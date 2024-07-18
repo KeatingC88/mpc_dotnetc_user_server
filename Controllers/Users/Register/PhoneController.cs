@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using dotnet_user_server.Controllers;
-using dotnet_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
-namespace dotnet_user_server.Controllers.Users.Register
+namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
     [ApiController]
     [Route("api/Phone")]
@@ -12,12 +10,12 @@ namespace dotnet_user_server.Controllers.Users.Register
     {
         private readonly ILogger<PhoneController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly UsersDbC UsersDbC;//EFCore -> Database
-        public PhoneController(ILogger<PhoneController> logger, IConfiguration configuration, UsersDbC context)
+        private readonly IUsersRepository _UsersRepository;
+        public PhoneController(ILogger<PhoneController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
         {
             _logger = logger;
             _configuration = configuration;
-            UsersDbC = context;
+            _UsersRepository = UsersRepository;
         }
 
         [HttpPost("Confirmation")]
@@ -33,8 +31,8 @@ namespace dotnet_user_server.Controllers.Users.Register
                     string.IsNullOrWhiteSpace(obj.Carrier) ||
                     string.IsNullOrEmpty(obj.Country.ToString()) || 
                     string.IsNullOrWhiteSpace(obj.Country.ToString()) ||
-                    !Valid.Phone(obj.Phone) || UsersDbC.Phone_Exists_In_Login_Telephone_Tbl(obj.Phone) ||
-                    !UsersDbC.Phone_Exists_In_Telephone_Not_Confirmed_Tbl(obj.Phone))
+                    !Valid.Phone(obj.Phone) || _UsersRepository.Telephone_Exists_In_Login_Telephone_Tbl(obj.Phone).Result ||
+                    !_UsersRepository.Phone_Exists_In_Telephone_Not_Confirmed_Tbl(obj.Phone).Result)
                     return BadRequest();
 
                 return StatusCode(200, JsonSerializer.Serialize(obj));
@@ -56,14 +54,14 @@ namespace dotnet_user_server.Controllers.Users.Register
                     string.IsNullOrWhiteSpace(obj.Carrier) ||
                     string.IsNullOrEmpty(obj.Country.ToString()) || 
                     string.IsNullOrWhiteSpace(obj.Country.ToString()) ||
-                    !Valid.Phone(obj.Phone) || 
-                    UsersDbC.Phone_Exists_In_Login_Telephone_Tbl(obj.Phone))
+                    !Valid.Phone(obj.Phone) ||
+                    _UsersRepository.Telephone_Exists_In_Login_Telephone_Tbl(obj.Phone).Result)
                     return BadRequest();
 
-                if (UsersDbC.Phone_Exists_In_Telephone_Not_Confirmed_Tbl(obj.Phone))
-                    return await Task.FromResult(UsersDbC.Update_Unconfirmed_Phone(obj));
+                if (_UsersRepository.Phone_Exists_In_Telephone_Not_Confirmed_Tbl(obj.Phone).Result)
+                    return await Task.FromResult(_UsersRepository.Update_Unconfirmed_Phone(obj).Result);
 
-                return await Task.FromResult(UsersDbC.Create_Unconfirmed_Phone(obj));
+                return await Task.FromResult(_UsersRepository.Create_Unconfirmed_Phone(obj).Result);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -83,7 +81,7 @@ namespace dotnet_user_server.Controllers.Users.Register
                     !Valid.LanguageRegion(obj.Language))
                     return BadRequest();
 
-                return await Task.FromResult(UsersDbC.Create_Account_By_Phone(obj));
+                return await Task.FromResult(_UsersRepository.Create_Account_By_Phone(obj)).Result;
             }
             catch (Exception e)
             {

@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using dotnet_user_server.Controllers;
-using dotnet_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
-namespace dotnet_user_server.Controllers.Users.Register
+namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
     [ApiController]
     [Route("api/Email")]
@@ -12,54 +10,57 @@ namespace dotnet_user_server.Controllers.Users.Register
     {
         private readonly ILogger<EmailController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly UsersDbC UsersDbC;//EFCore -> Database
-        public EmailController(ILogger<EmailController> logger, IConfiguration configuration, UsersDbC context)
+        private readonly IUsersRepository _UsersRepository;
+
+        public EmailController(ILogger<EmailController> logger, IConfiguration configuration, IUsersRepository iUsersRepository)
         {
             _logger = logger;
             _configuration = configuration;
-            UsersDbC = context;
+            _UsersRepository = iUsersRepository;
         }
         [HttpPost("Confirmation")]
         public ActionResult<string> Email_Account_Confirmation([FromBody] DTO obj)
         {
             try
             {
-                if (string.IsNullOrEmpty(obj.Email_address) || 
+                if (string.IsNullOrEmpty(obj.Email_address) ||
                     string.IsNullOrWhiteSpace(obj.Email_address) ||
-                    string.IsNullOrEmpty(obj.Code) || 
+                    string.IsNullOrEmpty(obj.Code) ||
                     string.IsNullOrWhiteSpace(obj.Code) ||
-                    !Valid.Email(obj.Email_address) || 
-                    !UsersDbC.Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(obj.Email_address) ||
-                    UsersDbC.Email_Exists_In_Login_EmailAddress_Tbl(obj.Email_address) ||
-                    !UsersDbC.Confirmation_Code_Exists_In_Not_Confirmed_Email_Address_Tbl(obj.Code))
+                    !Valid.Email(obj.Email_address) ||
+                    !_UsersRepository.Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(obj.Email_address).Result ||
+                    _UsersRepository.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_address).Result ||
+                    !_UsersRepository.Confirmation_Code_Exists_In_Not_Confirmed_Email_Address_Tbl(obj.Code).Result)
                     return BadRequest();
-                
+
                 return StatusCode(200, JsonSerializer.Serialize(obj));
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 return StatusCode(500, $"{e.Message}");
             }
         }
         [HttpPost("Register")]
         public async Task<ActionResult<string>> Email_Account_Register([FromBody] DTO obj)
-        {
+        {            
             try
             {
-                if (string.IsNullOrEmpty(obj.Email_address) || 
+                if (string.IsNullOrEmpty(obj.Email_address) ||
                     string.IsNullOrWhiteSpace(obj.Email_address) ||
                     string.IsNullOrWhiteSpace(obj.Language) ||
-                    string.IsNullOrEmpty(obj.Code) || 
+                    string.IsNullOrEmpty(obj.Code) ||
                     string.IsNullOrWhiteSpace(obj.Code) ||
                     !Valid.Email(obj.Email_address) ||
                     !Valid.LanguageRegion(obj.Language))
                     return BadRequest();
 
-                if(UsersDbC.Email_Exists_In_Login_EmailAddress_Tbl(obj.Email_address))
+                if (_UsersRepository.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_address).Result)
                     return StatusCode(409);
-               
-                if (UsersDbC.Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(obj.Email_address))
-                    return await Task.FromResult(UsersDbC.Update_Unconfirmed_Email(obj));
 
-                return await Task.FromResult(UsersDbC.Create_Unconfirmed_Email(obj));
+                if (_UsersRepository.Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(obj.Email_address).Result)
+                    return await Task.FromResult(_UsersRepository.Update_Unconfirmed_Email(obj)).Result;
+
+                return await _UsersRepository.Create_Unconfirmed_Email(obj);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -69,20 +70,22 @@ namespace dotnet_user_server.Controllers.Users.Register
         {
             try
             {
-                if (string.IsNullOrEmpty(obj.Email_address) || 
+                if (string.IsNullOrEmpty(obj.Email_address) ||
                     string.IsNullOrWhiteSpace(obj.Email_address) ||
-                    string.IsNullOrEmpty(obj.Password) || 
-                    string.IsNullOrWhiteSpace(obj.Password) || 
-                    string.IsNullOrEmpty(obj.Language) || 
-                    string.IsNullOrWhiteSpace(obj.Language) || 
-                    UsersDbC.Email_Exists_In_Login_EmailAddress_Tbl(obj.Email_address) ||
-                    !Valid.Email(obj.Email_address) || 
+                    string.IsNullOrEmpty(obj.Password) ||
+                    string.IsNullOrWhiteSpace(obj.Password) ||
+                    string.IsNullOrEmpty(obj.Language) ||
+                    string.IsNullOrWhiteSpace(obj.Language) ||
+                    _UsersRepository.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_address).Result ||
+                    !Valid.Email(obj.Email_address) ||
                     !Valid.Password(obj.Password) ||
                     !Valid.LanguageRegion(obj.Language))
                     return BadRequest();
 
-                return await Task.FromResult(UsersDbC.Create_Account_By_Email(obj));
-            } catch (Exception e) {
+                return await Task.FromResult(_UsersRepository.Create_Account_By_Email(obj)).Result;
+            }
+            catch (Exception e)
+            {
                 return StatusCode(500, $"{e.Message}");
             }
         }

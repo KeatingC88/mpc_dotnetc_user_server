@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using dotnet_user_server.Models.Users;
-using System.Text;
-using System.Text.RegularExpressions;
+using mpc_dotnetc_user_server.Models.Users;
 
-namespace dotnet_user_server.Controllers.Users.Account
+namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
     [ApiController]
     [Route("api/Identity")]
@@ -11,13 +9,13 @@ namespace dotnet_user_server.Controllers.Users.Account
     {
         private readonly ILogger<IdentityController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly UsersDbC UsersDbC;//Database Model
+        private readonly IUsersRepository _UsersRepository;
 
-        public IdentityController(ILogger<IdentityController> logger, IConfiguration configuration, UsersDbC context)
+        public IdentityController(ILogger<IdentityController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
         {
             _logger = logger;
             _configuration = configuration;
-            UsersDbC = context;
+            _UsersRepository = UsersRepository;
         }
 
         [HttpPost("FirstName")]
@@ -29,20 +27,20 @@ namespace dotnet_user_server.Controllers.Users.Account
                     dto.First_name.Length > 19)
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(dto.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                return await Task.FromResult(UsersDbC.Save_End_User_First_Name(new DTO
+                return await Task.FromResult(_UsersRepository.Save_End_User_First_Name(new DTO
                 {
                     ID = user_id,
                     Token = dto.Token,
                     First_name = dto.First_name
-                }));
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -57,20 +55,20 @@ namespace dotnet_user_server.Controllers.Users.Account
                     dto.Last_name.Length > 19)
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(dto.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                return await Task.FromResult(UsersDbC.Save_End_User_Last_Name(new DTO
+                return await Task.FromResult(_UsersRepository.Save_End_User_Last_Name(new DTO
                 {
                     ID = user_id,
                     Token = dto.Token,
                     Last_name = dto.Last_name
-                }));
+                })).Result;
             }
             catch (Exception e)
             {
@@ -87,19 +85,19 @@ namespace dotnet_user_server.Controllers.Users.Account
                     dto.Middle_name.Length > 19)
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(dto.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                return await Task.FromResult(UsersDbC.Save_End_User_Middle_Name(new DTO{
+                return await Task.FromResult(_UsersRepository.Save_End_User_Middle_Name(new DTO{
                     ID = user_id,
                     Token = dto.Token,
                     Middle_name = dto.Middle_name
-                }));
+                })).Result;
             }
             catch (Exception e)
             {
@@ -116,20 +114,20 @@ namespace dotnet_user_server.Controllers.Users.Account
                     dto.Maiden_name.Length > 19)
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(dto.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                return await Task.FromResult(UsersDbC.Save_End_User_Maiden_Name(new DTO
+                return await Task.FromResult(_UsersRepository.Save_End_User_Maiden_Name(new DTO
                 {
                     ID = user_id,
                     Token = dto.Token,
                     Maiden_name = dto.Maiden_name
-                }));
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -140,19 +138,19 @@ namespace dotnet_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(dto.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                return await Task.FromResult(UsersDbC.Save_End_User_Gender(new DTO {
+                return await Task.FromResult(_UsersRepository.Update_End_User_Gender(new DTO {
                     ID = user_id,
                     Token = dto.Token,
                     Gender = dto.Gender
-                }));
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -164,20 +162,20 @@ namespace dotnet_user_server.Controllers.Users.Account
             try
             {
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(dto.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                return await Task.FromResult(UsersDbC.Save_End_User_Ethnicity(new DTO
+                return await Task.FromResult(_UsersRepository.Save_End_User_Ethnicity(new DTO
                 {
                     ID = user_id,
                     Token = dto.Token,
                     Ethnicity = dto.Ethnicity
-                }));
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -189,21 +187,21 @@ namespace dotnet_user_server.Controllers.Users.Account
             try
             {
                 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(dto.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                return await Task.FromResult(UsersDbC.Save_End_User_Birth_Date(new DTO{
+                return await Task.FromResult(_UsersRepository.Save_End_User_Birth_Date(new DTO{
                     ID = user_id,
                     Token = dto.Token,
                     Month = dto.Month,
                     Day = dto.Day,
                     Year = dto.Year
-                }));
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

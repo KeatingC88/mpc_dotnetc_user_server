@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using dotnet_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users;
 
-namespace dotnet_user_server.Controllers.Users.Account
+
+namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
     [ApiController]
     [Route("api/Load")]
@@ -9,19 +10,20 @@ namespace dotnet_user_server.Controllers.Users.Account
     {
         private readonly ILogger<LoadController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly UsersDbC UsersDbC;//EFCore -> Database
-        public LoadController(ILogger<LoadController> logger, IConfiguration configuration, UsersDbC context)
+        private readonly IUsersRepository _UsersRepository;
+        
+        public LoadController(ILogger<LoadController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
         {
             _logger = logger;
             _configuration = configuration;
-            UsersDbC = context;
+            _UsersRepository = UsersRepository;
         }
 
         [HttpGet("All_Users")]
         public async Task<ActionResult<string>> LoadAllUsers()
         {
             try {
-                return await Task.FromResult(UsersDbC.Read_Users());
+                return await Task.FromResult(_UsersRepository.Read_Users()).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -32,12 +34,12 @@ namespace dotnet_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(dto.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
                 DTO obj = new DTO
@@ -46,7 +48,7 @@ namespace dotnet_user_server.Controllers.Users.Account
                     Token = dto.Token
                 };
 
-                return await Task.FromResult(UsersDbC.Read_User(obj));
+                return await Task.FromResult(_UsersRepository.Read_User(obj).Result);
             }
             catch (Exception e)
             {
@@ -59,21 +61,19 @@ namespace dotnet_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(dto.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                DTO obj = new DTO
+                return await Task.FromResult(_UsersRepository.Read_User_Profile(new DTO
                 {
                     ID = dto.ID,//Targetted User's ID that we use to retrieve data.
                     Token = dto.Token//Authorizing End User Requesting the Targetted ID.
-                };
-
-                return await Task.FromResult(UsersDbC.Read_User_Profile(obj));
+                })).Result;
             }
             catch (Exception e)
             {

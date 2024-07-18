@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models.Users.Feedback
+﻿namespace mpc_dotnetc_user_server.Models.Users.Feedback
 {
     public class Comment_BoxTbl
     {
@@ -12,12 +12,5 @@
         public ulong Updated_by { get; set; }
         public string Comment { get; set; } = string.Empty;
 
-    }
-
-    public class Comment_BoxDTO
-    {
-        public ulong ID { get; set; }
-        public string Token { get; set; } = string.Empty;
-        public string Comment { get; set; } = string.Empty;
     }
 }

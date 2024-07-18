@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models.Users.Chat
+﻿namespace mpc_dotnetc_user_server.Models.Users.Chat
 {
     public class Chat_WebSocketLogTbl
     {
@@ -14,15 +14,5 @@
         public byte Approved { get; set; }
         public byte Requested { get; set; }
         public byte Blocked { get; set; }
-    }
-    public class Chat_WebSocketLogDTO
-    {
-        public byte Approved { get; set; }
-        public byte Requested { get; set; }
-        public byte Blocked { get; set; }
-        public ulong ID { get; set; }
-        public ulong Send_to { get; set; }
-        public string Token { get; set; } = string.Empty;
-        public string Message { get; set; } = string.Empty;
     }
 }

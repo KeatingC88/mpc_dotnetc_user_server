@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models 
+﻿namespace mpc_dotnetc_user_server.Models 
 {
     public class Login_TSTbl
     {

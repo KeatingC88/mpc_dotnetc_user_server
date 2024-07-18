@@ -1,14 +1,16 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
-using dotnet_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users;
 
 var MPCServerOrigins = "MPCServerOrigins";
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
-//Database
+//Database Injection(s) and Scoped
 string path = Directory.GetCurrentDirectory();
-builder.Services.AddDbContext<UsersDbC>(options => options.UseSqlite($"Data Source = {path}\\Users.db"));
+builder.Services.AddDbContext<UsersDBC>(options => options.UseSqlite($"Data Source = {path}\\Users.db"));
+builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+//Cors Policies
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MPCServerOrigins,
@@ -21,7 +23,8 @@ builder.Services.AddCors(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-/*builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
@@ -33,7 +36,10 @@ builder.Services.AddSwaggerGen();
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
-});*/
+});
+
+builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);//AWS Lambda Required Code
+
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.MapGet("/", () => "Root Called");

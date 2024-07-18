@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models.Users.Selections
+﻿namespace mpc_dotnetc_user_server.Models.Users.Selections
 {
     public class Selected_LanguageTbl
     {

@@ -7,8 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.7.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.18" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.17" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.18">
       <PrivateAssets>all</PrivateAssets>
@@ -16,6 +17,10 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.18" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\Users\Repository\" />
   </ItemGroup>
 
 </Project>

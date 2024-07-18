@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models.Users.Authentication
+﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication
 {
     public class Logout_TSTbl
     {

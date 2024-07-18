@@ -1,0 +1,15 @@
+version: '1.0'
+services:
+  mpc_dotnetc_user_server:
+    container_name: mpc_dotnetc_user_server
+    image: mpc_dotnetc_user_server_rom
+    build: ./Dockerfile
+    volumes:
+      - ./data:/data
+    ports:
+      - 5177:80
+volumes:
+  data:
+
+
+

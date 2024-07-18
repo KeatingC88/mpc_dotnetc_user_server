@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
-using dotnet_user_server.Controllers.Users.Account;
-using dotnet_user_server.Models;
+using mpc_dotnetc_user_server.Controllers.Users.Account;
+using mpc_dotnetc_user_server.Models;
 using System.Text.RegularExpressions;
 
-namespace dotnet_user_server.Controllers
+namespace mpc_dotnetc_user_server.Controllers
 {
     public class Valid
     {
@@ -35,9 +35,7 @@ namespace dotnet_user_server.Controllers
                 var addr = new System.Net.Mail.MailAddress(email);
                 if (addr.Address != trimmedEmail)
                     return false;
-            }
-            catch
-            {
+            } catch {
                 return false;
             }
 
@@ -75,21 +73,51 @@ namespace dotnet_user_server.Controllers
             if (!language_region_has_two_parts_to_it[1].All(letter => char.IsUpper(letter)))
                 return false;
 
-            switch (language_region.ToUpper()) {
-                case "CN-TW":
-                case "CN-HK":
-                case "CN-MO":
-                case "CN-ZH":
-                case "CN-CM":
-                case "CN-YU":
-                case "CN-NA":
-                case "EN-US":
-                case "ES-MX":
-                case "ES-US":
-                case "NL-BE":
-                case "NL-NL":
+            switch (language_region_has_two_parts_to_it[0].ToUpper()) {
+                case "DE":
+                case "EN":
+                case "ZH":
+                case "HI":
+                case "FR":
+                case "ES":
+                case "NL":
                     return true;
             }
+
+            switch (language_region_has_two_parts_to_it[1].ToUpper())
+            {
+                case "DE":
+                case "GF":
+                case "MX":
+                case "FR":
+                case "US":
+                case "ES":
+                case "NL":
+                case "IN":
+                case "BE":
+                case "RU":
+                case "HK":
+                case "MC":
+                case "TW":
+                case "CDO":
+                case "CJY":
+                case "CMN":
+                case "CNP":
+                case "CPX":
+                case "CSH":
+                case "CZH":
+                case "CZO":
+                case "GAN":
+                case "HAK":
+                case "HSN":
+                case "LZH":
+                case "MNP":
+                case "NAN":
+                case "WUU":
+                case "YUE":
+                    return true;
+            }
+
             return false;
         }
     }

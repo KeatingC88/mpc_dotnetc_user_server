@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using dotnet_user_server.Models.Users;
-using dotnet_user_server.Models.Users.Feedback;
-using System.Text.RegularExpressions;
+using mpc_dotnetc_user_server.Models.Users;
 
-namespace dotnet_user_server.Controllers.Users.Feedback
+namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
 {
     [ApiController]
     [Route("api/Report")]
@@ -11,15 +9,15 @@ namespace dotnet_user_server.Controllers.Users.Feedback
     {
         private readonly ILogger<ReportController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly UsersDbC UsersDbC;//EFCore -> Database
-        public ReportController(ILogger<ReportController> logger, IConfiguration configuration, UsersDbC context)
+        private readonly IUsersRepository _UsersRepository;
+        public ReportController(ILogger<ReportController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
         {
             _logger = logger;
             _configuration = configuration;
-            UsersDbC = context;
+            _UsersRepository = UsersRepository;
         }
         [HttpPost("Broken_Link")]
-        public async Task<ActionResult<bool>> EmailRegister([FromBody] Broken_LinkDTO obj)
+        public async Task<ActionResult<bool>> EmailRegister([FromBody] DTO obj)
         {
             try
             {
@@ -27,17 +25,17 @@ namespace dotnet_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(obj.URL) || string.IsNullOrWhiteSpace(obj.URL))
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Create_Broken_Link_Record(obj));
+                return await Task.FromResult(_UsersRepository.Create_Broken_Link_Record(obj).Result);
             }
             catch (Exception e)
             {
@@ -45,26 +43,26 @@ namespace dotnet_user_server.Controllers.Users.Feedback
             }
         }
         [HttpPost("Contact_Us")]
-        public async Task<ActionResult<bool>> ContactUsRegister([FromBody] Contact_UsDTO obj)
+        public async Task<ActionResult<bool>> ContactUsRegister([FromBody] DTO obj)
         {
             try
             {
                 if (string.IsNullOrEmpty(obj.Token) || string.IsNullOrWhiteSpace(obj.Token) ||
-                    string.IsNullOrEmpty(obj.Subject_Line) || string.IsNullOrWhiteSpace(obj.Subject_Line) ||
+                    string.IsNullOrEmpty(obj.Subject_line) || string.IsNullOrWhiteSpace(obj.Subject_line) ||
                     string.IsNullOrEmpty(obj.Summary) || string.IsNullOrWhiteSpace(obj.Summary))
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Create_Contact_Us_Record(obj));
+                return await Task.FromResult(_UsersRepository.Create_Contact_Us_Record(obj)).Result;
             }
             catch (Exception e)
             {
@@ -73,7 +71,7 @@ namespace dotnet_user_server.Controllers.Users.Feedback
         }
 
         [HttpPost("Discord_Bot_Bug")]
-        public async Task<ActionResult<bool>> DiscordBotBugRegisterRegister([FromBody] Discord_Bot_BugDTO obj)
+        public async Task<ActionResult<bool>> DiscordBotBugRegisterRegister([FromBody] DTO obj)
         {
             try
             {
@@ -82,17 +80,17 @@ namespace dotnet_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(obj.Detail) || string.IsNullOrWhiteSpace(obj.Detail))
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Create_Discord_Bot_Bug_Record(obj));
+                return await Task.FromResult(_UsersRepository.Create_Discord_Bot_Bug_Record(obj)).Result;
             }
             catch (Exception e)
             {
@@ -101,7 +99,7 @@ namespace dotnet_user_server.Controllers.Users.Feedback
         }
 
         [HttpPost("Comment_Box")]
-        public async Task<ActionResult<bool>> Comment_BoxRegister([FromBody] Comment_BoxDTO obj)
+        public async Task<ActionResult<bool>> Comment_BoxRegister([FromBody] DTO obj)
         {
             try
             {
@@ -109,17 +107,17 @@ namespace dotnet_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(obj.Comment) || string.IsNullOrWhiteSpace(obj.Comment))
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Create_Comment_Box_Record(obj));
+                return await Task.FromResult(_UsersRepository.Create_Comment_Box_Record(obj)).Result;
             }
             catch (Exception e)
             {
@@ -128,21 +126,21 @@ namespace dotnet_user_server.Controllers.Users.Feedback
         }
 
         [HttpPost("User")]
-        public async Task<ActionResult<string>> ReportUserRegister([FromBody] Reported_DTO obj)
+        public async Task<ActionResult<string>> ReportUserRegister([FromBody] DTO obj)
         {
             try
             {
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Create_Reported_User_Record(obj));
+                return await Task.FromResult(_UsersRepository.Create_Reported_User_Record(obj)).Result;
             }
             catch (Exception e)
             {
@@ -150,7 +148,7 @@ namespace dotnet_user_server.Controllers.Users.Feedback
             }
         }
         [HttpPost("Website_Bug")]
-        public async Task<ActionResult<bool>> Website_BugRegister([FromBody] Reported_WebsiteBugDTO obj)
+        public async Task<ActionResult<bool>> Website_BugRegister([FromBody] DTO obj)
         {
             try
             {
@@ -159,17 +157,17 @@ namespace dotnet_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(obj.Detail) || string.IsNullOrWhiteSpace(obj.Detail))
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Create_Website_Bug_Record(obj));
+                return await Task.FromResult(_UsersRepository.Create_Website_Bug_Record(obj)).Result;
             }
             catch (Exception e)
             {

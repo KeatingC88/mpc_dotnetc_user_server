@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models.Users.Feedback
+﻿namespace mpc_dotnetc_user_server.Models.Users.Feedback
 {
     public class Reported_DiscordBotBugTbl
     {
@@ -10,13 +10,6 @@
         public ulong Deleted_by { get; set; }
         public ulong Updated_on { get; set; }
         public ulong Updated_by { get; set; }
-        public string Location { get; set; } = string.Empty;
-        public string Detail { get; set; } = string.Empty;
-    }
-    public class Discord_Bot_BugDTO
-    {
-        public ulong ID { get; set; }
-        public string Token { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public string Detail { get; set; } = string.Empty;
     }

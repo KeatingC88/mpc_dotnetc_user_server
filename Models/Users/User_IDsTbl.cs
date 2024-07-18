@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models.Users
+﻿namespace mpc_dotnetc_user_server.Models.Users
 {
     public class User_IDsTbl
     {

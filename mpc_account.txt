@@ -1,0 +1,13 @@
+1)Set Up MySQLInstaller, WorkBench, Server using installer...
+2)Edit Evironment Variables....
+3)Navigate to C:\Program Files\MySQL\MySQL Server 8.0\bin (where mysql is installed)
+4)Test MySQL Version using 'mysql --version' command in cmd prompt.
+5)Connect by using command: 
+
+6)run SQL commands while connected to the MySQL CLI.
+
+root:
+5!T(3E)P(O0)|-|!1xD{xCf@9
+127.254.254.255
+Port 32254
+mysql -h 127.254.254.255 -P 32254 -u root -p

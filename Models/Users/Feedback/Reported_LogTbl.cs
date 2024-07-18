@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models.Users.Feedback
+﻿namespace mpc_dotnetc_user_server.Models.Users.Feedback
 {
     public class Reported_ProfileLogTbl
     {
@@ -19,13 +19,5 @@
         public string? Banner_URL { get; set; } = string.Empty;
         public string Reported_Reason { get; set; } = string.Empty;
         public ulong? Report_Chat_TS { get; set; }
-    }
-    public class Reported_DTO
-    {
-        public ulong ID { get; set; }
-        public string Token { get; set; } = string.Empty;
-        public ulong Reported_ID { get; set; }
-        public ulong? Report_Chat_TS { get; set; }
-        public string Reported_Reason { get; set; } = string.Empty;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models.Users.Identity
+﻿namespace mpc_dotnetc_user_server.Models.Users.Identity
 {
     public class ProfilePageTbl
     {

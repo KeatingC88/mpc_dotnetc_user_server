@@ -1,16 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-//JWT Stuff...
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.ComponentModel.DataAnnotations;
+using mpc_dotnetc_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users.Selections;
 using System.Text;
-using Microsoft.AspNetCore.Authentication;
-using System.Text.RegularExpressions;
-using dotnet_user_server.Models.Users;
-using dotnet_user_server.Models.Users.Selections;
 
-namespace dotnet_user_server.Controllers.Users.Account
+
+namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
     [ApiController]
     [Route("api/Selected")]
@@ -18,12 +12,12 @@ namespace dotnet_user_server.Controllers.Users.Account
     {
         private readonly ILogger<SelectedController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly UsersDbC UsersDbC;//EFCore -> Database
-        public SelectedController(ILogger<SelectedController> logger, IConfiguration configuration, UsersDbC context)
+        private readonly IUsersRepository _UsersRepository;
+        public SelectedController(ILogger<SelectedController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
         {
             _logger = logger;
             _configuration = configuration;
-            UsersDbC = context;
+            _UsersRepository = UsersRepository;
         }
 
         [HttpPut("Alignment")]
@@ -36,17 +30,17 @@ namespace dotnet_user_server.Controllers.Users.Account
                     )
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Update_User_Selected_Alignment(obj));
+                return await Task.FromResult(_UsersRepository.Update_User_Selected_Alignment(obj)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -62,17 +56,17 @@ namespace dotnet_user_server.Controllers.Users.Account
                     )
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Update_User_Selected_TextAlignment(obj));
+                return await Task.FromResult(_UsersRepository.Update_User_Selected_TextAlignment(obj)).Result;
             }
             catch (Exception e)
             {
@@ -89,17 +83,17 @@ namespace dotnet_user_server.Controllers.Users.Account
                     string.IsNullOrEmpty(obj.Avatar_url_path) || string.IsNullOrWhiteSpace(obj.Avatar_url_path))
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Update_User_Avatar(obj));
+                return await Task.FromResult(_UsersRepository.Update_User_Avatar(obj)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -114,7 +108,7 @@ namespace dotnet_user_server.Controllers.Users.Account
                 if (string.IsNullOrEmpty(obj.Token) || string.IsNullOrWhiteSpace(obj.Token))
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (string.IsNullOrEmpty(obj.Display_name) || string.IsNullOrWhiteSpace(obj.Display_name))
                 {
@@ -124,13 +118,13 @@ namespace dotnet_user_server.Controllers.Users.Account
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
                 obj.Display_name = obj.Display_name;
 
-                return await Task.FromResult(UsersDbC.Update_User_Display_Name(obj));
+                return await Task.FromResult(_UsersRepository.Update_User_Display_Name(obj)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -144,23 +138,23 @@ namespace dotnet_user_server.Controllers.Users.Account
                 if (string.IsNullOrEmpty(dto.Token) || string.IsNullOrWhiteSpace(dto.Token) || string.IsNullOrEmpty(dto.Language) || string.IsNullOrWhiteSpace(dto.Language))
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(dto.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
-                return await Task.FromResult(UsersDbC.Update_User_Selected_Language(
-                    new Selected_LanguageTbl
+                return await Task.FromResult(_UsersRepository.Update_User_Selected_Language(
+                    new DTO
                     {
                         User_ID = user_id,
                         Language_code = dto.Language.Substring(0, 2),
                         Region_code = dto.Language.Substring(3, 2),
                         Updated_by = user_id
                     }
-                ));
+                )).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -176,17 +170,17 @@ namespace dotnet_user_server.Controllers.Users.Account
                     )
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Update_User_Selected_Nav_Lock(obj));
+                return await Task.FromResult(_UsersRepository.Update_User_Selected_Nav_Lock(obj).Result);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -205,22 +199,22 @@ namespace dotnet_user_server.Controllers.Users.Account
                     string.IsNullOrEmpty(obj.Email_address) || string.IsNullOrWhiteSpace(obj.Email_address))
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
-                byte[]? usersdb_SavedPasswordHash = UsersDbC.Get_User_Password_Hash_By_ID(user_id);
-                byte[]? given_PasswordHash = UsersDbC.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(obj.Password), Encoding.UTF8.GetBytes($"{obj.Email_address}MPCSalt"));
+                byte[]? usersdb_SavedPasswordHash = _UsersRepository.Get_User_Password_Hash_By_ID(user_id).Result;
+                byte[]? given_PasswordHash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(obj.Password), Encoding.UTF8.GetBytes($"{obj.Email_address}MPCSalt")).Result;
 
                 if (usersdb_SavedPasswordHash != null)
-                    if (!UsersDbC.Compare_Password_Byte_Arrays(usersdb_SavedPasswordHash, given_PasswordHash))
+                    if (!_UsersRepository.Compare_Password_Byte_Arrays(usersdb_SavedPasswordHash, given_PasswordHash))
                         return Unauthorized();
 
-                return await Task.FromResult(UsersDbC.Update_User_Password(new DTO { ID = user_id, Password = obj.Password, New_password = obj.New_password, Email_address = obj.Email_address }));
+                return await Task.FromResult(_UsersRepository.Update_User_Password(new DTO { ID = user_id, Password = obj.Password, New_password = obj.New_password, Email_address = obj.Email_address })).Result;
             }
             catch (Exception e)
             {
@@ -240,17 +234,17 @@ namespace dotnet_user_server.Controllers.Users.Account
                 if (obj.Online_status < 1 && obj.Online_status > 5)
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Update_User_Selected_Status(obj));
+                return await Task.FromResult(_UsersRepository.Update_User_Selected_Status(obj)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -265,17 +259,17 @@ namespace dotnet_user_server.Controllers.Users.Account
                     string.IsNullOrEmpty(obj.Token) || string.IsNullOrWhiteSpace(obj.Token))
                     return BadRequest();
 
-                ulong user_id = UsersDbC.Get_User_ID_From_JWToken(obj.Token);
+                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!UsersDbC.ID_Exist_In_Users_Tbl(user_id))
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(UsersDbC.Update_User_Selected_Theme(obj));
+                return await Task.FromResult(_UsersRepository.Update_User_Selected_Theme(obj).Result);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

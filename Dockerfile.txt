@@ -21,4 +21,4 @@ COPY --from=build /app/out ./
 EXPOSE 80
 
 # Start the application
-ENTRYPOINT ["dotnet", "mpc_dotnetc7_user_server.dll"]
+ENTRYPOINT ["dotnet", "mpc_dotnetc_user_server.dll"]

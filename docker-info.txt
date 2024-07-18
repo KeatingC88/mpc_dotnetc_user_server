@@ -1,0 +1,8 @@
+todo:
+ docker build -t Name_Of_Container C:\....Path
+ docker compose -f filename.yaml up -d
+
+in example:
+ docker build -t mpc_dotnetc_user_server_rom C:\Users\AcidSnake\source\repos\MPC\mpc_dotnetc_user_server
+
+ docker compose -f mpc_dotnetc_user_server.yaml up -d

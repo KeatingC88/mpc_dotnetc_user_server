@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models.Users.Confirmation
+﻿namespace mpc_dotnetc_user_server.Models.Users.Confirmation
 {
     public class Unconfirmed_EmailAddressTbl
     {

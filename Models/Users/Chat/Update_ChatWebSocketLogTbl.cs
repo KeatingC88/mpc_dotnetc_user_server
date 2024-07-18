@@ -1,4 +1,4 @@
-﻿namespace dotnet_user_server.Models.Users.Chat
+﻿namespace mpc_dotnetc_user_server.Models.Users.Chat
 {
     public class Update_ChatWebSocketLogTbl
     {
