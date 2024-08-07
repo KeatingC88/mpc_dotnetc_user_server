@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
-using mpc_dotnetc_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users.Index;
 
 var MPCServerOrigins = "MPCServerOrigins";
 var builder = WebApplication.CreateBuilder(args);

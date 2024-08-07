@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users.Index;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -23,13 +23,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                if (string.IsNullOrEmpty(obj.Email_address) || string.IsNullOrWhiteSpace(obj.Email_address))
+                if (string.IsNullOrEmpty(obj.Email_Address) || string.IsNullOrWhiteSpace(obj.Email_Address))
                     return BadRequest();
 
                 /* If Twitch Email Matches one our accounts in out database...?
-                    if (!UsersDBC.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_address))
+                    if (!UsersDBC.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_Address))
                         return NotFound();
-                    ulong user_id = UsersDBC.Get_User_ID_By_Email_Address(obj.Email_address);
+                    ulong user_id = UsersDBC.Get_User_ID_By_Email_Address(obj.Email_Address);
                     if (user_id == 0 || !_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                         return NotFound();
                     obj.ID = user_id;

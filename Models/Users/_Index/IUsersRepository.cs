@@ -1,10 +1,9 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users
+﻿namespace mpc_dotnetc_user_server.Models.Users.Index
 {
     public interface IUsersRepository
     {
         Task<bool> Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(string email_address);
         Task<bool> Email_Exists_In_Login_Email_Address_Tbl(string email_address);
-        Task<bool> Update_User_Logout(ulong user_id);
         Task<bool> Update_User_Password(DTO dto);
         Task<bool> Update_Chat_Web_Socket_Log_Tbl(DTO dto);
         Task<bool> Create_Comment_Box_Record(DTO dto);
@@ -39,6 +38,7 @@
         Task<string> Update_User_Avatar(DTO dto);
         Task<string> Update_User_Display_Name(DTO dto);
         Task<string> Update_User_Login(DTO dto);
+        Task<string> Update_User_Logout(ulong user_id);
         Task<string> Update_User_Selected_Alignment(DTO dto);
         Task<string> Update_User_Selected_TextAlignment(DTO dto);
         Task<string> Update_User_Selected_Language(DTO dto);
@@ -89,7 +89,7 @@
         public string Custom_lbl { get; set; } = string.Empty;
         public string Detail { get; set; } = string.Empty;
         public string Display_name { get; set; } = string.Empty;
-        public string Email_address { get; set; } = string.Empty;
+        public string Email_Address { get; set; } = string.Empty;
         public string Ethnicity { get; set; } = string.Empty;
         public string First_name { get; set; } = string.Empty;
         public string Language { get; set; } = string.Empty;

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users.Index;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -69,9 +69,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Token = dto.Token,
                     Last_name = dto.Last_name
                 })).Result;
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
         }//
@@ -144,7 +142,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return Ok();
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
-                    return Ok();
+                    return NotFound();
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Gender(new DTO {
                     ID = user_id,

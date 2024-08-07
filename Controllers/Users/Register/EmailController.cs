@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users.Index;
 using System.Text.Json;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
@@ -23,13 +23,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         {
             try
             {
-                if (string.IsNullOrEmpty(obj.Email_address) ||
-                    string.IsNullOrWhiteSpace(obj.Email_address) ||
+                if (string.IsNullOrEmpty(obj.Email_Address) ||
+                    string.IsNullOrWhiteSpace(obj.Email_Address) ||
                     string.IsNullOrEmpty(obj.Code) ||
                     string.IsNullOrWhiteSpace(obj.Code) ||
-                    !Valid.Email(obj.Email_address) ||
-                    !_UsersRepository.Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(obj.Email_address).Result ||
-                    _UsersRepository.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_address).Result ||
+                    !Valid.Email(obj.Email_Address) ||
+                    !_UsersRepository.Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(obj.Email_Address).Result ||
+                    _UsersRepository.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_Address).Result ||
                     !_UsersRepository.Confirmation_Code_Exists_In_Not_Confirmed_Email_Address_Tbl(obj.Code).Result)
                     return BadRequest();
 
@@ -45,19 +45,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         {            
             try
             {
-                if (string.IsNullOrEmpty(obj.Email_address) ||
-                    string.IsNullOrWhiteSpace(obj.Email_address) ||
+                if (string.IsNullOrEmpty(obj.Email_Address) ||
+                    string.IsNullOrWhiteSpace(obj.Email_Address) ||
                     string.IsNullOrWhiteSpace(obj.Language) ||
                     string.IsNullOrEmpty(obj.Code) ||
                     string.IsNullOrWhiteSpace(obj.Code) ||
-                    !Valid.Email(obj.Email_address) ||
+                    !Valid.Email(obj.Email_Address) ||
                     !Valid.LanguageRegion(obj.Language))
                     return BadRequest();
 
-                if (_UsersRepository.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_address).Result)
+                if (_UsersRepository.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_Address).Result)
                     return StatusCode(409);
 
-                if (_UsersRepository.Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(obj.Email_address).Result)
+                if (_UsersRepository.Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(obj.Email_Address).Result)
                     return await Task.FromResult(_UsersRepository.Update_Unconfirmed_Email(obj)).Result;
 
                 return await _UsersRepository.Create_Unconfirmed_Email(obj);
@@ -70,14 +70,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         {
             try
             {
-                if (string.IsNullOrEmpty(obj.Email_address) ||
-                    string.IsNullOrWhiteSpace(obj.Email_address) ||
+                if (string.IsNullOrEmpty(obj.Email_Address) ||
+                    string.IsNullOrWhiteSpace(obj.Email_Address) ||
                     string.IsNullOrEmpty(obj.Password) ||
                     string.IsNullOrWhiteSpace(obj.Password) ||
                     string.IsNullOrEmpty(obj.Language) ||
                     string.IsNullOrWhiteSpace(obj.Language) ||
-                    _UsersRepository.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_address).Result ||
-                    !Valid.Email(obj.Email_address) ||
+                    _UsersRepository.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_Address).Result ||
+                    !Valid.Email(obj.Email_Address) ||
                     !Valid.Password(obj.Password) ||
                     !Valid.LanguageRegion(obj.Language))
                     return BadRequest();

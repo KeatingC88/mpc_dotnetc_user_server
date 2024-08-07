@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users.Index;
 
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -23,7 +23,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         public async Task<ActionResult<string>> LoadAllUsers()
         {
             try {
-                return await Task.FromResult(_UsersRepository.Read_Users()).Result;
+                return await _UsersRepository.Read_Users();
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -48,10 +48,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Token = dto.Token
                 };
 
-                return await Task.FromResult(_UsersRepository.Read_User(obj).Result);
-            }
-            catch (Exception e)
-            {
+                return await _UsersRepository.Read_User(obj);
+            } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
         }
@@ -69,14 +67,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                return await Task.FromResult(_UsersRepository.Read_User_Profile(new DTO
+                return await _UsersRepository.Read_User_Profile(new DTO
                 {
                     ID = dto.ID,//Targetted User's ID that we use to retrieve data.
                     Token = dto.Token//Authorizing End User Requesting the Targetted ID.
-                })).Result;
-            }
-            catch (Exception e)
-            {
+                });
+            } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
         }

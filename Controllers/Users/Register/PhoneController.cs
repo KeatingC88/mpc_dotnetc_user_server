@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users.Index;
 using System.Text.Json;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register

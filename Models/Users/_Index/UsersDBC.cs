@@ -6,10 +6,9 @@ using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Integration;
 using mpc_dotnetc_user_server.Models.Users.Selections;
-using mpc_dotnetc_user_server.Models;
 using Microsoft.Extensions.Configuration;
 
-namespace mpc_dotnetc_user_server.Models.Users
+namespace mpc_dotnetc_user_server.Models.Users.Index
 {
     public class UsersDBC : DbContext
     {

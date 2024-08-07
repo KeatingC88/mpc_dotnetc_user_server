@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users;
+using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.Selections;
 using System.Text;
 
@@ -196,7 +196,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     string.IsNullOrEmpty(obj.Language) || string.IsNullOrWhiteSpace(obj.Language) ||
                     string.IsNullOrEmpty(obj.Password) || string.IsNullOrWhiteSpace(obj.Password) ||
                     string.IsNullOrWhiteSpace(obj.New_password) || string.IsNullOrEmpty(obj.New_password) ||
-                    string.IsNullOrEmpty(obj.Email_address) || string.IsNullOrWhiteSpace(obj.Email_address))
+                    string.IsNullOrEmpty(obj.Email_Address) || string.IsNullOrWhiteSpace(obj.Email_Address))
                     return BadRequest();
 
                 ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
@@ -208,13 +208,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return NotFound();
 
                 byte[]? usersdb_SavedPasswordHash = _UsersRepository.Get_User_Password_Hash_By_ID(user_id).Result;
-                byte[]? given_PasswordHash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(obj.Password), Encoding.UTF8.GetBytes($"{obj.Email_address}MPCSalt")).Result;
+                byte[]? given_PasswordHash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(obj.Password), Encoding.UTF8.GetBytes($"{obj.Email_Address}MPCSalt")).Result;
 
                 if (usersdb_SavedPasswordHash != null)
                     if (!_UsersRepository.Compare_Password_Byte_Arrays(usersdb_SavedPasswordHash, given_PasswordHash))
                         return Unauthorized();
 
-                return await Task.FromResult(_UsersRepository.Update_User_Password(new DTO { ID = user_id, Password = obj.Password, New_password = obj.New_password, Email_address = obj.Email_address })).Result;
+                return await Task.FromResult(_UsersRepository.Update_User_Password(new DTO { ID = user_id, Password = obj.Password, New_password = obj.New_password, Email_Address = obj.Email_Address })).Result;
             }
             catch (Exception e)
             {

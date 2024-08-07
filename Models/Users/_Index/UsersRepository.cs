@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models;
 using mpc_dotnetc_user_server.Models.Users.Confirmation;
 using mpc_dotnetc_user_server.Models.Users.Selections;
 using mpc_dotnetc_user_server.Models.Users.Identity;
@@ -16,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using mpc_dotnetc_user_server.Models.Users.Authentication;
 using Microsoft.Extensions.Configuration;
 
-namespace mpc_dotnetc_user_server.Models.Users
+namespace mpc_dotnetc_user_server.Models.Users.Index
 {
     public class UsersRepository : IUsersRepository
     {
@@ -36,7 +35,7 @@ namespace mpc_dotnetc_user_server.Models.Users
             await _UsersDBC.Unconfirmed_EmailAddressTbl.AddAsync(new Unconfirmed_EmailAddressTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Unconfirmed_EmailAddressTbl.Count() + 1),
-                Email = dto.Email_address,
+                Email = dto.Email_Address,
                 Code = dto.Code,
                 Language_Region = dto.Language,
                 Updated_on = TimeStamp,
@@ -45,7 +44,7 @@ namespace mpc_dotnetc_user_server.Models.Users
             });
 
             await _UsersDBC.SaveChangesAsync();
-            obj.email_address = dto.Email_address;
+            obj.email_address = dto.Email_Address;
             obj.code = dto.Code;
             obj.language = dto.Language;
             return JsonSerializer.Serialize(obj);
@@ -79,7 +78,7 @@ namespace mpc_dotnetc_user_server.Models.Users
         }
         public async Task<string> Create_Account_By_Email(DTO dto)
         {
-            await _UsersDBC.Unconfirmed_EmailAddressTbl.Where(x => x.Email == dto.Email_address).ExecuteUpdateAsync(s => s
+            await _UsersDBC.Unconfirmed_EmailAddressTbl.Where(x => x.Email == dto.Email_Address).ExecuteUpdateAsync(s => s
                 .SetProperty(col => col.Deleted, 1)
                 .SetProperty(col => col.Deleted_on, TimeStamp)
                 .SetProperty(col => col.Updated_on, TimeStamp)
@@ -90,7 +89,7 @@ namespace mpc_dotnetc_user_server.Models.Users
 
             await _UsersDBC.Confirmed_EmailAddressTbl.AddAsync(new Confirmed_EmailAddressTbl
             {
-                Email = dto.Email_address,
+                Email = dto.Email_Address,
                 Updated_on = TimeStamp,
                 Updated_by = 0,
                 Language_Region = dto.Language,
@@ -112,7 +111,7 @@ namespace mpc_dotnetc_user_server.Models.Users
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_EmailAddressTbl.Count() + 1),
                 User_ID = ID_Record.ID,
-                Email = dto.Email_address,
+                Email = dto.Email_Address,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Updated_by = 0,
@@ -123,7 +122,7 @@ namespace mpc_dotnetc_user_server.Models.Users
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_PasswordTbl.Count() + 1),
                 User_ID = ID_Record.ID,
-                Password = Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_address}MPCSalt")).Result,
+                Password = Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}MPCSalt")).Result,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Updated_by = 0,
@@ -153,7 +152,7 @@ namespace mpc_dotnetc_user_server.Models.Users
             await _UsersDBC.SaveChangesAsync();
 
             obj.id = ID_Record.ID;
-            obj.email_address = dto.Email_address;
+            obj.email_address = dto.Email_Address;
             obj.token = Create_Jwt_Token(@$"{ID_Record.ID}");
             obj.token_expire = DateTime.UtcNow.AddMinutes(TokenExpireTime);
             obj.created_on = TimeStamp;
@@ -163,8 +162,8 @@ namespace mpc_dotnetc_user_server.Models.Users
             obj.nav_lock = dto.Nav_lock;
             obj.theme = dto.Theme;
             obj.online_status = 1;
-            obj.name = dto.Email_address;
-            obj.display_name = dto.Email_address;
+            obj.name = dto.Email_Address;
+            obj.display_name = dto.Email_Address;
 
             Create_End_User_Database_Fields(obj);
             return JsonSerializer.Serialize(obj);
@@ -401,7 +400,7 @@ namespace mpc_dotnetc_user_server.Models.Users
             obj.Target_id = dto.Target_ID;
             return JsonSerializer.Serialize(obj);
         }
-        public async Task<string> Read_User(DTO dto)
+        public Task<string> Read_User(DTO dto)
         {//Getting Information About the End User...
             bool Nav_lock = _UsersDBC.Selected_NavbarLockTbl.Where(x => x.User_ID == dto.ID).Select(x => x.Locked).SingleOrDefault();
             byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.ID).Select(x => x.Online).SingleOrDefault();
@@ -500,7 +499,7 @@ namespace mpc_dotnetc_user_server.Models.Users
             obj.maiden_name = MaidenName;
             obj.ethnicity = Ethnicity;
 
-            return JsonSerializer.Serialize(obj);
+            return Task.FromResult(JsonSerializer.Serialize(obj));
         }
         public async Task<string> Read_User_Profile(DTO dto)
         {
@@ -543,7 +542,7 @@ namespace mpc_dotnetc_user_server.Models.Users
             return await Task.FromResult(JsonSerializer.Serialize(new DTO
             {
                 ID = dto.ID,
-                Email_address = Email,
+                Email_Address = Email,
                 Display_name = DisplayName,
                 Login_on = LoginTS,
                 Logout_on = LogoutTS,
@@ -555,7 +554,7 @@ namespace mpc_dotnetc_user_server.Models.Users
                 Avatar_title = Avatar_title
             }));
         }
-        public async Task<string> Read_Chat_Web_Socket_Log_Record(DTO dto)
+        public Task<string> Read_Chat_Web_Socket_Log_Record(DTO dto)
         {
             byte requested = _UsersDBC.Chat_WebSocketLogTbl.Where(x => x.User_id == dto.ID && x.Sent_to == dto.Send_to).Select(x => x.Requested).SingleOrDefault();
             byte approved = _UsersDBC.Chat_WebSocketLogTbl.Where(x => x.User_id == dto.ID && x.Sent_to == dto.Send_to).Select(x => x.Approved).SingleOrDefault();
@@ -594,7 +593,7 @@ namespace mpc_dotnetc_user_server.Models.Users
             obj.send_to = dto.Send_to;
             obj.message = dto.Message;
 
-            return JsonSerializer.Serialize(obj);
+            return Task.FromResult(JsonSerializer.Serialize(obj));
         }
         public async Task<string> Read_End_User_Web_Socket_Data(DTO dto)
         {
@@ -636,19 +635,21 @@ namespace mpc_dotnetc_user_server.Models.Users
                 );
                 await _UsersDBC.SaveChangesAsync();
                 return true;
-            } catch {
+            }
+            catch
+            {
                 return false;
             }
         }
         public async Task<string> Update_Unconfirmed_Email(DTO dto)
         {
-            await _UsersDBC.Unconfirmed_EmailAddressTbl.Where(x => x.Email == dto.Email_address).ExecuteUpdateAsync(s => s
+            await _UsersDBC.Unconfirmed_EmailAddressTbl.Where(x => x.Email == dto.Email_Address).ExecuteUpdateAsync(s => s
                 .SetProperty(col => col.Code, dto.Code)
                 .SetProperty(col => col.Language_Region, dto.Language)
                 .SetProperty(col => col.Updated_on, TimeStamp)
             );
             await _UsersDBC.SaveChangesAsync();
-            obj.email_address = dto.Email_address;
+            obj.email_address = dto.Email_Address;
             obj.updated_on = TimeStamp;
             obj.language = dto.Language;
             return JsonSerializer.Serialize(obj);
@@ -736,19 +737,21 @@ namespace mpc_dotnetc_user_server.Models.Users
             obj.login_on = TimeStamp;
             obj.gender = Gender;
 
-            return JsonSerializer.Serialize(obj);
+            return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
         }
-        public async Task<bool> Update_User_Logout(ulong id)
+        public async Task<string> Update_User_Logout(ulong id)
         {
             if (ID_Exists_In_Logout_Tbl(id))
-            {
+            {//update
                 await _UsersDBC.Logout_TSTbl.Where(x => x.User_ID == id).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Logout_on, TimeStamp)
                     .SetProperty(col => col.Updated_on, TimeStamp)
                     .SetProperty(col => col.Updated_by, id)
                 );
                 await _UsersDBC.SaveChangesAsync();
-            } else {
+            }
+            else
+            {//insert
                 await _UsersDBC.Logout_TSTbl.AddAsync(new Logout_TSTbl
                 {
                     User_ID = id,
@@ -759,7 +762,9 @@ namespace mpc_dotnetc_user_server.Models.Users
                 });
                 await _UsersDBC.SaveChangesAsync();
             }
-            return true;
+            obj.ID = id;
+            obj.logout_on = TimeStamp;
+            return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
         }
         public async Task<bool> Update_User_Password(DTO dto)
         {
@@ -1062,14 +1067,14 @@ namespace mpc_dotnetc_user_server.Models.Users
                     return await Read_User(dto);
             }
         }
-        public async Task<string> Read_Users()
+        public Task<string> Read_Users()
         {
             obj.logoutsTS = _UsersDBC.Logout_TSTbl.Select(x => x).ToList();
             obj.loginsTS = _UsersDBC.Login_TSTbl.Select(x => x).ToList();
             obj.display_names = _UsersDBC.Selected_NameTbl.Select(x => x).ToList();
             obj.avatars = _UsersDBC.Selected_AvatarTbl.Select(x => x).ToList();
             obj.languages = _UsersDBC.Selected_LanguageTbl.Select(x => x).ToList();
-            return JsonSerializer.Serialize(obj);
+            return Task.FromResult(JsonSerializer.Serialize(obj));
         }
         public async Task<bool> Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(string email_address)
         {
@@ -1211,11 +1216,11 @@ namespace mpc_dotnetc_user_server.Models.Users
             await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
-                User_ID = dto.ID,
+                User_ID = dto.id,
                 Gender = 2,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
-                Updated_by = dto.ID
+                Updated_by = dto.id
             });
 
             if (dto.theme == 0)
@@ -1356,9 +1361,9 @@ namespace mpc_dotnetc_user_server.Models.Users
                 new Claim(ClaimTypes.Name, $@"{id}"),
                 new Claim(ClaimTypes.Role, "MPC-End-User"),
             };
-            #pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable CS8604 // Possible null reference argument.
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            #pragma warning restore CS8604 // Possible null reference argument.
+#pragma warning restore CS8604 // Possible null reference argument.
             var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
                 _configuration["Jwt:Issuer"],
@@ -1388,7 +1393,9 @@ namespace mpc_dotnetc_user_server.Models.Users
                     Created_on = TimeStamp,
                     Updated_by = dto.ID
                 });
-            } else {//Update
+            }
+            else
+            {//Update
                 await _UsersDBC.IdentityTbl.Where(x => x.User_ID == dto.ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.First_Name, dto.First_name)
                     .SetProperty(col => col.Updated_on, TimeStamp)
@@ -1443,11 +1450,11 @@ namespace mpc_dotnetc_user_server.Models.Users
             }
             else
             { //Update
-               await _UsersDBC.IdentityTbl.Where(x => x.User_ID == dto.ID).ExecuteUpdateAsync(s => s
-                    .SetProperty(col => col.Middle_Name, dto.Middle_name)
-                    .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, dto.ID)
-                );
+                await _UsersDBC.IdentityTbl.Where(x => x.User_ID == dto.ID).ExecuteUpdateAsync(s => s
+                     .SetProperty(col => col.Middle_Name, dto.Middle_name)
+                     .SetProperty(col => col.Updated_on, TimeStamp)
+                     .SetProperty(col => col.Updated_by, dto.ID)
+                 );
             }
             await _UsersDBC.SaveChangesAsync();
             obj.id = dto.ID;
@@ -1494,17 +1501,9 @@ namespace mpc_dotnetc_user_server.Models.Users
                     Created_on = TimeStamp,
                     Updated_by = dto.ID
                 });
-            } else { //Update
-
-                await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
-                {
-                    ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
-                    User_ID = dto.ID,
-                    Gender = 2,
-                    Updated_on = TimeStamp,
-                    Created_on = TimeStamp,
-                    Updated_by = dto.ID
-                });
+            }
+            else
+            { //Update
 
                 await _UsersDBC.IdentityTbl.Where(x => x.User_ID == dto.ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Gender, dto.Gender)

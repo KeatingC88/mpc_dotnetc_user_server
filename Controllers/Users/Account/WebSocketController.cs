@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users;
 using mpc_dotnetc_user_server.Models.Users.Chat;
+using mpc_dotnetc_user_server.Models.Users.Index;
 
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
