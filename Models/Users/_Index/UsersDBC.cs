@@ -15,9 +15,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         private readonly IConfiguration _configuration;
 
         public DbSet<User_IDsTbl> User_IDsTbl { get; set; } = null!;
-        public DbSet<Confirmed_EmailAddressTbl> Confirmed_EmailAddressTbl { get; set; } = null!;
+        public DbSet<Completed_Email_RegistrationTbl> Completed_Email_RegistrationTbl { get; set; } = null!;
+        public DbSet<Pending_Email_RegistrationTbl> Pending_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Confirmed_TelephoneTbl> Confirmed_TelephoneTbl { get; set; } = null!;
-        public DbSet<Unconfirmed_EmailAddressTbl> Unconfirmed_EmailAddressTbl { get; set; } = null!;
         public DbSet<Unconfirmed_TelephoneTbl> Unconfirmed_TelephoneTbl { get; set; } = null!;
         public DbSet<Contact_UsTbl> Contact_UsTbl { get; set; } = null!;
         public DbSet<Comment_BoxTbl> Comment_BoxTbl { get; set; } = null!;
@@ -39,10 +39,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Selected_AvatarTbl> Selected_AvatarTbl { get; set; } = null!;
         public DbSet<Reported_BrokenLinkTbl> Reported_BrokenLinkTbl { get; set; } = null!;
         public DbSet<Reported_DiscordBotBugTbl> Reported_DiscordBotBugTbl { get; set; } = null!;
-        public DbSet<Reported_ProfileLogTbl> Reported_ProfileLogTbl { get; set; } = null!;
+        public DbSet<Reported_ProfileTbl> Reported_ProfileTbl { get; set; } = null!;
         public DbSet<Reported_WebsiteBugTbl> Reported_WebsiteBugTbl { get; set; } = null!;
-        public DbSet<Chat_WebSocketLogTbl> Chat_WebSocketLogTbl { get; set; } = null!;
-        public DbSet<Chat_WebSocketDirectMessagesTbl> Chat_WebSocketDirectMessagesTbl { get; set; } = null!;
+        public DbSet<Reported_WebSocketTbl> Reported_WebSocketTbl { get; set; } = null!;
+        public DbSet<Websocket_Chat_PermissionTbl> Websocket_Chat_PermissionTbl { get; set; } = null!;
 
         public UsersDBC(DbContextOptions<UsersDBC> options, IConfiguration configuration) : base(options)
         {

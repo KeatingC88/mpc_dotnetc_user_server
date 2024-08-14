@@ -70,9 +70,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 Blocked = 0
             };
 
-            await _UsersRepository.Update_Chat_Web_Socket_Log_Tbl(Recipient);
+            await _UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(Recipient);
 
-            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Log_Tbl(Approver).Result);
+            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(Approver).Result);
         }
 
         [HttpPost("Block")]
@@ -96,19 +96,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 Blocked = 1
             };
 
-            DTO Blocked_Recipient = new DTO
-            {
-                ID = user_id,//End User that is using this API POST derrived from JWToken.
-                Sent_to = dto.Send_to,//Updating other chatter's data too.
-                Sent_from = user_id,//Updated by
-                Requested = 0,
-                Approved = 0,
-                Blocked = 1
-            };
-
-            await _UsersRepository.Update_Chat_Web_Socket_Log_Tbl(Blocked_Recipient);
-
-            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Log_Tbl(Person_Blocking_Their_Chat_From_Someone_Else).Result);
+            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(Person_Blocking_Their_Chat_From_Someone_Else).Result);
         }
 
         [HttpPut("Spam")]
@@ -125,16 +113,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             DTO obj = new DTO
             {
                 ID = user_id,//End User that is using this API POST derrived from JWToken.
-                Sent_to = dto.ID,//Approved by this person.
                 Sent_from = dto.Send_to,//Approving the person making the request.
                 Requested = 0,
                 Approved = 0,
-                Blocked = 1
+                Blocked = 1,
             };
+            await Task.FromResult(_UsersRepository.Create_Reported_WebSocket_Record(obj).Result);
 
-            //Todo: Send Player Report
-
-            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Log_Tbl(obj).Result);
+            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(obj).Result);
         }
 
         [HttpPut("Abusive")]
@@ -150,38 +136,38 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             DTO obj = new DTO
             {
-                ID = user_id,//End User that is using this API POST derrived from JWToken.
-                Sent_to = dto.ID,//Approved by this person.
+                ID = dto.Send_to,//End User that is using this API POST derrived from JWToken.
                 Sent_from = dto.Send_to,//Approving the person making the request.
+                Sent_to = user_id,
                 Requested = 0,
                 Approved = 0,
-                Blocked = 1
+                Blocked = 1,
+                Spam = 0,
+                Abuse = 1,
+                Reported_Reason = dto.Reported_Reason
             };
+            await Task.FromResult(_UsersRepository.Create_Reported_WebSocket_Record(obj).Result);
 
-            //Todo: Send Player Report
-
-            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Log_Tbl(obj).Result);
+            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(obj).Result);
         }
 
         [HttpPost("Authorize_Users")]
         public async Task<ActionResult<string>> CheckingBothEndUsersAuthorizationToChatTogether([FromBody] DTO dto)
         {
-            if (string.IsNullOrEmpty(dto.Token) || string.IsNullOrWhiteSpace(dto.Token) ||
-                string.IsNullOrEmpty(dto.Message) || string.IsNullOrWhiteSpace(dto.Message) ||
-                string.IsNullOrEmpty(dto.Send_to.ToString()) || string.IsNullOrWhiteSpace(dto.Send_to.ToString()))
+            if (string.IsNullOrEmpty(dto.Token) || string.IsNullOrWhiteSpace(dto.Token)) {
                 return BadRequest();
+            }
 
             ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
 
-            if (user_id == 0)
-                return BadRequest();
-
-            if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result || !_UsersRepository.ID_Exists_In_Users_Tbl(dto.Send_to).Result)
+            if (string.IsNullOrEmpty(dto.Send_to.ToString()) || string.IsNullOrWhiteSpace(dto.Send_to.ToString())||
+                !_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result || !_UsersRepository.ID_Exists_In_Users_Tbl(dto.Send_to).Result ||
+                user_id == 0)
                 return BadRequest();
 
             dto.ID = user_id;
 
-            return await Task.FromResult(_UsersRepository.Read_Chat_Web_Socket_Log_Record(dto)).Result;
+            return await Task.FromResult(_UsersRepository.Read_WebSocket_Permission_Record(dto)).Result;
         }
     }//Controller.
 }

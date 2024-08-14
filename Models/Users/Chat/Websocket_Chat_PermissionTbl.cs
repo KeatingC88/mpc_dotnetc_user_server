@@ -1,6 +1,6 @@
 ﻿namespace mpc_dotnetc_user_server.Models.Users.Chat
 {
-    public class Chat_WebSocketDirectMessagesTbl
+    public class Websocket_Chat_PermissionTbl
     {
         public ulong ID { get; set; }
         public ulong User_id { get; set; }
@@ -11,7 +11,8 @@
         public ulong Updated_on { get; set; }
         public ulong Deleted_on { get; set; }
         public ulong Deleted_by { get; set; }
-        public ulong HostClient_ts { get; set; }
-        public string Message { get; set; } = string.Empty;
+        public byte Approved { get; set; }
+        public byte Requested { get; set; }
+        public byte Blocked { get; set; }
     }
 }

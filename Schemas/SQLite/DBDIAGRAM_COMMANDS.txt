@@ -378,7 +378,7 @@ Table Profile_WallTbl {
   message string
 }
 
-Table Chat_WebSocketLogTbl {
+Table Websocket_Chat_PermissionTbl {
   id integer [primary key]
   user_id integer [note: "foreign key"]
   deleted bool
@@ -442,7 +442,7 @@ Ref: Profile_WallTbl.user_id > User_IDsTbl.id
 Ref: TwitchTbl.user_id > User_IDsTbl.id
 Ref: DiscordTbl.user_id > User_IDsTbl.id
 //Users' WebSocket Information
-Ref: Chat_WebSocketLogTbl.user_id > User_IDsTbl.id
+Ref: Websocket_Chat_PermissionTbl.user_id > User_IDsTbl.id
 //Users' Friends Information
 Ref: FriendsTbl.user_id > User_IDsTbl.id
 //Application Database?

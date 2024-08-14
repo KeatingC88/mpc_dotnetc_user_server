@@ -1,6 +1,6 @@
 ﻿namespace mpc_dotnetc_user_server.Models.Users.Feedback
 {
-    public class Reported_ProfileLogTbl
+    public class Reported_ProfileTbl
     {
         public ulong ID { get; set; }
         public ulong USER_ID { get; set; }

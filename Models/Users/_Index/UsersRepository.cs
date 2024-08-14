@@ -32,9 +32,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Create_Unconfirmed_Email(DTO dto)
         {
-            await _UsersDBC.Unconfirmed_EmailAddressTbl.AddAsync(new Unconfirmed_EmailAddressTbl
+            await _UsersDBC.Pending_Email_RegistrationTbl.AddAsync(new Pending_Email_RegistrationTbl
             {
-                ID = Convert.ToUInt64(_UsersDBC.Unconfirmed_EmailAddressTbl.Count() + 1),
+                ID = Convert.ToUInt64(_UsersDBC.Pending_Email_RegistrationTbl.Count() + 1),
                 Email = dto.Email_Address,
                 Code = dto.Code,
                 Language_Region = dto.Language,
@@ -78,7 +78,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Create_Account_By_Email(DTO dto)
         {
-            await _UsersDBC.Unconfirmed_EmailAddressTbl.Where(x => x.Email == dto.Email_Address).ExecuteUpdateAsync(s => s
+            await _UsersDBC.Pending_Email_RegistrationTbl.Where(x => x.Email == dto.Email_Address).ExecuteUpdateAsync(s => s
                 .SetProperty(col => col.Deleted, 1)
                 .SetProperty(col => col.Deleted_on, TimeStamp)
                 .SetProperty(col => col.Updated_on, TimeStamp)
@@ -87,7 +87,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             );
             await _UsersDBC.SaveChangesAsync();
 
-            await _UsersDBC.Confirmed_EmailAddressTbl.AddAsync(new Confirmed_EmailAddressTbl
+            await _UsersDBC.Completed_Email_RegistrationTbl.AddAsync(new Completed_Email_RegistrationTbl
             {
                 Email = dto.Email_Address,
                 Updated_on = TimeStamp,
@@ -283,27 +283,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> Create_WebSocket_DM_Record(DTO obj)
-        {
-            await _UsersDBC.Chat_WebSocketDirectMessagesTbl.AddAsync(new Chat_WebSocketDirectMessagesTbl
-            {
-                ID = Convert.ToUInt64(_UsersDBC.Chat_WebSocketDirectMessagesTbl.Count() + 1),
-                User_id = obj.ID,
-                Sent_to = obj.Sent_to,
-                Message = obj.Message,
-                Updated_on = TimeStamp,
-                Created_on = TimeStamp,
-                HostClient_ts = obj.Timestamp,
-                Updated_by = 0
-            });
-            await _UsersDBC.SaveChangesAsync();
-            return true;
-        }
         public async Task<bool> Create_WebSocket_Log_Record(DTO obj)
         {
-            await _UsersDBC.Chat_WebSocketLogTbl.AddAsync(new Chat_WebSocketLogTbl
+            await _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
             {
-                ID = Convert.ToUInt64(_UsersDBC.Chat_WebSocketLogTbl.Count() + 1),
+                ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
                 User_id = obj.ID,
                 Sent_to = obj.Send_to,
                 Updated_on = TimeStamp,
@@ -359,11 +343,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             return true;
         }
-        public async Task<string> Create_Reported_User_Record(DTO dto)
+        public async Task<string> Create_Reported_User_Profile_Record(DTO dto)
         {
-            Reported_ProfileLogTbl record = new Reported_ProfileLogTbl
+            Reported_ProfileTbl record = new Reported_ProfileTbl
             {
-                ID = Convert.ToUInt64(_UsersDBC.Reported_ProfileLogTbl.Count() + 1),
+                ID = Convert.ToUInt64(_UsersDBC.Reported_ProfileTbl.Count() + 1),
                 USER_ID = dto.ID,
                 Reported_ID = dto.Reported_ID,
                 Page_Title = _UsersDBC.ProfilePageTbl.Where(x => x.User_ID == dto.Reported_ID).Select(x => x.Page_Title).SingleOrDefault(),
@@ -375,7 +359,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Created_on = TimeStamp,
                 Updated_by = dto.ID
             };
-            await _UsersDBC.Reported_ProfileLogTbl.AddAsync(record);
+            await _UsersDBC.Reported_ProfileTbl.AddAsync(record);
             await _UsersDBC.SaveChangesAsync();
             obj.id = dto.ID;
             obj.report_record_id = record.ID;
@@ -554,11 +538,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Avatar_title = Avatar_title
             }));
         }
-        public Task<string> Read_Chat_Web_Socket_Log_Record(DTO dto)
+        public Task<string> Read_WebSocket_Permission_Record(DTO dto)
         {
-            byte requested = _UsersDBC.Chat_WebSocketLogTbl.Where(x => x.User_id == dto.ID && x.Sent_to == dto.Send_to).Select(x => x.Requested).SingleOrDefault();
-            byte approved = _UsersDBC.Chat_WebSocketLogTbl.Where(x => x.User_id == dto.ID && x.Sent_to == dto.Send_to).Select(x => x.Approved).SingleOrDefault();
-            byte blocked = _UsersDBC.Chat_WebSocketLogTbl.Where(x => x.User_id == dto.ID && x.Sent_to == dto.Send_to).Select(x => x.Blocked).SingleOrDefault();
+            byte requested = _UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_id == dto.ID && x.Sent_to == dto.Send_to).Select(x => x.Requested).SingleOrDefault();
+            byte approved = _UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_id == dto.ID && x.Sent_to == dto.Send_to).Select(x => x.Approved).SingleOrDefault();
+            byte blocked = _UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_id == dto.ID && x.Sent_to == dto.Send_to).Select(x => x.Blocked).SingleOrDefault();
 
             if (requested == 1)
             {
@@ -582,7 +566,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             }
 
             if (requested == 0 && approved == 0 && blocked == 0)
-            {//When no records found, where-as, the current user and other end user have engaged with chat for the first time.
+            {//When no records are found meaning a request is made from person A to person B.
                 Create_Chat_WebSocket_Log_Records(dto);
                 obj.requested = 1;
                 obj.blocked = 0;
@@ -597,7 +581,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Read_End_User_Web_Socket_Data(DTO dto)
         {
-            return await Task.FromResult(JsonSerializer.Serialize(_UsersDBC.Chat_WebSocketLogTbl.Where(x => x.User_id == dto.ID).ToList().Concat(_UsersDBC.Chat_WebSocketLogTbl.Where(x => x.Sent_to == dto.ID).ToList())));
+            return await Task.FromResult(JsonSerializer.Serialize(_UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_id == dto.ID).ToList().Concat(_UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.Sent_to == dto.ID).ToList())));
         }
         public async Task<byte> Read_End_User_Selected_Status(DTO dto)
         {
@@ -622,11 +606,34 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Status = 5;
             return await Task.FromResult(Status);
         }
-        public async Task<bool> Update_Chat_Web_Socket_Log_Tbl(DTO dto)
+
+        public async Task<bool> Create_Reported_WebSocket_Record(DTO dto) 
         {
             try
             {
-                await _UsersDBC.Chat_WebSocketLogTbl.Where(x => x.User_id == dto.Sent_from && x.Sent_to == dto.Sent_to).ExecuteUpdateAsync(s => s
+                await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                {
+                    USER_ID = dto.ID,
+                    Updated_on = TimeStamp,
+                    Updated_by = dto.ID,
+                    User = dto.Sent_from,
+                    Spam = dto.Spam,
+                    Abuse = dto.Abuse,
+                    Reason = dto.Reported_Reason,
+                    Created_on = TimeStamp,
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        public async Task<bool> Update_Chat_Web_Socket_Permissions_Tbl(DTO dto)
+        {
+            try
+            {
+                await _UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_id == dto.Sent_from && x.Sent_to == dto.Sent_to).ExecuteUpdateAsync(s => s
                     .SetProperty(dto => dto.Requested, dto.Requested)
                     .SetProperty(dto => dto.Blocked, dto.Blocked)
                     .SetProperty(dto => dto.Approved, dto.Approved)
@@ -643,7 +650,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Update_Unconfirmed_Email(DTO dto)
         {
-            await _UsersDBC.Unconfirmed_EmailAddressTbl.Where(x => x.Email == dto.Email_Address).ExecuteUpdateAsync(s => s
+            await _UsersDBC.Pending_Email_RegistrationTbl.Where(x => x.Email == dto.Email_Address).ExecuteUpdateAsync(s => s
                 .SetProperty(col => col.Code, dto.Code)
                 .SetProperty(col => col.Language_Region, dto.Language)
                 .SetProperty(col => col.Updated_on, TimeStamp)
@@ -1078,11 +1085,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<bool> Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(string email_address)
         {
-            return await Task.FromResult(_UsersDBC.Unconfirmed_EmailAddressTbl.Any(e => e.Email == email_address));
+            return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(e => e.Email == email_address));
         }
         public async Task<bool> Confirmation_Code_Exists_In_Not_Confirmed_Email_Address_Tbl(string Code)
         {
-            return await Task.FromResult(_UsersDBC.Unconfirmed_EmailAddressTbl.Any(e => e.Code == Code));
+            return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(e => e.Code == Code));
         }
         public async Task<bool> Telephone_Exists_In_Login_Telephone_Tbl(string telephone_number)
         {
@@ -1578,9 +1585,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public void Create_Chat_WebSocket_Log_Records(DTO dto)
         {
-            _UsersDBC.Chat_WebSocketLogTbl.AddAsync(new Chat_WebSocketLogTbl
+            _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
             {
-                ID = Convert.ToUInt64(_UsersDBC.Chat_WebSocketLogTbl.Count() + 1),
+                ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
                 User_id = dto.ID,
                 Sent_to = dto.Send_to,
                 Updated_on = TimeStamp,
@@ -1591,9 +1598,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Approved = 0
             });
             _UsersDBC.SaveChangesAsync();
-            _UsersDBC.Chat_WebSocketLogTbl.AddAsync(new Chat_WebSocketLogTbl
+            _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
             {
-                ID = Convert.ToUInt64(_UsersDBC.Chat_WebSocketLogTbl.Count() + 1),
+                ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
                 User_id = dto.Send_to,//Swapped so we are to create the record for the other user.
                 Sent_to = dto.ID,//Ditto.
                 Updated_on = TimeStamp,

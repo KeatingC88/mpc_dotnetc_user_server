@@ -5,11 +5,11 @@
         Task<bool> Email_Exists_In_Not_Confirmed_Registered_Email_Tbl(string email_address);
         Task<bool> Email_Exists_In_Login_Email_Address_Tbl(string email_address);
         Task<bool> Update_User_Password(DTO dto);
-        Task<bool> Update_Chat_Web_Socket_Log_Tbl(DTO dto);
+        Task<bool> Update_Chat_Web_Socket_Permissions_Tbl(DTO dto);
+        Task<bool> Create_Reported_WebSocket_Record(DTO dto);
         Task<bool> Create_Comment_Box_Record(DTO dto);
         Task<bool> Create_Broken_Link_Record(DTO dto);
         Task<bool> Create_Discord_Bot_Bug_Record(DTO dto);
-        Task<bool> Create_WebSocket_DM_Record(DTO dto);
         Task<bool> Create_WebSocket_Log_Record(DTO dto);
         Task<bool> Create_Website_Bug_Record(DTO dto);
         Task<bool> Create_Contact_Us_Record(DTO dto);
@@ -27,11 +27,11 @@
         Task<string> Create_Unconfirmed_Phone(DTO dto);
         Task<string> Create_Account_By_Email(DTO dto);
         Task<string> Create_Account_By_Phone(DTO dto);
-        Task<string> Create_Reported_User_Record(DTO dto);
+        Task<string> Create_Reported_User_Profile_Record(DTO dto);
         Task<string> Delete_Account_By_User_ID(DTO dto);
         Task<string> Read_User(DTO dto);
         Task<string> Read_User_Profile(DTO dto);
-        Task<string> Read_Chat_Web_Socket_Log_Record(DTO dto);
+        Task<string> Read_WebSocket_Permission_Record(DTO dto);
         Task<string> Read_End_User_Web_Socket_Data(DTO dto);
         Task<string> Update_Unconfirmed_Phone(DTO dto);
         Task<string> Update_Unconfirmed_Email(DTO dto);
@@ -96,7 +96,7 @@
         public string Language_code { get; set; } = string.Empty;
         public string Last_name { get; set; } = string.Empty;
         public string Maiden_name { get; set; } = string.Empty;
-        public string Message { get; set; } = string.Empty;
+        public string? Message { get; set; } = string.Empty;
         public string Middle_name { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string New_password { get; set; } = string.Empty;
@@ -124,6 +124,8 @@
         public byte Online_status { get; set; }
         public byte Requested { get; set; }
         public byte Theme { get; set; }
+        public byte Spam { get; set; } 
+        public byte Abuse { get; set; } 
         public byte Alignment { get; set; }
         public byte Text_alignment { get; set; }
     }

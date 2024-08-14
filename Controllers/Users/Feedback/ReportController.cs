@@ -126,7 +126,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
         }
 
         [HttpPost("User")]
-        public async Task<ActionResult<string>> ReportUserRegister([FromBody] DTO obj)
+        public async Task<ActionResult<string>> ReportUserProfile([FromBody] DTO obj)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
 
                 obj.ID = user_id;
 
-                return await Task.FromResult(_UsersRepository.Create_Reported_User_Record(obj)).Result;
+                return await Task.FromResult(_UsersRepository.Create_Reported_User_Profile_Record(obj)).Result;
             }
             catch (Exception e)
             {
