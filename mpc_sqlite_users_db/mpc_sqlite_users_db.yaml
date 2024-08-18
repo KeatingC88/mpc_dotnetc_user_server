@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  mpc_sqlite_users_db:
+    image: alpine:latest
+    container_name: mpc_sqlite_users_db_rom
+    volumes:
+      - ./data:/data
+    command: sqlite3 ./Users.db
+    stdin_open: true
+    tty: true
+volumes:
+  mpc_sqlite_users_db-data:

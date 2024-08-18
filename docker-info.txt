@@ -1,8 +1,5 @@
-todo:
- docker build -t Name_Of_Container C:\....Path
- docker compose -f filename.yaml up -d
-
-in example:
- docker build -t mpc_dotnetc_user_server_rom C:\Users\AcidSnake\source\repos\MPC\mpc_dotnetc_user_server
-
- docker compose -f mpc_dotnetc_user_server.yaml up -d
+1) Build Container using CMD:
+docker build -t mpc_dotnetc_user_server_rom .
+2) Run Container using CMD:
+docker run -d -p (your_app_port):(dockerfile_port_number) --name (folder-name) (image-name)
+docker run -d -p 5177:80 --name mpc_dotnetc_user_server mpc_dotnetc_user_server_rom

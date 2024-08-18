@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 //Database Injection(s) and Scoped
 string path = Directory.GetCurrentDirectory();
-builder.Services.AddDbContext<UsersDBC>(options => options.UseSqlite($"Data Source = {path}\\Users.db"));
+builder.Services.AddDbContext<UsersDBC>(options => options.UseSqlite($"Data Source = {path}\\mpc_sqlite_users_db\\Users.db"));
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 //Cors Policies
 builder.Services.AddCors(options =>
