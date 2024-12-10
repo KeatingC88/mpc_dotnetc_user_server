@@ -3,7 +3,7 @@
     public class ProfilePageTbl
     {
         public ulong ID { get; set; }
-        public ulong User_ID { get; set; }
+        public ulong User_id { get; set; }
         public ulong Created_on { get; set; }
         public byte Deleted { get; set; }
         public ulong Deleted_on { get; set; }

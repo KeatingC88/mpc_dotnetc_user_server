@@ -4,6 +4,7 @@
     {
         public ulong ID { get; set; }
         public ulong Created_on { get; set; }
+        public ulong Created_by { get; set; }
         public byte Deleted { get; set; }
         public ulong Deleted_on { get; set; }
         public ulong Deleted_by { get; set; }

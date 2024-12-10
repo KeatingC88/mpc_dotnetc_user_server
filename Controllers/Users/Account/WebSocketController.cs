@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users.Chat;
+using mpc_dotnetc_user_server.Models.Users.Authentication;
+using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Index;
 
 
@@ -25,46 +26,31 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             if (string.IsNullOrEmpty(token) || string.IsNullOrWhiteSpace(token))
                 return BadRequest();
 
-            ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(token).Result;
-
-            if (user_id == 0)
-                return BadRequest();
-
-            DTO obj = new DTO
-            {
-                ID = user_id,
-                Token = token
-            };
-
-            return await Task.FromResult(_UsersRepository.Read_End_User_Web_Socket_Data(obj).Result);
+            ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(token).Result;
+            return await Task.FromResult(_UsersRepository.Read_End_User_Web_Socket_Data(user_id).Result);
         }
 
         [HttpPost("Approve")]
-        public async Task<ActionResult<bool>> UpdateApprovedChatWebSocketLogTbl(DTO dto)
+        public async Task<ActionResult<string>> Update_Approve_for_WebSocket_PermissionTbl(Websocket_Chat_PermissionDTO dto)
         {
-            if (string.IsNullOrEmpty(dto.Token) || string.IsNullOrWhiteSpace(dto.Token))
+            if (!ModelState.IsValid)
                 return BadRequest();
 
-            ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
+            ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
 
-            if (user_id == 0)
-                return BadRequest();
-
-            DTO Approver = new DTO
+            Websocket_Chat_PermissionTbl Approver = new Websocket_Chat_PermissionTbl
             {
-                ID = user_id,//End User that is using this API POST derrived from JWToken.
-                Sent_to = dto.ID,//Approved by this person.
-                Sent_from = dto.Send_to,//Approving the person made the request prior to now.
+                User_A_id = user_id,
+                User_B_id = dto.User_B_id,
                 Requested = 0,
                 Approved = 1,
                 Blocked = 0
             };
 
-            DTO Recipient = new DTO
+            Websocket_Chat_PermissionTbl Recipient = new Websocket_Chat_PermissionTbl
             {
-                ID = user_id,//End User that is using this API POST derrived from JWToken.
-                Sent_to = dto.Send_to,//Updating other chatter's data too.
-                Sent_from = user_id,
+                User_A_id = dto.User_B_id,
+                User_B_id = user_id,
                 Requested = 0,
                 Approved = 1,
                 Blocked = 0
@@ -76,96 +62,68 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         }
 
         [HttpPost("Block")]
-        public async Task<ActionResult<bool>> UpdateBlockedChatWebSocketLogTbl(DTO dto)
+        public async Task<ActionResult<string>> Update_Block_for_WebSocket_PermissionTbl(Websocket_Chat_PermissionDTO dto)
         {
-            if (string.IsNullOrEmpty(dto.Token) || string.IsNullOrWhiteSpace(dto.Token))
+            if (!ModelState.IsValid)
                 return BadRequest();
 
-            ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
+            ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
 
-            if (user_id == 0)
-                return BadRequest();
-
-            DTO Person_Blocking_Their_Chat_From_Someone_Else = new DTO
+            Websocket_Chat_PermissionTbl permission_obj = new Websocket_Chat_PermissionTbl
             {
-                ID = user_id,//End User that is using this API POST derrived from JWToken.
-                Sent_to = dto.ID,//Blocked by this person which is the End User.
-                Sent_from = dto.Send_to,//Person being BLocked.
+                User_A_id = user_id,
+                User_B_id = dto.User_B_id,
                 Requested = 0,
                 Approved = 0,
                 Blocked = 1
             };
 
-            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(Person_Blocking_Their_Chat_From_Someone_Else).Result);
-        }
-
-        [HttpPut("Spam")]
-        public async Task<ActionResult<bool>> UpdateSpamChatWebSocketLogTbl(DTO dto)
-        {
-            if (string.IsNullOrEmpty(dto.Token) || string.IsNullOrWhiteSpace(dto.Token))
-                return BadRequest();
-
-            ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
-
-            if (user_id == 0)
-                return BadRequest();
-
-            DTO obj = new DTO
-            {
-                ID = user_id,//End User that is using this API POST derrived from JWToken.
-                Sent_from = dto.Send_to,//Approving the person making the request.
-                Requested = 0,
-                Approved = 0,
-                Blocked = 1,
-            };
-            await Task.FromResult(_UsersRepository.Create_Reported_WebSocket_Record(obj).Result);
-
-            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(obj).Result);
+            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(permission_obj).Result);
         }
 
         [HttpPut("Abusive")]
-        public async Task<ActionResult<bool>> UpdateAbusiveChatWebSocketLogTbl(DTO dto)
+        public async Task<ActionResult<string>> Report_Abusive_User(Reported_WebSocket_AbuseDTO dto)
         {
-            if (string.IsNullOrEmpty(dto.Token) || string.IsNullOrWhiteSpace(dto.Token))
+            if (!ModelState.IsValid)
                 return BadRequest();
 
-            ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
+            ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
 
-            if (user_id == 0)
-                return BadRequest();
-
-            DTO obj = new DTO
+            Reported_WebSocket_AbuseDTO abuse_obj = new Reported_WebSocket_AbuseDTO
             {
-                ID = dto.Send_to,//End User that is using this API POST derrived from JWToken.
-                Sent_from = dto.Send_to,//Approving the person making the request.
-                Sent_to = user_id,
+                User_id = user_id,
+                Abuser = dto.Abuser,
+                Abuse_type = dto.Abuse_type,
+                Reason = dto.Reason
+            };
+
+            Websocket_Chat_PermissionTbl permission_obj = new Websocket_Chat_PermissionTbl
+            {
+                User_A_id = user_id,
+                User_B_id = dto.Abuser,
                 Requested = 0,
                 Approved = 0,
-                Blocked = 1,
-                Spam = 0,
-                Abuse = 1,
-                Reported_Reason = dto.Reported_Reason
+                Blocked = 1
             };
-            await Task.FromResult(_UsersRepository.Create_Reported_WebSocket_Record(obj).Result);
 
-            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(obj).Result);
+            await Task.FromResult(_UsersRepository.Create_Reported_WebSocket_Abuse_Record(abuse_obj).Result);
+
+            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(permission_obj).Result);
         }
 
         [HttpPost("Authorize_Users")]
-        public async Task<ActionResult<string>> CheckingBothEndUsersAuthorizationToChatTogether([FromBody] DTO dto)
+        public async Task<ActionResult<string>> Authorizating_End_Users_Chat_Permission([FromBody] Websocket_Chat_PermissionDTO dto)
         {
-            if (string.IsNullOrEmpty(dto.Token) || string.IsNullOrWhiteSpace(dto.Token)) {
-                return BadRequest();
-            }
-
-            ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
-
-            if (string.IsNullOrEmpty(dto.Send_to.ToString()) || string.IsNullOrWhiteSpace(dto.Send_to.ToString())||
-                !_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result || !_UsersRepository.ID_Exists_In_Users_Tbl(dto.Send_to).Result ||
-                user_id == 0)
+            if (!ModelState.IsValid)
                 return BadRequest();
 
-            dto.ID = user_id;
+            ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
+
+            if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result || 
+                !_UsersRepository.ID_Exists_In_Users_Tbl(dto.User_B_id).Result)
+                return BadRequest();
+
+            dto.User_A_id = user_id;
 
             return await Task.FromResult(_UsersRepository.Read_WebSocket_Permission_Record(dto)).Result;
         }

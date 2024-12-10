@@ -27,9 +27,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
 
                 /* If Twitch Email Matches one our accounts in out database...?
-                    if (!UsersDBC.Email_Exists_In_Login_Email_Address_Tbl(obj.Email_Address))
+                    if (!UsersDBC.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address))
                         return NotFound();
-                    ulong user_id = UsersDBC.Get_User_ID_By_Email_Address(obj.Email_Address);
+                    ulong user_id = UsersDBC.Read_User_id_By_Email_Address(obj.Email_Address);
                     if (user_id == 0 || !_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                         return NotFound();
                     obj.ID = user_id;

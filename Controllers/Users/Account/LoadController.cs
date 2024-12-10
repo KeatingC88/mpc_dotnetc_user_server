@@ -34,7 +34,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
+                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
@@ -48,7 +48,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Token = dto.Token
                 };
 
-                return await _UsersRepository.Read_User(obj);
+                return await _UsersRepository.Read_User(obj.ID);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -59,7 +59,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(dto.Token).Result;
+                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();

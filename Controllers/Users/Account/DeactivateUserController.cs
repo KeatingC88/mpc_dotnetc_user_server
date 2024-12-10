@@ -32,7 +32,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     string.IsNullOrEmpty(obj.Password) || string.IsNullOrWhiteSpace(obj.Password))
                     return BadRequest();
 
-                user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
+                user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
                 target_id = obj.Target_ID;
 
                 if (!string.IsNullOrEmpty(obj.Target_ID.ToString()) || 
@@ -41,14 +41,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     target_id == 0)
                         return NotFound();
 
-                string? email = _UsersRepository.Get_User_Email_By_ID(user_id).Result;
-                byte[]? user_password_hash_from_database_storage = _UsersRepository.Get_User_Password_Hash_By_ID(user_id).Result;
+                string? email = _UsersRepository.Read_User_Email_By_ID(user_id).Result;
+                byte[]? user_password_hash_from_database_storage = _UsersRepository.Read_User_Password_Hash_By_ID(user_id).Result;
                 byte[]? user_password_given_from_end_user_on_gui_client = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(obj.Password), Encoding.UTF8.GetBytes($"{email}MPCSalt")).Result;
                 if (user_password_hash_from_database_storage != null)
                     if (user_id == 0 || !_UsersRepository.Compare_Password_Byte_Arrays(user_password_hash_from_database_storage, user_password_given_from_end_user_on_gui_client))
                         return Unauthorized();//Passwords do not match from end user on the gui-client to what's saved in our database or user_id invalid.
 
-                return await Task.FromResult(_UsersRepository.Delete_Account_By_User_ID(new DTO { ID = user_id, Target_ID = target_id }).Result);
+                return await Task.FromResult(_UsersRepository.Delete_Account_By_User_id(new DTO { ID = user_id, Target_ID = target_id }).Result);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

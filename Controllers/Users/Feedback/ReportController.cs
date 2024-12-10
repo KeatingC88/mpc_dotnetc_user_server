@@ -25,7 +25,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(obj.URL) || string.IsNullOrWhiteSpace(obj.URL))
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
+                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -52,7 +52,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(obj.Summary) || string.IsNullOrWhiteSpace(obj.Summary))
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
+                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -80,7 +80,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(obj.Detail) || string.IsNullOrWhiteSpace(obj.Detail))
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
+                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -107,7 +107,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(obj.Comment) || string.IsNullOrWhiteSpace(obj.Comment))
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
+                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -130,7 +130,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
         {
             try
             {
-                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
+                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -157,7 +157,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(obj.Detail) || string.IsNullOrWhiteSpace(obj.Detail))
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Get_User_ID_From_JWToken(obj.Token).Result;
+                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
