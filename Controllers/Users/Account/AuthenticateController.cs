@@ -49,15 +49,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     User_id = user_id                
                 }).Result;
 
-                if (end_user_selected_status != 1)
-                {//User has a Hidden Status Saved in the Database from Previous Login.
-                    await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
-                    {
-                        User_id = user_id,
-                        Online_status = 2
-                    });
-                }
-
                 if (end_user_selected_status == 0)
                 {//User does not have a Status Record and will be set to Online Status.
                     await _UsersRepository.Create_End_User_Status_Record(new Selected_StatusDTO
@@ -66,10 +57,53 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     });
                 }
 
-                return await _UsersRepository.Update_End_User_Login(new Login_Time_StampDTO
+                if (end_user_selected_status != 1 && end_user_selected_status != 0)
+                {//User has a Hidden Status Saved in the Database from Previous Login.
+                    await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
+                    {
+                        User_id = user_id,
+                        Online_status = 2
+                    });
+                }
+
+                await _UsersRepository.Update_End_User_Login(new Login_Time_StampDTO
                 {
                     User_id = user_id
                 });
+
+                await _UsersRepository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO 
+                { 
+                    User_id = user_id,
+                    Alignment = obj.Alignment
+                });
+
+                await _UsersRepository.Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
+                {
+                    User_id = user_id,
+                    Text_alignment = obj.Text_alignment
+                });
+
+                await _UsersRepository.Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
+                {
+                    User_id = user_id,
+                    Locked = obj.Locked
+                });
+
+                await _UsersRepository.Update_End_User_Selected_Language(new Selected_LanguageDTO
+                {
+                    User_id = user_id,
+                    Language = obj.Language,
+                    Region = obj.Region
+                });
+
+                await _UsersRepository.Update_End_User_Selected_Theme(new Selected_ThemeDTO
+                {
+                    User_id = user_id,
+                    Theme = obj.Theme
+                });
+
+                return await Task.FromResult(_UsersRepository.Read_User(user_id)).Result;
+
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

@@ -2,6 +2,8 @@
 using mpc_dotnetc_user_server.Models.Users.Index;
 using System.Text.Json;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
+using mpc_dotnetc_user_server.Controllers.Users;
+using mpc_dotnetc_user_server.Controllers.Users.AES;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
@@ -12,6 +14,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         private readonly ILogger<EmailController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
+        AES_Decryptor AES = new AES_Decryptor();
 
         public EmailController(ILogger<EmailController> logger, IConfiguration configuration, IUsersRepository iUsersRepository)
         {
@@ -27,7 +30,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
             {
                 if (!ModelState.IsValid ||
                     !Valid.Email(obj.Email_Address) ||
-                    !Valid.LanguageRegion(obj.Language_Region) ||
+                    !Valid.Language_Code(obj.Language) ||
+                    !Valid.Region_Code(obj.Region) ||
                     !_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result ||
                     _UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result ||
                     !_UsersRepository.Confirmation_Code_Exists_In_Pending_Email_Address_RegistrationTbl (obj.Code).Result)
@@ -40,13 +44,17 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         }
 
         [HttpPost("Register")]
-        public async Task<ActionResult<string>> Registering_An_Email_Account_For_New_User([FromBody] Pending_Email_RegistrationDTO obj)
+        public string Registering_An_Email_Account_For_New_User([FromBody] EncryptedPayload obj)
         {            
             try
-            {
-                if (!ModelState.IsValid ||
+            {                
+                var foo = AES.Process(obj.Data);
+                return foo;
+
+/*                if (!ModelState.IsValid ||
                     !Valid.Email(obj.Email_Address) ||
-                    !Valid.LanguageRegion(obj.Language_Region))
+                    !Valid.Language_Code(obj.Language) ||
+                    !Valid.Region_Code(obj.Region))
                     return BadRequest();
 
                 if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result)
@@ -55,11 +63,16 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 if (_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result)
                     return await Task.FromResult(_UsersRepository.Update_Pending_Email_Registration_Record(obj)).Result;
 
-                return await _UsersRepository.Create_Pending_Email_Registration_Record(obj);
+                return await _UsersRepository.Create_Pending_Email_Registration_Record(obj);*/
 
             } catch (Exception e) {
-                return StatusCode(500, $"{e.Message}");
+                return e.Message.ToString();
+                //return StatusCode(500, $"{e.Message}");
             }
+        }
+        public class EncryptedPayload
+        {
+            public string Data { get; set; }
         }
 
         [HttpPost("Submit")]
@@ -71,7 +84,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     _UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result ||
                     !Valid.Email(obj.Email_Address) ||
                     !Valid.Password(obj.Password) ||
-                    !Valid.LanguageRegion(obj.Language_Region))
+                    !Valid.Language_Code(obj.Language) ||
+                    !Valid.Region_Code(obj.Region))
                     return BadRequest();
 
                 return await Task.FromResult(_UsersRepository.Create_Account_By_Email(obj)).Result;
@@ -79,5 +93,5 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 return StatusCode(500, $"{e.Message}");
             }
         }
-    }//Controller.
-}//NameSpace.
+    }
+}

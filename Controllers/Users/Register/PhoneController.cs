@@ -77,8 +77,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     string.IsNullOrEmpty(obj.Carrier) || string.IsNullOrWhiteSpace(obj.Carrier) ||
                     string.IsNullOrEmpty(obj.Country.ToString()) || string.IsNullOrWhiteSpace(obj.Country.ToString()) ||
                     string.IsNullOrEmpty(obj.Password) || string.IsNullOrWhiteSpace(obj.Password) ||
-                    !Valid.Phone(obj.Phone) || !Valid.Password(obj.Password) ||
-                    !Valid.LanguageRegion(obj.Language))
+                    !Valid.Phone(obj.Phone) || !Valid.Password(obj.Password))
                     return BadRequest();
 
                 return await Task.FromResult(_UsersRepository.Create_Account_By_Phone(obj)).Result;
@@ -88,5 +87,5 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 return StatusCode(500, $"{e.Message}");
             }
         }
-    }//Controller.
-}//NameSpace.
+    }
+}

@@ -53,27 +53,14 @@ namespace mpc_dotnetc_user_server.Controllers
         {
             return true;
         }
-        static public bool LanguageRegion(string language_region)
+
+        static public bool Language_Code(string language_code) 
         {
-            char symbol = '-';
-            bool hasAtSymbol = language_region.Contains(symbol);
-            if (!hasAtSymbol)
+            if (!Regex.IsMatch(language_code, @"^[a-z]+$"))
                 return false;
 
-            string[] language_region_has_two_parts_to_it = language_region.Split('-');
-            if (!Regex.IsMatch(language_region_has_two_parts_to_it[0], @"^[a-zA-Z]+$"))
-                return false;
-
-            if (!Regex.IsMatch(language_region_has_two_parts_to_it[1], @"^[a-zA-Z]+$"))
-                return false;
-
-            if (!language_region_has_two_parts_to_it[0].All(letter => char.IsLower(letter)))
-                return false;
-
-            if (!language_region_has_two_parts_to_it[1].All(letter => char.IsUpper(letter)))
-                return false;
-
-            switch (language_region_has_two_parts_to_it[0].ToUpper()) {
+            switch (language_code.ToUpper())
+            {
                 case "DE":
                 case "EN":
                 case "ZH":
@@ -84,7 +71,15 @@ namespace mpc_dotnetc_user_server.Controllers
                     return true;
             }
 
-            switch (language_region_has_two_parts_to_it[1].ToUpper())
+            return false;
+        }
+
+        static public bool Region_Code(string region_code)
+        {
+            if (!Regex.IsMatch(region_code, @"^[A-Z]+$"))
+                return false;
+            
+            switch (region_code.ToUpper())
             {
                 case "DE":
                 case "GF":

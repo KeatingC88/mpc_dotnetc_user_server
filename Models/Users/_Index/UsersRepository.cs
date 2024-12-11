@@ -56,7 +56,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Email_Address = dto.Email_Address,
                 Updated_on = TimeStamp,
                 Updated_by = (ulong)0,
-                Language_Region = dto.Language_Region,
+                Language_Region = @$"{dto.Language}-{dto.Region}",
                 Created_on = TimeStamp,
                 Created_by = ID_Record.ID
             });
@@ -88,55 +88,44 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             await Update_End_User_Selected_Language(new Selected_LanguageDTO {
                 User_id = ID_Record.ID,
-                Language_code = dto.Language_Region.Split("-")[0],
-                Region_code = dto.Language_Region.Split("-")[1]
+                Language = dto.Language,
+                Region = dto.Region
             });
 
-            if (dto.Alignment != null) { 
-                await Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO
-                {
-                    User_id = ID_Record.ID,
-                    Alignment = dto.Alignment,
-                });
-                obj.alignment = dto.Alignment;
-            }
-
-            if (dto.Theme != null)
+            await Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO
             {
-                await Update_End_User_Selected_Theme(new Selected_ThemeDTO
-                {
-                    User_id = ID_Record.ID,
-                    Theme = dto.Theme,
-                });
-                obj.theme = dto.Theme;
-            }
+                User_id = ID_Record.ID,
+                Alignment = dto.Alignment,
+            });
+            obj.alignment = dto.Alignment;
 
-            if (dto.Nav_lock != null)
+            await Update_End_User_Selected_Theme(new Selected_ThemeDTO
             {
-                await Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
-                {
-                    User_id = ID_Record.ID,
-                    Locked = dto.Nav_lock,
-                });
-                obj.nav_lock = dto.Nav_lock;
-            }
+                User_id = ID_Record.ID,
+                Theme = dto.Theme,
+            });
+            obj.theme = dto.Theme;
+            
+            await Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
+            {
+                User_id = ID_Record.ID,
+                Locked = dto.Nav_lock,
+            });
+            obj.nav_lock = dto.Nav_lock;
 
-            if (dto.Text_alignment != null)
+            await Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
             {
-                await Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
-                {
-                    User_id = ID_Record.ID,
-                    Text_alignment = dto.Text_alignment,
-                });
-                obj.text_alignment = dto.Text_alignment;
-            }
+                User_id = ID_Record.ID,
+                Text_alignment = dto.Text_alignment,
+            });
+            obj.text_alignment = dto.Text_alignment;
 
             obj.id = ID_Record.ID;
             obj.email_address = dto.Email_Address;
             obj.token = Create_Jwt_Token(@$"{ID_Record.ID}");
             obj.token_expire = DateTime.UtcNow.AddMinutes(TokenExpireTime);
             obj.created_on = TimeStamp;
-            obj.language_region = dto.Language_Region;
+            obj.language_region = @$"{dto.Language}-{dto.Region}";
             return JsonSerializer.Serialize(obj);
         }
         public async Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto)
@@ -146,7 +135,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 ID = Convert.ToUInt64(_UsersDBC.Pending_Email_RegistrationTbl.Count() + 1),
                 Email_Address = dto.Email_Address,
                 Code = dto.Code,
-                Language_Region = dto.Language_Region,
+                Language_Region = @$"{dto.Language}-{dto.Region}",
                 Created_by = 0,
                 Created_on = TimeStamp,
                 Updated_on = TimeStamp,
@@ -156,7 +145,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             obj.email_address = dto.Email_Address;
             obj.code = dto.Code;
-            obj.language_region = dto.Language_Region;
+            obj.language_region = @$"{dto.Language}-{dto.Region}";
             obj.created_on = TimeStamp;
             return JsonSerializer.Serialize(obj);
         }        
@@ -657,14 +646,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 await _UsersDBC.Pending_Email_RegistrationTbl.Where(x => x.Email_Address == dto.Email_Address).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Email_Address, dto.Email_Address)
                     .SetProperty(col => col.Code, dto.Code)
-                    .SetProperty(col => col.Language_Region, dto.Language_Region)
+                    .SetProperty(col => col.Language_Region, @$"{dto.Language}-{dto.Region}")
                     .SetProperty(col => col.Updated_on, TimeStamp)
                     .SetProperty(col => col.Updated_by, (ulong)0)
                 );
                 await _UsersDBC.SaveChangesAsync();
                 obj.email_address = dto.Email_Address;
                 obj.updated_on = TimeStamp;
-                obj.language_region = dto.Language_Region;
+                obj.language_region = @$"{dto.Language}-{dto.Region}";
                 return JsonSerializer.Serialize(obj);            
             } catch {
                 obj.error = "Server Error: Email Address Registration Failed";
@@ -725,44 +714,82 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Selected_Alignment(Selected_App_AlignmentDTO dto)
         {
             try {
-                switch (dto.Alignment)
+                switch ((byte)dto.Alignment)
                 {
                     case 0:
-                        await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Left, 1)
-                            .SetProperty(col => col.Center, 0)
-                            .SetProperty(col => col.Right, 0)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                        );
-
+                        if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        {//Insert
+                            await _UsersDBC.Selected_App_AlignmentTbl.AddAsync(new Selected_App_AlignmentTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Selected_App_AlignmentTbl.Count() + 1),
+                                User_id = dto.User_id,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Left = 1,
+                                Updated_by = dto.User_id
+                            });
+                        } else { //Update
+                            await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Left, 1)
+                                .SetProperty(col => col.Center, 0)
+                                .SetProperty(col => col.Right, 0)
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.User_id)
+                            );
+                        }
                         await _UsersDBC.SaveChangesAsync();
                         obj.alignment = "left";
                         return JsonSerializer.Serialize(obj);
                     case 2:
-                        await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Left, 0)
-                            .SetProperty(col => col.Center, 0)
-                            .SetProperty(col => col.Right, 1)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                        );
+                        if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        {//Insert
+                            await _UsersDBC.Selected_App_AlignmentTbl.AddAsync(new Selected_App_AlignmentTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Selected_App_AlignmentTbl.Count() + 1),
+                                User_id = dto.User_id,
+                                Right = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.User_id
+                            });
+                        } else { //Update
+                            await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Left, 0)
+                                .SetProperty(col => col.Center, 0)
+                                .SetProperty(col => col.Right, 1)
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.User_id)
+                            );
+                        }
                         await _UsersDBC.SaveChangesAsync();
                         obj.alignment = "right";
                         return JsonSerializer.Serialize(obj);
                     case 1:
-                        await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Left, 0)
-                            .SetProperty(col => col.Center, 1)
-                            .SetProperty(col => col.Right, 0)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                        );
+                        if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        {//Insert
+                            await _UsersDBC.Selected_App_AlignmentTbl.AddAsync(new Selected_App_AlignmentTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Selected_App_AlignmentTbl.Count() + 1),
+                                User_id = dto.User_id,
+                                Center = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.User_id
+                            });
+                        } else { //Update
+                            await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Left, 0)
+                                .SetProperty(col => col.Center, 1)
+                                .SetProperty(col => col.Right, 0)
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.User_id)
+                            );
+                        }
                         await _UsersDBC.SaveChangesAsync();
                         obj.alignment = "center";
                         return JsonSerializer.Serialize(obj);
                     default:
-                        obj.alignment = "default";
+                        obj.alignment = "error";
                         return JsonSerializer.Serialize(obj);
                 }                
             } catch {
@@ -773,43 +800,88 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Selected_TextAlignment(Selected_App_Text_AlignmentDTO dto)
         {
             try { 
-                switch (dto.Text_alignment)
+                switch ((byte)dto.Text_alignment)
                 {
                     case 0:
-                        await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Left, 1)
-                            .SetProperty(col => col.Center, 0)
-                            .SetProperty(col => col.Right, 0)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                        );
+                        if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        {//Insert
+                            await _UsersDBC.Selected_App_Text_AlignmentTbl.AddAsync(new Selected_App_Text_AlignmentTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Selected_App_Text_AlignmentTbl.Count() + 1),
+                                User_id = dto.User_id,
+                                Left = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.User_id
+                            });
+                        }
+                        else
+                        { //Update
+                            await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Left, 1)
+                                .SetProperty(col => col.Center, 0)
+                                .SetProperty(col => col.Right, 0)
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.User_id)
+                            );
+                        }
                         await _UsersDBC.SaveChangesAsync();
                         obj.text_alignment = "Left";
                         return JsonSerializer.Serialize(obj);
                     case 2:
-                        await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Left, 0)
-                            .SetProperty(col => col.Center, 0)
-                            .SetProperty(col => col.Right, 1)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                        );
+                        if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        {//Insert
+                            await _UsersDBC.Selected_App_Text_AlignmentTbl.AddAsync(new Selected_App_Text_AlignmentTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Selected_App_Text_AlignmentTbl.Count() + 1),
+                                User_id = dto.User_id,
+                                Right = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.User_id
+                            });
+                        }
+                        else
+                        { //Update
+                            await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Left, 0)
+                                .SetProperty(col => col.Center, 0)
+                                .SetProperty(col => col.Right, 1)
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.User_id)
+                            );
+                        }
                         await _UsersDBC.SaveChangesAsync();
                         obj.text_alignment = "Right";
                         return JsonSerializer.Serialize(obj);
                     case 1:
-                        await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Left, 0)
-                            .SetProperty(col => col.Center, 1)
-                            .SetProperty(col => col.Right, 0)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                        );
+                        if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        {//Insert
+                            await _UsersDBC.Selected_App_Text_AlignmentTbl.AddAsync(new Selected_App_Text_AlignmentTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Selected_App_Text_AlignmentTbl.Count() + 1),
+                                User_id = dto.User_id,
+                                Center = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.User_id
+                            });
+                        }
+                        else
+                        { //Update
+                            await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Left, 0)
+                                .SetProperty(col => col.Center, 1)
+                                .SetProperty(col => col.Right, 0)
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.User_id)
+                            );
+                        }
                         await _UsersDBC.SaveChangesAsync();
                         obj.text_alignment = "Center";
                         return JsonSerializer.Serialize(obj);
                     default:
-                        obj.text_alignment = "default";
+                        obj.text_alignment = "error";
                         return JsonSerializer.Serialize(obj);
                 }            
             } catch {
@@ -834,14 +906,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 }
                 else {
                     await _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                        .SetProperty(col => col.Language_code, dto.Language_code)
-                        .SetProperty(col => col.Region_code, dto.Region_code)
+                        .SetProperty(col => col.Language_code, dto.Language)
+                        .SetProperty(col => col.Region_code, dto.Region)
                         .SetProperty(col => col.Updated_on, TimeStamp)
                         .SetProperty(col => col.Updated_by, dto.User_id)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
-                obj.language_region = @$"{dto.Language_code}-{dto.Region_code}";
+                obj.language_region = @$"{dto.Language}-{dto.Region}";
                 return JsonSerializer.Serialize(obj);
             } catch {
                 obj.error = "Server Error: Update Text Alignment Failed.";
@@ -1049,34 +1121,84 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 switch (dto.Theme)
                 {
                     case 0:
-                        await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Light, 1)
-                            .SetProperty(col => col.Night, 0)
-                            .SetProperty(col => col.Custom, 0)
-                        );
+                        if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_id == dto.User_id))
+                        {//Insert
+                            await _UsersDBC.Selected_ThemeTbl.AddAsync(new Selected_ThemeTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Selected_ThemeTbl.Count() + 1),
+                                User_id = dto.User_id,
+                                Light = 1,
+                                Updated_on = TimeStamp,
+                                Created_by = dto.User_id,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.User_id
+                            });
+                        } else { //Update
+                            await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Light, 1)
+                                .SetProperty(col => col.Night, 0)
+                                .SetProperty(col => col.Custom, 0)
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.User_id)
+                            );
+                        }
                         await _UsersDBC.SaveChangesAsync();
                         obj.theme = "Light";
                         return JsonSerializer.Serialize(obj);
                     case 1:
-                        await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Light, 0)
-                            .SetProperty(col => col.Night, 1)
-                            .SetProperty(col => col.Custom, 0)
-                        );
+                        if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_id == dto.User_id))
+                        {//Insert
+                            await _UsersDBC.Selected_ThemeTbl.AddAsync(new Selected_ThemeTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Selected_ThemeTbl.Count() + 1),
+                                User_id = dto.User_id,
+                                Night = 1,
+                                Updated_on = TimeStamp,
+                                Created_by = dto.User_id,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.User_id
+                            });
+                        }
+                        else
+                        { //Update
+                            await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Light, 0)
+                                .SetProperty(col => col.Night, 1)
+                                .SetProperty(col => col.Custom, 0)
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.User_id)
+                            );
+                        }
                         await _UsersDBC.SaveChangesAsync();
                         obj.theme = "Night";
                         return JsonSerializer.Serialize(obj);
                     case 2:
-                        await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Light, 0)
-                            .SetProperty(col => col.Night, 0)
-                            .SetProperty(col => col.Custom, 1)
-                        );
+                        if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_id == dto.User_id))
+                        {//Insert
+                            await _UsersDBC.Selected_ThemeTbl.AddAsync(new Selected_ThemeTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Selected_ThemeTbl.Count() + 1),
+                                User_id = dto.User_id,
+                                Night = 1,
+                                Created_by = dto.User_id,
+                                Created_on = TimeStamp,
+                                Updated_on = TimeStamp,
+                                Updated_by = dto.User_id
+                            });
+                        } else { //Update
+                            await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.User_id)
+                                .SetProperty(col => col.Light, 0)
+                                .SetProperty(col => col.Night, 0)
+                                .SetProperty(col => col.Custom, 1)
+                            );
+                        }
                         await _UsersDBC.SaveChangesAsync();
                         obj.theme = "Custom";
                         return JsonSerializer.Serialize(obj);
                     default:
-                        obj.theme = "default";
+                        obj.theme = "error";
                         return JsonSerializer.Serialize(obj);
                 }
             } catch {
