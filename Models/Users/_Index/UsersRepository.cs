@@ -12,6 +12,7 @@ using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.BirthDate;
 using mpc_dotnetc_user_server.Models.Users.Selection;
+using mpc_dotnetc_user_server.Controllers.Users.AES;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -22,6 +23,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         private dynamic obj = new ExpandoObject();
         private readonly IConfiguration _configuration;
         private readonly UsersDBC _UsersDBC;
+
+        AES_RW AES_RW = new AES_RW();
 
         public UsersRepository(IConfiguration configuration, UsersDBC UsersDBC)
         {
@@ -143,10 +146,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
 
             await _UsersDBC.SaveChangesAsync();
-            obj.email_address = dto.Email_Address;
-            obj.code = dto.Code;
-            obj.language_region = @$"{dto.Language}-{dto.Region}";
-            obj.created_on = TimeStamp;
+            obj.email_address = AES_RW.Process_Encryption(dto.Email_Address);
+            obj.code = AES_RW.Process_Encryption(dto.Code);
+            obj.language = AES_RW.Process_Encryption(dto.Language);
+            obj.region = AES_RW.Process_Encryption(dto.Region);
+            obj.created_on = AES_RW.Process_Encryption(TimeStamp.ToString());
             return JsonSerializer.Serialize(obj);
         }        
         public async Task<bool> Email_Exists_In_Login_Email_AddressTbl(string email_address)
@@ -651,9 +655,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Updated_by, (ulong)0)
                 );
                 await _UsersDBC.SaveChangesAsync();
-                obj.email_address = dto.Email_Address;
-                obj.updated_on = TimeStamp;
-                obj.language_region = @$"{dto.Language}-{dto.Region}";
+
+                obj.email_address = AES_RW.Process_Encryption(dto.Email_Address);
+                obj.language = AES_RW.Process_Encryption(dto.Language);
+                obj.region = AES_RW.Process_Encryption(dto.Region);
+                obj.updated_on = AES_RW.Process_Encryption(TimeStamp.ToString());
+
                 return JsonSerializer.Serialize(obj);            
             } catch {
                 obj.error = "Server Error: Email Address Registration Failed";

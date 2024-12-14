@@ -4,6 +4,9 @@ using System.Text.Json;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
 using mpc_dotnetc_user_server.Controllers.Users;
 using mpc_dotnetc_user_server.Controllers.Users.AES;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
@@ -14,7 +17,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         private readonly ILogger<EmailController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
-        AES_Decryptor AES = new AES_Decryptor();
+        AES_RW AES_RW = new AES_RW();
+
+        private readonly string secretKey;
 
         public EmailController(ILogger<EmailController> logger, IConfiguration configuration, IUsersRepository iUsersRepository)
         {
@@ -24,17 +29,23 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         }
 
         [HttpPost("Confirmation")]
-        public ActionResult<string> Validating_Email_Address_User_Information_Before_Submission([FromBody] Confirmation_Email_RegistrationDTO obj)
+        public ActionResult<string> Validating_Email_Address_User_Information_Before_Submission([FromBody] Confirmation_Email_Registration_EncryptedDTO obj)
         {
             try
             {
-                if (!ModelState.IsValid ||
-                    !Valid.Email(obj.Email_Address) ||
+                if (!ModelState.IsValid)
+                    BadRequest();
+
+                obj.Email_Address = AES_RW.Process_Decryption(obj.Email_Address);
+                obj.Language = AES_RW.Process_Decryption(obj.Language);
+                obj.Region = AES_RW.Process_Decryption(obj.Region);
+
+                if (!Valid.Email(obj.Email_Address) ||
                     !Valid.Language_Code(obj.Language) ||
                     !Valid.Region_Code(obj.Region) ||
                     !_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result ||
                     _UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result ||
-                    !_UsersRepository.Confirmation_Code_Exists_In_Pending_Email_Address_RegistrationTbl (obj.Code).Result)
+                    !_UsersRepository.Confirmation_Code_Exists_In_Pending_Email_Address_RegistrationTbl(obj.Code).Result)
                     return BadRequest();
 
                 return StatusCode(200, JsonSerializer.Serialize(obj));
@@ -44,35 +55,39 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         }
 
         [HttpPost("Register")]
-        public string Registering_An_Email_Account_For_New_User([FromBody] EncryptedPayload obj)
-        {            
+        public async Task<ActionResult<string>> Registering_An_Email_Account_For_New_User([FromBody] Pending_Email_Registration_EncryptedDTO obj)
+        {
             try
-            {                
-                var foo = AES.Process(obj.Data);
-                return foo;
-
-/*                if (!ModelState.IsValid ||
-                    !Valid.Email(obj.Email_Address) ||
-                    !Valid.Language_Code(obj.Language) ||
-                    !Valid.Region_Code(obj.Region))
+            {
+                if (!ModelState.IsValid)
                     return BadRequest();
+                
+                obj.Email_Address = AES_RW.Process_Decryption(obj.Email_Address);
+                obj.Language = AES_RW.Process_Decryption(obj.Language);
+                obj.Region = AES_RW.Process_Decryption(obj.Region);
 
-                if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result)
-                    return StatusCode(409);
+                if (!Valid.Email(obj.Email_Address) ||
+                    !Valid.Language_Code(obj.Language) ||
+                    !Valid.Region_Code(obj.Region) ||
+                    _UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result)
+                    return Conflict();
+
+
+                Pending_Email_RegistrationDTO end_user_data = new Pending_Email_RegistrationDTO
+                {
+                    Email_Address = obj.Email_Address,
+                    Language = obj.Language,
+                    Region = obj.Region,
+                    Code = obj.Code
+                };
 
                 if (_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result)
-                    return await Task.FromResult(_UsersRepository.Update_Pending_Email_Registration_Record(obj)).Result;
+                    return await Task.FromResult(_UsersRepository.Update_Pending_Email_Registration_Record(end_user_data)).Result;
 
-                return await _UsersRepository.Create_Pending_Email_Registration_Record(obj);*/
-
+                return await _UsersRepository.Create_Pending_Email_Registration_Record(end_user_data);
             } catch (Exception e) {
-                return e.Message.ToString();
-                //return StatusCode(500, $"{e.Message}");
+                return StatusCode(500, $"{e.Message}");
             }
-        }
-        public class EncryptedPayload
-        {
-            public string Data { get; set; }
         }
 
         [HttpPost("Submit")]
