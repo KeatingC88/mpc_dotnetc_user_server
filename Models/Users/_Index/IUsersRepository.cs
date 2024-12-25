@@ -59,7 +59,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Update_End_User_Birth_Date(Birth_DateDTO dto);
         void Create_Chat_WebSocket_Log_Records(Websocket_Chat_PermissionDTO dto);
         bool Compare_Password_Byte_Arrays(byte[] array1, byte[] array2);
-        Task<bool> Confirmation_Code_Exists_In_Pending_Email_Address_RegistrationTbl (string code);
         Task<bool> Telephone_Exists_In_Login_Telephone_Tbl(string telephone_number);
         Task<bool> Phone_Exists_In_Telephone_Not_Confirmed_Tbl(string telephone_number);
         Task<bool> Email_Exists_In_Pending_Email_RegistrationTbl(string email_address);

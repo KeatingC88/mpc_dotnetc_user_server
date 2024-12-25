@@ -123,12 +123,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             obj.text_alignment = dto.Text_alignment;
 
-            obj.id = ID_Record.ID;
-            obj.email_address = dto.Email_Address;
-            obj.token = Create_Jwt_Token(@$"{ID_Record.ID}");
-            obj.token_expire = DateTime.UtcNow.AddMinutes(TokenExpireTime);
-            obj.created_on = TimeStamp;
-            obj.language_region = @$"{dto.Language}-{dto.Region}";
+            obj.id = AES_RW.Process_Encryption(ID_Record.ID.ToString());
+            obj.email_address = AES_RW.Process_Encryption(dto.Email_Address);
+            obj.language = AES_RW.Process_Encryption(dto.Language);
+            obj.region = AES_RW.Process_Encryption(dto.Region);
+            obj.created_on = AES_RW.Process_Encryption(TimeStamp.ToString());
+            obj.token = Create_Jwt_Token(@$"{ID_Record.ID}").Result;
+            obj.token_expire = AES_RW.Process_Encryption(DateTime.UtcNow.AddMinutes(TokenExpireTime).ToString());
+
             return JsonSerializer.Serialize(obj);
         }
         public async Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto)
@@ -920,7 +922,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
-                obj.language_region = @$"{dto.Language}-{dto.Region}";
+                obj.region = dto.Region;
+                obj.language = dto.Language;
                 return JsonSerializer.Serialize(obj);
             } catch {
                 obj.error = "Server Error: Update Text Alignment Failed.";
@@ -1323,20 +1326,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Where(x => x.User_id == id).Select(x => x.Email_Address).SingleOrDefault());
         }
-        public async Task<ulong> Read_User_ID_By_JWToken(string jwtToken)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(jwtToken);
-            List<object> values = jwtSecurityToken.Payload.Values.ToList();
-            ulong currentTime = Convert.ToUInt64(((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds());
-            ulong token_expire = Convert.ToUInt64(values[2]);
-            bool tokenExpired = token_expire < currentTime ? true : false;
-
-            if (tokenExpired)
-                return 0;
-
-            return await Task.FromResult(Convert.ToUInt64(values[0].ToString()));
-        }
         public async Task<byte[]> Create_Salted_Hash_String(byte[] text, byte[] salt)
         {
             HashAlgorithm algorithm = SHA256.Create();
@@ -1377,11 +1366,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             return await Task.FromResult(_UsersDBC.Login_PasswordTbl.Where(user => user.User_id == user_id).Select(user => user.Password).SingleOrDefault());
         }
         public async Task<string> Create_Jwt_Token(string id)
-        {
+        {//must fix
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, $@"{id}"),
-                new Claim(ClaimTypes.Role, "MPC-End-User"),
+                new Claim(ClaimTypes.Name, $@"{AES_RW.Process_Encryption(id.ToString())}"),
+                new Claim(ClaimTypes.Role, $@"{AES_RW.Process_Encryption("MPC-End-User")}"),
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -1393,6 +1382,20 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 signingCredentials: signIn);
 
             return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
+        }
+        public async Task<ulong> Read_User_ID_By_JWToken(string jwtToken)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtSecurityToken = handler.ReadJwtToken(jwtToken);
+            List<object> values = jwtSecurityToken.Payload.Values.ToList();
+            ulong currentTime = Convert.ToUInt64(((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds());
+            ulong token_expire = Convert.ToUInt64(values[2]);
+            bool tokenExpired = token_expire < currentTime ? true : false;
+
+            if (tokenExpired)
+                return 0;
+
+            return await Task.FromResult(Convert.ToUInt64(AES_RW.Process_Decryption(values[0].ToString())));
         }
         public async Task<string> Create_Integration_Twitch_Record(DTO dto)
         {

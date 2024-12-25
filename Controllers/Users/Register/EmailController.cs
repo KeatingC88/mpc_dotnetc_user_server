@@ -43,9 +43,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 if (!Valid.Email(obj.Email_Address) ||
                     !Valid.Language_Code(obj.Language) ||
                     !Valid.Region_Code(obj.Region) ||
-                    !_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result ||
                     _UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result ||
-                    !_UsersRepository.Confirmation_Code_Exists_In_Pending_Email_Address_RegistrationTbl(obj.Code).Result)
+                    !_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result)
                     return BadRequest();
 
                 return StatusCode(200, JsonSerializer.Serialize(obj));
@@ -91,19 +90,35 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         }
 
         [HttpPost("Submit")]
-        public async Task<ActionResult<string>> Submit_Login_Email_PasswordDTO([FromBody] Complete_Email_RegistrationDTO obj)
+        public async Task<ActionResult<string>> Submit_Login_Email_PasswordDTO([FromBody] Confirmation_Email_Registration_EncryptedDTO obj)
         {
             try
             {
-                if (!ModelState.IsValid ||
-                    _UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result ||
+                if (!ModelState.IsValid)
+                    return BadRequest();
+
+                obj.Email_Address = AES_RW.Process_Decryption(obj.Email_Address);
+                obj.Language = AES_RW.Process_Decryption(obj.Language);
+                obj.Password = AES_RW.Process_Decryption(obj.Password);
+                obj.Region = AES_RW.Process_Decryption(obj.Region);
+
+                if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result ||
+                    !_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result ||
                     !Valid.Email(obj.Email_Address) ||
                     !Valid.Password(obj.Password) ||
                     !Valid.Language_Code(obj.Language) ||
                     !Valid.Region_Code(obj.Region))
                     return BadRequest();
 
-                return await Task.FromResult(_UsersRepository.Create_Account_By_Email(obj)).Result;
+                Complete_Email_RegistrationDTO end_user_data = new Complete_Email_RegistrationDTO
+                {
+                    Email_Address = obj.Email_Address,
+                    Language = obj.Language,
+                    Region = obj.Region,
+                    Code = obj.Code
+                };
+
+                return await Task.FromResult(_UsersRepository.Create_Account_By_Email(end_user_data)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
