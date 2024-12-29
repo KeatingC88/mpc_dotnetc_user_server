@@ -2,11 +2,7 @@
 using mpc_dotnetc_user_server.Models.Users.Index;
 using System.Text.Json;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
-using mpc_dotnetc_user_server.Controllers.Users;
 using mpc_dotnetc_user_server.Controllers.Users.AES;
-using System.Security.Cryptography;
-using System.Text;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
@@ -48,6 +44,27 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     return BadRequest();
 
                 return StatusCode(200, JsonSerializer.Serialize(obj));
+            } catch (Exception e) {
+                return StatusCode(500, $"{e.Message}");
+            }
+        }
+
+        [HttpPost("Exists")]
+        public async Task<ActionResult<string>> Validating_Email_Exists_In_Login_Email_Address_Tbl([FromBody] Validate_Email_AddressDTO obj) {
+            try {
+                string email_address = AES_RW.Process_Decryption(obj.Email_Address);
+
+                if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(email_address).Result)
+                {
+                    return Conflict();
+                }
+ 
+                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(email_address).Result)
+                {
+                    return Ok();
+                }
+
+                return StatusCode(500);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
