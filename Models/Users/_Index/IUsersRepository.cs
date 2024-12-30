@@ -21,6 +21,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<bool> Create_Contact_Us_Record(DTO dto);
         Task<byte[]> Create_Salted_Hash_String(byte[] text, byte[] salt);
         Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
+        Task<string> Create_Reported_Email_Post_Registration_Record(Reported_Email_Post_RegistrationDTO dto);
         Task<string> Create_Unconfirmed_Phone(DTO dto);
         Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto);
         Task<string> Create_Account_By_Phone(DTO dto);

@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace mpc_dotnetc_user_server.Controllers.Users.AES
+namespace mpc_dotnetc_user_server.Controllers
 {
     public class AES_RW
     {
@@ -54,7 +54,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.AES
                     encrypted_bytes = encryptor.TransformFinalBlock(string_bytes, 0, string_bytes.Length);
                 }
             }
-            
+
             return Convert.ToBase64String(encrypted_bytes);
         }
     }

@@ -12,7 +12,8 @@ using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.BirthDate;
 using mpc_dotnetc_user_server.Models.Users.Selection;
-using mpc_dotnetc_user_server.Controllers.Users.AES;
+using mpc_dotnetc_user_server.Controllers;
+using System.Net.Mail;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -666,6 +667,30 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return JsonSerializer.Serialize(obj);            
             } catch {
                 obj.error = "Server Error: Email Address Registration Failed";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Create_Reported_Email_Post_Registration_Record(Reported_Email_Post_RegistrationDTO dto) 
+        {
+            try
+            {
+                await _UsersDBC.Reported_Email_Post_RegistrationTbl.AddAsync(new Reported_Email_Post_RegistrationTbl
+                {
+                    User_ID = dto.User_ID,
+                    Updated_on = TimeStamp,
+                    Created_on = TimeStamp,
+                    Client_IP = dto.Client_Networking_IP_Address,
+                    Client_Port = dto.Client_Networking_Port,
+                    Server_IP = dto.Server_Networking_IP_Address,
+                    Server_Port = dto.Server_Networking_Port,
+                    Language_Region = $"{dto.Language}-{dto.Region}",
+                    Email_Address = dto.Email_Address
+                });
+                await _UsersDBC.SaveChangesAsync();
+                obj.recorded_on = TimeStamp;
+                return JsonSerializer.Serialize(obj);
+            } catch {
+                obj.error = "Server Error: Record Creation Failed.";
                 return JsonSerializer.Serialize(obj);
             }
         }
@@ -1366,7 +1391,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             return await Task.FromResult(_UsersDBC.Login_PasswordTbl.Where(user => user.User_id == user_id).Select(user => user.Password).SingleOrDefault());
         }
         public async Task<string> Create_Jwt_Token(string id)
-        {//must fix
+        {
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, $@"{AES_RW.Process_Encryption(id.ToString())}"),

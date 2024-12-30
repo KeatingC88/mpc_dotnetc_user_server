@@ -16,6 +16,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<User_IDsTbl> User_IDsTbl { get; set; } = null!;
         public DbSet<Completed_Email_RegistrationTbl> Completed_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_RegistrationTbl> Pending_Email_RegistrationTbl { get; set; } = null!;
+        public DbSet<Reported_Email_Post_RegistrationTbl> Reported_Email_Post_RegistrationTbl { get; set; } = null!;
         public DbSet<Completed_Telephone_RegistrationTbl> Completed_Telephone_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Telephone_RegistrationTbl> Pending_Telephone_RegistrationTbl { get; set; } = null!;
         public DbSet<Contact_UsTbl> Contact_UsTbl { get; set; } = null!;

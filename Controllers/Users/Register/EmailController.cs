@@ -2,7 +2,6 @@
 using mpc_dotnetc_user_server.Models.Users.Index;
 using System.Text.Json;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
-using mpc_dotnetc_user_server.Controllers.Users.AES;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
@@ -52,19 +51,36 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         [HttpPost("Exists")]
         public async Task<ActionResult<string>> Validating_Email_Exists_In_Login_Email_Address_Tbl([FromBody] Validate_Email_AddressDTO obj) {
             try {
+
                 string email_address = AES_RW.Process_Decryption(obj.Email_Address);
+                string language = AES_RW.Process_Decryption(obj.Language);
+                string region = AES_RW.Process_Decryption(obj.Region);
+
+                if (!Valid.Email(email_address) ||
+                    !Valid.Language_Code(language) ||
+                    !Valid.Region_Code(region))
+                    return BadRequest();
 
                 if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(email_address).Result)
                 {
+                    ulong user_id = _UsersRepository.Read_User_ID_By_Email_Address(email_address).Result;
+
+                    await _UsersRepository.Create_Reported_Email_Post_Registration_Record(new Reported_Email_Post_RegistrationDTO
+                    {
+                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                        Client_Networking_Port = HttpContext.Connection.RemotePort,
+                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        User_ID = user_id,
+                        Email_Address = email_address,
+                        Language = language,
+                        Region = region,
+                    });
+
                     return Conflict();
                 }
- 
-                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(email_address).Result)
-                {
-                    return Ok();
-                }
 
-                return StatusCode(500);
+                return Ok();
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
