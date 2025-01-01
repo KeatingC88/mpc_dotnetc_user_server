@@ -1,36 +1,37 @@
 ﻿using System.Dynamic;
 using System.Text.Json;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
-using mpc_dotnetc_user_server.Models.Users.Authentication;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
 using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.BirthDate;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Controllers;
-using System.Net.Mail;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Phone;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Phone;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Telephone;
+using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
+using mpc_dotnetc_user_server.Models.Users.Notification;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
     public class UsersRepository : IUsersRepository
     {
-        private readonly int TokenExpireTime = 9999;//JWT expired in integer Minutes.
         private readonly ulong TimeStamp = Convert.ToUInt64(DateTimeOffset.Now.ToUnixTimeSeconds());
         private dynamic obj = new ExpandoObject();
-        private readonly IConfiguration _configuration;
         private readonly UsersDBC _UsersDBC;
 
-        AES_RW AES_RW = new AES_RW();
+        AES AES = new AES();
 
-        public UsersRepository(IConfiguration configuration, UsersDBC UsersDBC)
+        public UsersRepository(UsersDBC UsersDBC)
         {
             _UsersDBC = UsersDBC;
-            _configuration = configuration;
         }
 
         public async Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto)
@@ -90,7 +91,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             await _UsersDBC.SaveChangesAsync();
 
-            await Update_End_User_Selected_Language(new Selected_LanguageDTO {
+            await Update_End_User_Selected_Language(new Selected_LanguageDTO 
+            {
                 User_id = ID_Record.ID,
                 Language = dto.Language,
                 Region = dto.Region
@@ -124,13 +126,19 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             obj.text_alignment = dto.Text_alignment;
 
-            obj.id = AES_RW.Process_Encryption(ID_Record.ID.ToString());
-            obj.email_address = AES_RW.Process_Encryption(dto.Email_Address);
-            obj.language = AES_RW.Process_Encryption(dto.Language);
-            obj.region = AES_RW.Process_Encryption(dto.Region);
-            obj.created_on = AES_RW.Process_Encryption(TimeStamp.ToString());
-            obj.token = Create_Jwt_Token(@$"{ID_Record.ID}").Result;
-            obj.token_expire = AES_RW.Process_Encryption(DateTime.UtcNow.AddMinutes(TokenExpireTime).ToString());
+            await Update_End_User_Account_Type(new Account_TypeDTO 
+            { 
+                User_id = ID_Record.ID,
+                Type = 1
+            });
+
+            obj.id = AES.Process_Encryption(ID_Record.ID.ToString());
+            obj.email_address = AES.Process_Encryption(dto.Email_Address);
+            obj.language = AES.Process_Encryption(dto.Language);
+            obj.region = AES.Process_Encryption(dto.Region);
+            obj.created_on = AES.Process_Encryption(TimeStamp.ToString());
+            obj.token = JWT.Create_Token(@$"{ID_Record.ID}").Result;
+            obj.account_type = AES.Process_Encryption("1");
 
             return JsonSerializer.Serialize(obj);
         }
@@ -149,11 +157,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
 
             await _UsersDBC.SaveChangesAsync();
-            obj.email_address = AES_RW.Process_Encryption(dto.Email_Address);
-            obj.code = AES_RW.Process_Encryption(dto.Code);
-            obj.language = AES_RW.Process_Encryption(dto.Language);
-            obj.region = AES_RW.Process_Encryption(dto.Region);
-            obj.created_on = AES_RW.Process_Encryption(TimeStamp.ToString());
+            obj.email_address = AES.Process_Encryption(dto.Email_Address);
+            obj.code = AES.Process_Encryption(dto.Code);
+            obj.language = AES.Process_Encryption(dto.Language);
+            obj.region = AES.Process_Encryption(dto.Region);
+            obj.created_on = AES.Process_Encryption(TimeStamp.ToString());
             return JsonSerializer.Serialize(obj);
         }        
         public async Task<bool> Email_Exists_In_Login_Email_AddressTbl(string email_address)
@@ -222,8 +230,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
 
             obj.id = ID_Record.ID;
-            obj.token = Create_Jwt_Token(@$"{ID_Record.ID}");
-            obj.token_expire = DateTime.UtcNow.AddMinutes(TokenExpireTime);
+            obj.token = JWT.Create_Token(@$"{ID_Record.ID}");
+            //obj.token_expire = DateTime.UtcNow.AddMinutes(TokenExpireTime);
             obj.created_on = TimeStamp;
             obj.phone = dto.Phone;
             obj.country = dto.Country;
@@ -385,101 +393,103 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             return JsonSerializer.Serialize(obj);
         }
         public Task<string> Read_User(ulong end_user_id)
-        {//Getting Information About the End User...
-            bool Nav_lock = _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.User_id == end_user_id).Select(x => x.Locked).SingleOrDefault();
+        {
+            bool nav_lock = _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.User_id == end_user_id).Select(x => x.Locked).SingleOrDefault();
+            byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Type).SingleOrDefault();
             byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Online).SingleOrDefault();
             byte status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Offline).SingleOrDefault();
             byte status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Hidden).SingleOrDefault();
             byte status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Away).SingleOrDefault();
             byte status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.DND).SingleOrDefault();
             byte status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Custom).SingleOrDefault();
-            byte Status = 0;
-            byte Light = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Light).SingleOrDefault();
-            byte Night = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Night).SingleOrDefault();
-            byte CustomTheme = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Custom).SingleOrDefault();
-            byte Theme = 0;
-            byte LeftAligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Left).SingleOrDefault();
-            byte CenterAligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Center).SingleOrDefault();
-            byte RightAligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Right).SingleOrDefault();
-            byte Alignment = 0;
-            byte LeftTextAligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Left).SingleOrDefault();
-            byte CenterTextAligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Center).SingleOrDefault();
-            byte RightTextAligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Right).SingleOrDefault();
-            byte TextAlignment = 0;
-            ulong LoginTS = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == end_user_id).Select(x => x.Login_on).SingleOrDefault();
-            ulong LogoutTS = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == end_user_id).Select(x => x.Logout_on).SingleOrDefault();
-            ulong Created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Created_on).SingleOrDefault();
+            byte status_type = 0;
+            byte light = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Light).SingleOrDefault();
+            byte night = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Night).SingleOrDefault();
+            byte custom_theme = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Custom).SingleOrDefault();
+            byte theme_type = 0;
+            byte left_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Left).SingleOrDefault();
+            byte center_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Center).SingleOrDefault();
+            byte right_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Right).SingleOrDefault();
+            byte alignment_type = 0;
+            byte left_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Left).SingleOrDefault();
+            byte center_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Center).SingleOrDefault();
+            byte right_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Right).SingleOrDefault();
+            byte text_alignment_type = 0;
+            ulong login_timestamp = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == end_user_id).Select(x => x.Login_on).SingleOrDefault();
+            ulong logout_timestamp = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == end_user_id).Select(x => x.Logout_on).SingleOrDefault();
+            ulong created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Created_on).SingleOrDefault();
             string? customLbl = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Custom_lbl).SingleOrDefault();
-            string? Email = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_id == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
-            string? RegionCode = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == end_user_id).Select(x => x.Region_code).SingleOrDefault();
-            string? LanguageCode = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == end_user_id).Select(x => x.Language_code).SingleOrDefault();
-            string? Avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == end_user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
-            string? Avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == end_user_id).Select(x => x.Avatar_title).SingleOrDefault();
-            string? DisplayName = _UsersDBC.Selected_NameTbl.Where(x => x.User_id == end_user_id).Select(x => x.Name).SingleOrDefault();
-            byte? Gender = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Gender).SingleOrDefault();
+            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_id == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == end_user_id).Select(x => x.Region_code).SingleOrDefault();
+            string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == end_user_id).Select(x => x.Language_code).SingleOrDefault();
+            string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == end_user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
+            string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == end_user_id).Select(x => x.Avatar_title).SingleOrDefault();
+            string? display_name = _UsersDBC.Selected_NameTbl.Where(x => x.User_id == end_user_id).Select(x => x.Name).SingleOrDefault();
+            byte? gender = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Gender).SingleOrDefault();
             byte? birth_day = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Day).SingleOrDefault();
             byte? birth_month = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Month).SingleOrDefault();
             ulong? birth_year = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Year).SingleOrDefault();
-            string? FirstName = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.First_Name).SingleOrDefault();
-            string? LastName = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Last_Name).SingleOrDefault();
-            string? MiddleName = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Middle_Name).SingleOrDefault();
-            string? MaidenName = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Maiden_Name).SingleOrDefault();
-            string? Ethnicity = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Ethnicity).SingleOrDefault();
+            string? first_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.First_Name).SingleOrDefault();
+            string? last_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Last_Name).SingleOrDefault();
+            string? middle_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Middle_Name).SingleOrDefault();
+            string? maiden_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Maiden_Name).SingleOrDefault();
+            string? ethnicity = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Ethnicity).SingleOrDefault();
 
             if (status_offline == 1)
-                Status = 0;
+                status_type = 0;
             if (status_hidden == 1)
-                Status = 1;
+                status_type = 1;
             if (status_online == 1)
-                Status = 2;
+                status_type = 2;
             if (status_away == 1)
-                Status = 3;
+                status_type = 3;
             if (status_dnd == 1)
-                Status = 4;
+                status_type = 4;
             if (status_custom == 1)
-                Status = 5;
-            if (Light == 1)
-                Theme = 0;
-            if (Night == 1)
-                Theme = 1;
-            if (CustomTheme == 1)
-                Theme = 2;
-            if (LeftAligned == 1)
-                Alignment = 0;
-            if (CenterAligned == 1)
-                Alignment = 1;
-            if (RightAligned == 1)
-                Alignment = 2;
-            if (LeftTextAligned == 1)
-                TextAlignment = 0;
-            if (CenterTextAligned == 1)
-                TextAlignment = 1;
-            if (RightTextAligned == 1)
-                TextAlignment = 2;
+                status_type = 5;
+            if (light == 1)
+                theme_type = 0;
+            if (night == 1)
+                theme_type = 1;
+            if (custom_theme == 1)
+                theme_type = 2;
+            if (left_aligned == 1)
+                alignment_type = 0;
+            if (center_aligned == 1)
+                alignment_type = 1;
+            if (right_aligned == 1)
+                alignment_type = 2;
+            if (left_text_aligned == 1)
+                text_alignment_type = 0;
+            if (center_text_aligned == 1)
+                text_alignment_type = 1;
+            if (right_text_aligned == 1)
+                text_alignment_type = 2;
 
             obj.id = end_user_id;
-            obj.email_address = Email;
-            obj.display_name = DisplayName;
-            obj.login_on = LoginTS;
-            obj.logout_on = LogoutTS;
-            obj.language = @$"{LanguageCode}-{RegionCode}";
-            obj.online_status = Status;
+            obj.account_type = account_type;
+            obj.email_address = email_address;
+            obj.display_name = display_name;
+            obj.login_on = login_timestamp;
+            obj.logout_on = logout_timestamp;
+            obj.language = @$"{language_code}-{region_code}";
+            obj.online_status = status_type;
             obj.custom_lbl = customLbl;
-            obj.created_on = Created_on;
-            obj.avatar_url_path = Avatar_url_path;
-            obj.avatar_title = Avatar_title;
-            obj.theme = Theme;
-            obj.alignment = Alignment;
-            obj.text_alignment = TextAlignment;
-            obj.gender = Gender;
+            obj.created_on = created_on;
+            obj.avatar_url_path = avatar_url_path;
+            obj.avatar_title = avatar_title;
+            obj.theme = theme_type;
+            obj.alignment = alignment_type;
+            obj.text_alignment = text_alignment_type;
+            obj.gender = gender;
             obj.birth_day = birth_day;
             obj.birth_month = birth_month;
             obj.birth_year = birth_year;
-            obj.first_name = FirstName;
-            obj.last_name = LastName;
-            obj.middle_name = MiddleName;
-            obj.maiden_name = MaidenName;
-            obj.ethnicity = Ethnicity;
+            obj.first_name = first_name;
+            obj.last_name = last_name;
+            obj.middle_name = middle_name;
+            obj.maiden_name = maiden_name;
+            obj.ethnicity = ethnicity;
 
             return Task.FromResult(JsonSerializer.Serialize(obj));
         }
@@ -659,10 +669,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 );
                 await _UsersDBC.SaveChangesAsync();
 
-                obj.email_address = AES_RW.Process_Encryption(dto.Email_Address);
-                obj.language = AES_RW.Process_Encryption(dto.Language);
-                obj.region = AES_RW.Process_Encryption(dto.Region);
-                obj.updated_on = AES_RW.Process_Encryption(TimeStamp.ToString());
+                obj.email_address = AES.Process_Encryption(dto.Email_Address);
+                obj.language = AES.Process_Encryption(dto.Language);
+                obj.region = AES.Process_Encryption(dto.Region);
+                obj.updated_on = AES.Process_Encryption(TimeStamp.ToString());
 
                 return JsonSerializer.Serialize(obj);            
             } catch {
@@ -918,6 +928,34 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         obj.text_alignment = "error";
                         return JsonSerializer.Serialize(obj);
                 }            
+            } catch {
+                obj.error = "Server Error: Update Text Alignment Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+
+        public async Task<string> Update_End_User_Account_Type(Account_TypeDTO dto)
+        {
+            try {
+                if (!_UsersDBC.Account_TypeTbl.Any(x => x.User_id == dto.User_id)) {//Insert
+                    await _UsersDBC.Account_TypeTbl.AddAsync(new Account_TypeTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Account_TypeTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Type = dto.Type,
+                        Updated_on = TimeStamp,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                } else {//Update
+                    await _UsersDBC.Account_TypeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Type, dto.Type)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                obj.text_alignment = "error";
+                return JsonSerializer.Serialize(obj);
             } catch {
                 obj.error = "Server Error: Update Text Alignment Failed.";
                 return JsonSerializer.Serialize(obj);
@@ -1280,8 +1318,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 await _UsersDBC.SaveChangesAsync();
 
                 obj.login_on = TimeStamp;
-                obj.token = Create_Jwt_Token(@$"{dto.User_id}").Result;
-                obj.token_expire = DateTime.UtcNow.AddMinutes(TokenExpireTime);
+                obj.token = JWT.Create_Token(@$"{dto.User_id}").Result;
+                //obj.token_expire = DateTime.UtcNow.AddMinutes(TokenExpireTime);
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;            
             } catch {
                 obj.error = "Server Error: Update Login Failed.";
@@ -1322,6 +1360,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.display_names = _UsersDBC.Selected_NameTbl.Select(x => x).ToList();
             obj.avatars = _UsersDBC.Selected_AvatarTbl.Select(x => x).ToList();
             obj.languages = _UsersDBC.Selected_LanguageTbl.Select(x => x).ToList();
+            obj.account_types = _UsersDBC.Account_TypeTbl.Select(x => x).ToList();
             return Task.FromResult(JsonSerializer.Serialize(obj));
         }
         public Task<bool> ID_Exists_In_Users_Tbl(ulong user_id) {
@@ -1389,38 +1428,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<byte[]?> Read_User_Password_Hash_By_ID(ulong user_id)
         {
             return await Task.FromResult(_UsersDBC.Login_PasswordTbl.Where(user => user.User_id == user_id).Select(user => user.Password).SingleOrDefault());
-        }
-        public async Task<string> Create_Jwt_Token(string id)
-        {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, $@"{AES_RW.Process_Encryption(id.ToString())}"),
-                new Claim(ClaimTypes.Role, $@"{AES_RW.Process_Encryption("MPC-End-User")}"),
-            };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(
-                _configuration["Jwt:Issuer"],
-                _configuration["Jwt:Audience"],
-                claims,
-                expires: DateTime.UtcNow.AddMinutes(TokenExpireTime),
-                signingCredentials: signIn);
-
-            return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
-        }
-        public async Task<ulong> Read_User_ID_By_JWToken(string jwtToken)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(jwtToken);
-            List<object> values = jwtSecurityToken.Payload.Values.ToList();
-            ulong currentTime = Convert.ToUInt64(((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds());
-            ulong token_expire = Convert.ToUInt64(values[2]);
-            bool tokenExpired = token_expire < currentTime ? true : false;
-
-            if (tokenExpired)
-                return 0;
-
-            return await Task.FromResult(Convert.ToUInt64(AES_RW.Process_Decryption(values[0].ToString())));
         }
         public async Task<string> Create_Integration_Twitch_Record(DTO dto)
         {

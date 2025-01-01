@@ -1,7 +1,7 @@
 ﻿using mpc_dotnetc_user_server.Models.Users.Selection;
 using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
 {
     public class Complete_Email_RegistrationDTO
     {

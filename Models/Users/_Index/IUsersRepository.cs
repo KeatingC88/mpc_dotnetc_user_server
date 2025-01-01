@@ -1,8 +1,12 @@
-﻿using mpc_dotnetc_user_server.Models.Users.Authentication;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
+﻿using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
 using mpc_dotnetc_user_server.Models.Users.BirthDate;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
+using mpc_dotnetc_user_server.Models.Users.Notification;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
@@ -13,7 +17,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<bool> Create_Comment_Box_Record(DTO dto);
         Task<bool> Create_Broken_Link_Record(DTO dto);
         Task<bool> Create_Discord_Bot_Bug_Record(DTO dto);
-        Task<string> Create_Jwt_Token(string id);
         Task<string> Create_Integration_Twitch_Record(DTO dto);
         Task<string> Create_WebSocket_Log_Record(Websocket_Chat_PermissionDTO dto);
         Task<bool> Create_Website_Bug_Record(DTO dto);
@@ -35,7 +38,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<byte> Read_End_User_Selected_Status(Selected_StatusDTO dto);
         Task<byte[]?> Read_User_Password_Hash_By_ID(ulong id);
         Task<ulong> Read_User_ID_By_Email_Address(string email_address);
-        Task<ulong> Read_User_ID_By_JWToken(string token);
         Task<string?> Read_User_Email_By_ID(ulong id);
         Task<string> Update_Unconfirmed_Phone(DTO dto);
         Task<string> Update_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);

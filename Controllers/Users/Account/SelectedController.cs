@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users.Authentication;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using System.Text;
@@ -29,7 +29,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
+                ulong user_id =JWT.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Conflict();
@@ -50,7 +50,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
@@ -72,7 +72,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Conflict();
@@ -93,7 +93,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (string.IsNullOrEmpty(dto.Name) || string.IsNullOrWhiteSpace(dto.Name))
                 {
@@ -119,7 +119,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Conflict();
@@ -138,7 +138,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
+                ulong user_id =JWT.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Conflict();
@@ -158,7 +158,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
+                ulong user_id =JWT.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
@@ -188,7 +188,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (obj.Online_status < 1 && obj.Online_status > 5)
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
+                ulong user_id =JWT.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -213,7 +213,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     string.IsNullOrEmpty(obj.Token) || string.IsNullOrWhiteSpace(obj.Token))
                     return BadRequest();
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
+                ulong user_id =JWT.Read_User_ID_By_JWToken(obj.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();

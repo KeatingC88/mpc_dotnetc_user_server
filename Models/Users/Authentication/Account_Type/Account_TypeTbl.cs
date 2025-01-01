@@ -1,10 +1,10 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication
+﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type
 {
-    public class Login_PasswordTbl
+    public class Account_TypeTbl
     {
         public ulong ID { get; set; }
         public ulong User_id { get; set; }
-        public byte[]? Password { get; set; }
+        public byte Type { get; set; }
         public ulong Created_by { get; set; }
         public ulong Created_on { get; set; }
         public bool Deleted { get; set; }

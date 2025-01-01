@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿
 using System.Security.Cryptography;
 using System.Text;
 
 namespace mpc_dotnetc_user_server.Controllers
 {
-    public class AES_RW
+    public class AES
     {
         private static readonly string secretKey = "z0nz0fb!gb0sz664";// The same secret key (must be 16 bytes for AES-128)
         private readonly byte[] key = Encoding.UTF8.GetBytes(secretKey);

@@ -1,4 +1,4 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
+﻿namespace mpc_dotnetc_user_server.Models.Users.Notification
 {
     public class Reported_Email_Post_RegistrationTbl
     {

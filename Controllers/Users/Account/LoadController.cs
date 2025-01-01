@@ -34,10 +34,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
-
-                if (user_id == 0)
-                    return Ok();
+                ulong user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
@@ -59,7 +56,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();

@@ -1,9 +1,8 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication
+﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Phone
 {
-    public class Login_TelephoneTbl
+    public class Completed_Telephone_RegistrationTbl
     {
         public ulong ID { get; set; }
-        public ulong User_id { get; set; }
         public byte? Country { get; set; }
         public string? Phone { get; set; } = string.Empty;
         public string? Carrier { get; set; } = string.Empty;
@@ -13,5 +12,6 @@
         public ulong Deleted_by { get; set; }
         public ulong Updated_on { get; set; }
         public ulong Updated_by { get; set; }
+        public string? Code { get; set; } = string.Empty;
     }
 }

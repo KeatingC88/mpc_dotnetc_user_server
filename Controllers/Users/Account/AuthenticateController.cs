@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Models.Users.Index;
-using mpc_dotnetc_user_server.Models.Users.Authentication;
 
 using System.Text;
 using mpc_dotnetc_user_server.Models.Users.Selection;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -12,7 +13,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
     public class AuthenticateController : ControllerBase
     {
         private readonly ILogger<AuthenticateController> _logger;
-        private readonly IConfiguration _configuration;
+        private static IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
 
         public AuthenticateController(ILogger<AuthenticateController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
@@ -21,6 +22,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             _configuration = configuration;
             _UsersRepository = UsersRepository;
         }
+
+        JWT JWT = new JWT();
+        AES AES = new AES();
 
         [HttpPut("Login/Email")]
         public async Task<ActionResult<string>> Login_With_Login_Email_PasswordDTO([FromBody] Login_Email_PasswordDTO obj)
@@ -114,11 +118,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong end_user_id = _UsersRepository.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong end_user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(end_user_id).Result)
                     return Unauthorized();
                 
                 dto.User_id = end_user_id;
+
                 switch (dto.Online_status) {//We capturing the user's last online-status for when they sign back in using that same status publicly to other end users.
                     case 1:
                         dto.Online_status = 10;//1-0 i.e. like save status as hidden-offline since end user is trying to logout.

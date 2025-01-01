@@ -1,19 +1,27 @@
 using Microsoft.EntityFrameworkCore;
-using mpc_dotnetc_user_server.Models.Users.Authentication;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Integration;
 using mpc_dotnetc_user_server.Models.Users.Selection;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
 using mpc_dotnetc_user_server.Models.Users.BirthDate;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Phone;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Phone;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Telephone;
+using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
+using mpc_dotnetc_user_server.Models.Users.Notification;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
     public class UsersDBC : DbContext
     {
         private readonly IConfiguration _configuration;
-
         public DbSet<User_IDsTbl> User_IDsTbl { get; set; } = null!;
+        public DbSet<Account_TypeTbl> Account_TypeTbl { get; set; } = null!;
         public DbSet<Completed_Email_RegistrationTbl> Completed_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_RegistrationTbl> Pending_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Reported_Email_Post_RegistrationTbl> Reported_Email_Post_RegistrationTbl { get; set; } = null!;

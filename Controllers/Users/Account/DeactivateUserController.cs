@@ -12,6 +12,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<DeactivateUserController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
+
         public DeactivateUserController(ILogger<DeactivateUserController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
         {
             _logger = logger;
@@ -32,7 +33,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     string.IsNullOrEmpty(obj.Password) || string.IsNullOrWhiteSpace(obj.Password))
                     return BadRequest();
 
-                user_id = _UsersRepository.Read_User_ID_By_JWToken(obj.Token).Result;
+                user_id =JWT.Read_User_ID_By_JWToken(obj.Token).Result;
                 target_id = obj.Target_ID;
 
                 if (!string.IsNullOrEmpty(obj.Target_ID.ToString()) || 

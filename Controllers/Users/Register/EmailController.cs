@@ -2,6 +2,9 @@
 using mpc_dotnetc_user_server.Models.Users.Index;
 using System.Text.Json;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
+using mpc_dotnetc_user_server.Models.Users.Notification;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
@@ -12,7 +15,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         private readonly ILogger<EmailController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
-        AES_RW AES_RW = new AES_RW();
+        AES AES = new AES();
 
         private readonly string secretKey;
 
@@ -31,9 +34,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 if (!ModelState.IsValid)
                     BadRequest();
 
-                obj.Email_Address = AES_RW.Process_Decryption(obj.Email_Address);
-                obj.Language = AES_RW.Process_Decryption(obj.Language);
-                obj.Region = AES_RW.Process_Decryption(obj.Region);
+                obj.Email_Address = AES.Process_Decryption(obj.Email_Address);
+                obj.Language = AES.Process_Decryption(obj.Language);
+                obj.Region = AES.Process_Decryption(obj.Region);
 
                 if (!Valid.Email(obj.Email_Address) ||
                     !Valid.Language_Code(obj.Language) ||
@@ -52,9 +55,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         public async Task<ActionResult<string>> Validating_Email_Exists_In_Login_Email_Address_Tbl([FromBody] Validate_Email_AddressDTO obj) {
             try {
 
-                string email_address = AES_RW.Process_Decryption(obj.Email_Address);
-                string language = AES_RW.Process_Decryption(obj.Language);
-                string region = AES_RW.Process_Decryption(obj.Region);
+                string email_address = AES.Process_Decryption(obj.Email_Address);
+                string language = AES.Process_Decryption(obj.Language);
+                string region = AES.Process_Decryption(obj.Region);
 
                 if (!Valid.Email(email_address) ||
                     !Valid.Language_Code(language) ||
@@ -94,9 +97,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 if (!ModelState.IsValid)
                     return BadRequest();
                 
-                obj.Email_Address = AES_RW.Process_Decryption(obj.Email_Address);
-                obj.Language = AES_RW.Process_Decryption(obj.Language);
-                obj.Region = AES_RW.Process_Decryption(obj.Region);
+                obj.Email_Address = AES.Process_Decryption(obj.Email_Address);
+                obj.Language = AES.Process_Decryption(obj.Language);
+                obj.Region = AES.Process_Decryption(obj.Region);
 
                 if (!Valid.Email(obj.Email_Address) ||
                     !Valid.Language_Code(obj.Language) ||
@@ -130,10 +133,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                obj.Email_Address = AES_RW.Process_Decryption(obj.Email_Address);
-                obj.Language = AES_RW.Process_Decryption(obj.Language);
-                obj.Password = AES_RW.Process_Decryption(obj.Password);
-                obj.Region = AES_RW.Process_Decryption(obj.Region);
+                obj.Email_Address = AES.Process_Decryption(obj.Email_Address);
+                obj.Language = AES.Process_Decryption(obj.Language);
+                obj.Password = AES.Process_Decryption(obj.Password);
+                obj.Region = AES.Process_Decryption(obj.Region);
 
                 if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result ||
                     !_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result ||

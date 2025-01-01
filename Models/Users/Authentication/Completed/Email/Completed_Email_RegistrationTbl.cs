@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
 {
-    public class Pending_Email_RegistrationTbl
+    public class Completed_Email_RegistrationTbl
     {
         public ulong ID { get; set; }
         public ulong Created_by { get; set; }

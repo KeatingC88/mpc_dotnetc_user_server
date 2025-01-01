@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
 {
     public class Login_Email_PasswordDTO
     {

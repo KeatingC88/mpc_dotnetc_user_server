@@ -1,6 +1,6 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
+﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Phone
 {
-    public class Completed_Telephone_RegistrationTbl
+    public class Pending_Telephone_RegistrationTbl
     {
         public ulong ID { get; set; }
         public byte? Country { get; set; }

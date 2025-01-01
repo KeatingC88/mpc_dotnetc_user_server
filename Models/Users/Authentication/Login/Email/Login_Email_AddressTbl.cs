@@ -1,4 +1,4 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication
+﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
 {
     public class Login_Email_AddressTbl
     {
