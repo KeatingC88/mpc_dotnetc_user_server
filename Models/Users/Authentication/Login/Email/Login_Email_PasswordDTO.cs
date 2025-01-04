@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using mpc_dotnetc_user_server.Models.Users.Selection;
+using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
 {
@@ -22,10 +22,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
         public string Region { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Alignment values must be 0, 1, xor 2.")]
-        public AlignmentType Alignment { get; set; }
+        public byte Alignment { get; set; }
 
         [Required(ErrorMessage = "Alignment values must be 0, 1, xor 2.")]
-        public AlignmentType Text_alignment { get; set; }
+        public byte Text_alignment { get; set; }
 
         [Required]
         public bool Locked { get; set; }

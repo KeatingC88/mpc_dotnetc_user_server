@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Notification
+namespace mpc_dotnetc_user_server.Models.Users.Notification.Email
 {
-    public class Reported_Email_Post_RegistrationDTO
+    public class Reported_Email_RegistrationDTO
     {
         [Required(ErrorMessage = "Email Address is Missing.")]
         [EmailAddress(ErrorMessage = "Email Address format is 'local@domain.com'.")]
@@ -30,5 +30,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Notification
 
         [Required(ErrorMessage = "User_id is Missing.")]
         public ulong User_ID { get; set; }
+
+        [Required(ErrorMessage = "Location is Missing.")]
+        public string Location { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Client Time is Missing.")]
+        public string Client_time { get; set; } = string.Empty;
     }
 }

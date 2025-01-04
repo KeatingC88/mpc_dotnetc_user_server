@@ -2,11 +2,18 @@
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
 using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
 using mpc_dotnetc_user_server.Models.Users.BirthDate;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
-using mpc_dotnetc_user_server.Models.Users.Notification;
+using mpc_dotnetc_user_server.Models.Users.Notification.Email;
+using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
+using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
+using mpc_dotnetc_user_server.Models.Users.Selected.Language;
+using mpc_dotnetc_user_server.Models.Users.Selected.Name;
+using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
+using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
@@ -24,12 +31,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<bool> Create_Contact_Us_Record(DTO dto);
         Task<byte[]> Create_Salted_Hash_String(byte[] text, byte[] salt);
         Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
-        Task<string> Create_Reported_Email_Post_Registration_Record(Reported_Email_Post_RegistrationDTO dto);
+        Task<string> Create_Reported_Email_Registration_Record(Reported_Email_RegistrationDTO dto);
         Task<string> Create_Unconfirmed_Phone(DTO dto);
         Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto);
         Task<string> Create_Account_By_Phone(DTO dto);
         Task<string> Create_Reported_User_Profile_Record(DTO dto);
         Task<string> Delete_Account_By_User_id(DTO dto);
+        Task<string> Insert_End_User_Login_Time_Stamp(Login_Time_StampDTO dto);
+        Task<string> Insert_Report_Email_RegistrationTbl(Report_Email_RegistrationDTO dto);
         Task<string> Read_User(ulong end_user_id);
         Task<string> Read_Users();
         Task<string> Read_User_Profile(DTO dto);
@@ -40,10 +49,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<ulong> Read_User_ID_By_Email_Address(string email_address);
         Task<string?> Read_User_Email_By_ID(ulong id);
         Task<string> Update_Unconfirmed_Phone(DTO dto);
+        Task<string> Insert_Pending_Email_Registration_History_Record(Pending_Email_Registration_HistoryDTO dto);
         Task<string> Update_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
         Task<string> Update_End_User_Avatar(Selected_AvatarDTO dto);
         Task<string> Update_End_User_Name(Selected_NameDTO dto);
-        Task<string> Update_End_User_Login(Login_Time_StampDTO dto);
+        Task<string> Update_End_User_Login_Time_Stamp(Login_Time_StampDTO dto);
         Task<string> Update_End_User_Logout(ulong user_id);
         Task<string> Update_End_User_Selected_Alignment(Selected_App_AlignmentDTO dto);
         Task<string> Update_End_User_Selected_TextAlignment(Selected_App_Text_AlignmentDTO dto);

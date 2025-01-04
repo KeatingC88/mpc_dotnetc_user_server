@@ -2,9 +2,13 @@
 using mpc_dotnetc_user_server.Models.Users.Index;
 
 using System.Text;
-using mpc_dotnetc_user_server.Models.Users.Selection;
+using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
+using mpc_dotnetc_user_server.Models.Users.Selected.Language;
+using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
+using mpc_dotnetc_user_server.Models.Users.Selected.Status;
+using mpc_dotnetc_user_server.Models.Users.Selection;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -27,23 +31,23 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         AES AES = new AES();
 
         [HttpPut("Login/Email")]
-        public async Task<ActionResult<string>> Login_With_Login_Email_PasswordDTO([FromBody] Login_Email_PasswordDTO obj)
+        public async Task<ActionResult<string>> Login_With_Login_Email_PasswordDTO([FromBody] Login_Email_PasswordDTO dto)
         {
             try
             {
                 if (!ModelState.IsValid) 
                     return BadRequest();
                 
-                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result)
+                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
                     return Conflict();
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_Email_Address(obj.Email_Address).Result;
+                ulong user_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Conflict();
 
                 byte[]? user_id_password_hash_in_the_database = _UsersRepository.Read_User_Password_Hash_By_ID(user_id).Result;
-                byte[]? end_user_given_password_that_becomes_hash_to_compare_db_hash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(obj.Password), Encoding.UTF8.GetBytes($"{obj.Email_Address}MPCSalt")).Result;
+                byte[]? end_user_given_password_that_becomes_hash_to_compare_db_hash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}MPCSalt")).Result;
 
                 if (user_id_password_hash_in_the_database != null)
                     if (!_UsersRepository.Compare_Password_Byte_Arrays(user_id_password_hash_in_the_database, end_user_given_password_that_becomes_hash_to_compare_db_hash))
@@ -70,7 +74,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     });
                 }
 
-                await _UsersRepository.Update_End_User_Login(new Login_Time_StampDTO
+                await _UsersRepository.Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
                 {
                     User_id = user_id
                 });
@@ -78,32 +82,32 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 await _UsersRepository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO 
                 { 
                     User_id = user_id,
-                    Alignment = obj.Alignment
+                    Alignment = dto.Alignment
                 });
 
                 await _UsersRepository.Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
                 {
                     User_id = user_id,
-                    Text_alignment = obj.Text_alignment
+                    Text_alignment = dto.Text_alignment
                 });
 
                 await _UsersRepository.Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
                 {
                     User_id = user_id,
-                    Locked = obj.Locked
+                    Locked = dto.Locked
                 });
 
                 await _UsersRepository.Update_End_User_Selected_Language(new Selected_LanguageDTO
                 {
                     User_id = user_id,
-                    Language = obj.Language,
-                    Region = obj.Region
+                    Language = dto.Language,
+                    Region = dto.Region
                 });
 
                 await _UsersRepository.Update_End_User_Selected_Theme(new Selected_ThemeDTO
                 {
                     User_id = user_id,
-                    Theme = obj.Theme
+                    Theme = dto.Theme
                 });
 
                 return await Task.FromResult(_UsersRepository.Read_User(user_id)).Result;

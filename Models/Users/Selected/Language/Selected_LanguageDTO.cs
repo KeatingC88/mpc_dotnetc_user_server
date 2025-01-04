@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Selection
+namespace mpc_dotnetc_user_server.Models.Users.Selected.Language
 {
     public class Selected_LanguageDTO
     {

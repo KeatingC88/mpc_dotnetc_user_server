@@ -1,4 +1,4 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Selection
+﻿namespace mpc_dotnetc_user_server.Models.Users.Selected.Avatar
 {
     public class Selected_AvatarTbl
     {

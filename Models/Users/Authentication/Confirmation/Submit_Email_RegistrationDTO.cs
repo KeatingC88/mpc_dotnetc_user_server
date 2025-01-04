@@ -1,11 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
+using System.ComponentModel.DataAnnotations;
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
 {
-    public class Confirmation_Email_RegistrationDTO
+    public class Submit_Email_RegistrationDTO
     {
         [Required(ErrorMessage = "Email Address is Missing.")]
         public string Email_Address { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Password is Missing.")]
+        public string Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Language_Code is Missing.")]
         public string Language { get; set; } = string.Empty;
@@ -21,5 +25,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
 
         [Required(ErrorMessage = "Client Time is Missing.")]
         public string Client_time { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Theme is Missing.")]
+        public string Theme { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Alignment is Missing.")]
+        public string Alignment { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Nav_Lock is Missing.")]
+        public string Nav_Lock { get; set; } = string.Empty;
     }
 }

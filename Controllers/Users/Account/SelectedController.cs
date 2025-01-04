@@ -1,6 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Index;
+using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
+using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
+using mpc_dotnetc_user_server.Models.Users.Selected.Language;
+using mpc_dotnetc_user_server.Models.Users.Selected.Name;
+using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
+using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using System.Text;
 

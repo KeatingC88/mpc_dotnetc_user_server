@@ -1,4 +1,4 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Selection
+﻿namespace mpc_dotnetc_user_server.Models.Users.Selected.Alignment
 {
     public class Selected_App_Text_AlignmentTbl
     {

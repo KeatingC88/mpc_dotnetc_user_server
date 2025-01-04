@@ -1,4 +1,4 @@
-﻿using mpc_dotnetc_user_server.Models.Users.Selection;
+﻿using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using System.ComponentModel.DataAnnotations;
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
@@ -24,9 +24,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
         [Required(ErrorMessage = "Code is Missing.")]
         [StringLength(int.MaxValue, MinimumLength = 16, ErrorMessage = "Code length must be greater than 16")]
         public string Code { get; set; } = string.Empty;
-        public AlignmentType Alignment { get; set; }
-        public AlignmentType Text_alignment { get; set; }
+        public byte Alignment { get; set; }
+        public byte Text_alignment { get; set; }
         public bool Nav_lock { get; set; }
         public byte Theme { get; set; }
+        public string Location { get; set; } = string.Empty;
+        public string Client_time { get; set; } = string.Empty;
+        public string Client_Networking_IP_Address { get; set; } = string.Empty;
+        public int Client_Networking_Port { get; set; }
+        public string Server_Networking_IP_Address { get; set; } = string.Empty;
+        public int Server_Networking_Port { get; set; }
     }
 }

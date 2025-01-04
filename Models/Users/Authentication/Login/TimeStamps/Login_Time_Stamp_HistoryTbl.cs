@@ -1,6 +1,6 @@
 ﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
 {
-    public class Login_Time_StampTbl
+    public class Login_Time_Stamp_HistoryTbl
     {
         public ulong ID { get; set; }
         public ulong User_id { get; set; }

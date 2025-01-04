@@ -1,10 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
+﻿namespace mpc_dotnetc_user_server.Models.Users.Notification.Email
 {
-    public class Pending_Email_RegistrationTbl
+    public class Reported_Email_RegistrationTbl
     {
         public ulong ID { get; set; }
+        public ulong User_ID { get; set; }
         public ulong Created_by { get; set; }
         public ulong Created_on { get; set; }
         public byte Deleted { get; set; }
@@ -19,7 +18,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
         public string Server_IP { get; set; } = string.Empty;
         public int Server_Port { get; set; }
         public string Location { get; set; } = string.Empty;
-        public string Code { get; set; } = string.Empty;
         public ulong Client_time { get; set; }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users.Index;
 using System.Text.Json;
+
+using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
-using mpc_dotnetc_user_server.Models.Users.Notification;
+using mpc_dotnetc_user_server.Models.Users.Notification.Email;
+using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
@@ -27,7 +29,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         }
 
         [HttpPost("Confirmation")]
-        public ActionResult<string> Validating_Email_Address_User_Information_Before_Submission([FromBody] Confirmation_Email_Registration_EncryptedDTO obj)
+        public ActionResult<string> Validating_Email_Address_User_Information_Before_Submission([FromBody] Confirmation_Email_RegistrationDTO obj)
         {
             try
             {
@@ -37,6 +39,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 obj.Email_Address = AES.Process_Decryption(obj.Email_Address);
                 obj.Language = AES.Process_Decryption(obj.Language);
                 obj.Region = AES.Process_Decryption(obj.Region);
+                obj.Client_time = AES.Process_Decryption(obj.Client_time);
+                obj.Location = AES.Process_Decryption(obj.Location);
 
                 if (!Valid.Email(obj.Email_Address) ||
                     !Valid.Language_Code(obj.Language) ||
@@ -52,7 +56,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         }
 
         [HttpPost("Exists")]
-        public async Task<ActionResult<string>> Validating_Email_Exists_In_Login_Email_Address_Tbl([FromBody] Validate_Email_AddressDTO obj) {
+        public async Task<ActionResult<string>> Validating_Email_Exists_In_Login_Email_Address_Tbl([FromBody] Validate_Email_AddressDTO obj) 
+        {
             try {
 
                 string email_address = AES.Process_Decryption(obj.Email_Address);
@@ -68,7 +73,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 {
                     ulong user_id = _UsersRepository.Read_User_ID_By_Email_Address(email_address).Result;
 
-                    await _UsersRepository.Create_Reported_Email_Post_Registration_Record(new Reported_Email_Post_RegistrationDTO
+                    await _UsersRepository.Create_Reported_Email_Registration_Record(new Reported_Email_RegistrationDTO
                     {
                         Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
                         Client_Networking_Port = HttpContext.Connection.RemotePort,
@@ -90,7 +95,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         }
 
         [HttpPost("Register")]
-        public async Task<ActionResult<string>> Registering_An_Email_Account_For_New_User([FromBody] Pending_Email_Registration_EncryptedDTO obj)
+        public async Task<ActionResult<string>> Registering_An_Email_Account_For_New_User([FromBody] Pending_Email_RegistrationDTO obj)
         {
             try
             {
@@ -100,6 +105,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 obj.Email_Address = AES.Process_Decryption(obj.Email_Address);
                 obj.Language = AES.Process_Decryption(obj.Language);
                 obj.Region = AES.Process_Decryption(obj.Region);
+                obj.Client_time = AES.Process_Decryption(obj.Client_time);
+                obj.Location = AES.Process_Decryption(obj.Location);
 
                 if (!Valid.Email(obj.Email_Address) ||
                     !Valid.Language_Code(obj.Language) ||
@@ -107,26 +114,41 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     _UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result)
                     return Conflict();
 
-
-                Pending_Email_RegistrationDTO end_user_data = new Pending_Email_RegistrationDTO
+                await _UsersRepository.Insert_Pending_Email_Registration_History_Record(new Pending_Email_Registration_HistoryDTO
                 {
                     Email_Address = obj.Email_Address,
                     Language = obj.Language,
                     Region = obj.Region,
-                    Code = obj.Code
-                };
+                    Client_time = obj.Client_time,
+                    Location = obj.Location,
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                });
 
                 if (_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result)
-                    return await Task.FromResult(_UsersRepository.Update_Pending_Email_Registration_Record(end_user_data)).Result;
+                    return await Task.FromResult(_UsersRepository.Update_Pending_Email_Registration_Record(obj)).Result;
 
-                return await _UsersRepository.Create_Pending_Email_Registration_Record(end_user_data);
+                return await _UsersRepository.Create_Pending_Email_Registration_Record(new Pending_Email_RegistrationDTO {
+                    Email_Address = obj.Email_Address,
+                    Language = obj.Language,
+                    Region = obj.Region,
+                    Client_time = obj.Client_time,
+                    Location = obj.Location,
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                });
+
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
         }
 
         [HttpPost("Submit")]
-        public async Task<ActionResult<string>> Submit_Login_Email_PasswordDTO([FromBody] Confirmation_Email_Registration_EncryptedDTO obj)
+        public async Task<ActionResult<string>> Submit_Login_Email_PasswordDTO([FromBody] Submit_Email_RegistrationDTO obj)
         {
             try
             {
@@ -137,6 +159,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 obj.Language = AES.Process_Decryption(obj.Language);
                 obj.Password = AES.Process_Decryption(obj.Password);
                 obj.Region = AES.Process_Decryption(obj.Region);
+                obj.Client_time = AES.Process_Decryption(obj.Client_time);
+                obj.Location = AES.Process_Decryption(obj.Location);
+                obj.Nav_Lock = AES.Process_Decryption(obj.Nav_Lock);
+                obj.Alignment = AES.Process_Decryption(obj.Alignment);
+                obj.Theme = AES.Process_Decryption(obj.Theme);
 
                 if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result ||
                     !_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result ||
@@ -146,15 +173,22 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     !Valid.Region_Code(obj.Region))
                     return BadRequest();
 
-                Complete_Email_RegistrationDTO end_user_data = new Complete_Email_RegistrationDTO
+                return await Task.FromResult(_UsersRepository.Create_Account_By_Email(new Complete_Email_RegistrationDTO
                 {
                     Email_Address = obj.Email_Address,
                     Language = obj.Language,
                     Region = obj.Region,
-                    Code = obj.Code
-                };
-
-                return await Task.FromResult(_UsersRepository.Create_Account_By_Email(end_user_data)).Result;
+                    Code = obj.Code,
+                    Client_time = obj.Client_time,
+                    Location = obj.Location,
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Theme = byte.Parse(obj.Theme),
+                    Alignment = byte.Parse(obj.Alignment),
+                    Nav_lock = bool.Parse(obj.Nav_Lock)
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

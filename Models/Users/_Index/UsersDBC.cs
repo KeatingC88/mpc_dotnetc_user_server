@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Integration;
@@ -12,8 +13,14 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Telephone;
 using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
-using mpc_dotnetc_user_server.Models.Users.Notification;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
+using mpc_dotnetc_user_server.Models.Users.Notification.Email;
+using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
+using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
+using mpc_dotnetc_user_server.Models.Users.Selected.Language;
+using mpc_dotnetc_user_server.Models.Users.Selected.Name;
+using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
+using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -24,7 +31,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Account_TypeTbl> Account_TypeTbl { get; set; } = null!;
         public DbSet<Completed_Email_RegistrationTbl> Completed_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_RegistrationTbl> Pending_Email_RegistrationTbl { get; set; } = null!;
-        public DbSet<Reported_Email_Post_RegistrationTbl> Reported_Email_Post_RegistrationTbl { get; set; } = null!;
+        public DbSet<Pending_Email_Registration_HistoryTbl> Pending_Email_Registration_HistoryTbl { get; set; } = null!;
+        public DbSet<Reported_Email_RegistrationTbl> Reported_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Completed_Telephone_RegistrationTbl> Completed_Telephone_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Telephone_RegistrationTbl> Pending_Telephone_RegistrationTbl { get; set; } = null!;
         public DbSet<Contact_UsTbl> Contact_UsTbl { get; set; } = null!;
@@ -33,6 +41,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Login_Email_AddressTbl> Login_Email_AddressTbl { get; set; } = null!;
         public DbSet<Login_TelephoneTbl> Login_TelephoneTbl { get; set; } = null!;
         public DbSet<Login_Time_StampTbl> Login_Time_StampTbl { get; set; } = null!;
+        public DbSet<Login_Time_Stamp_HistoryTbl> Login_Time_Stamp_HistoryTbl { get; set; } = null!;
         public DbSet<Logout_Time_StampTbl> Logout_Time_StampTbl { get; set; } = null!;
         public DbSet<IdentityTbl> IdentityTbl { get; set; } = null!;
         public DbSet<Birth_DateTbl> Birth_DateTbl { get; set; } = null!;
