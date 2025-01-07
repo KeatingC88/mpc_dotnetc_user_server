@@ -14,6 +14,8 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Telephone;
 using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Notification.Email;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
@@ -29,6 +31,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         private readonly IConfiguration _configuration;
         public DbSet<User_IDsTbl> User_IDsTbl { get; set; } = null!;
         public DbSet<Account_TypeTbl> Account_TypeTbl { get; set; } = null!;
+        public DbSet<Account_RolesTbl> Account_RolesTbl { get; set; } = null!;
+        public DbSet<Account_GroupsTbl> Account_GroupsTbl { get; set; } = null!;
         public DbSet<Completed_Email_RegistrationTbl> Completed_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_RegistrationTbl> Pending_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_Registration_HistoryTbl> Pending_Email_Registration_HistoryTbl { get; set; } = null!;
@@ -61,7 +65,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Reported_Website_BugTbl> Reported_Website_BugTbl { get; set; } = null!;
         public DbSet<Reported_WebSocket_AbuseTbl> Reported_WebSocket_AbuseTbl { get; set; } = null!;
         public DbSet<Websocket_Chat_PermissionTbl> Websocket_Chat_PermissionTbl { get; set; } = null!;
-
         public UsersDBC(DbContextOptions<UsersDBC> options, IConfiguration configuration) : base(options)
         {
             _configuration = configuration;

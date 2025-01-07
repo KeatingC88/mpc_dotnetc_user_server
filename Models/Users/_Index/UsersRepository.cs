@@ -16,7 +16,6 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Telephone;
 using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
-using mpc_dotnetc_user_server.Models.Users.Notification;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
 using mpc_dotnetc_user_server.Models.Users.Notification.Email;
@@ -26,6 +25,8 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Language;
 using mpc_dotnetc_user_server.Models.Users.Selected.Name;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -54,6 +55,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             };
             await _UsersDBC.User_IDsTbl.AddAsync(ID_Record);
             await _UsersDBC.SaveChangesAsync();
+            obj.id = AES.Process_Encryption(ID_Record.ID.ToString());
 
             await _UsersDBC.Pending_Email_RegistrationTbl.Where(x => x.Email_Address == dto.Email_Address).ExecuteUpdateAsync(s => s
                 .SetProperty(col => col.Deleted, 1)
@@ -99,73 +101,150 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             await _UsersDBC.SaveChangesAsync();
 
-            await Update_End_User_Selected_Language(new Selected_LanguageDTO 
+            obj.email_address = AES.Process_Encryption(dto.Email_Address);
+
+            await _UsersDBC.Selected_LanguageTbl.AddAsync(new Selected_LanguageTbl
             {
                 User_id = ID_Record.ID,
-                Language = dto.Language,
-                Region = dto.Region
+                Language_code = dto.Language,
+                Region_code = dto.Region
             });
+            obj.language = AES.Process_Encryption(dto.Language);
+            obj.region = AES.Process_Encryption(dto.Region);
 
             await Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO
             {
                 User_id = ID_Record.ID,
                 Alignment = dto.Alignment,
             });
-            obj.alignment = dto.Alignment;
+            obj.alignment = AES.Process_Encryption($"{dto.Alignment}");
             
             await Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
             {
                 User_id = ID_Record.ID,
                 Locked = dto.Nav_lock,
             });
-            obj.nav_lock = dto.Nav_lock;
+            obj.nav_lock = AES.Process_Encryption($"{dto.Nav_lock}");
 
             await Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
             {
                 User_id = ID_Record.ID,
                 Text_alignment = dto.Text_alignment,
             });
-            obj.text_alignment = dto.Text_alignment;
-
-            await Update_End_User_Account_Type(new Account_TypeDTO 
-            { 
-                User_id = ID_Record.ID,
-                Type = 1
-            });
-
-            await Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO { 
-                User_id = ID_Record.ID,
-                Login_on = TimeStamp,
-                Client_time = ulong.Parse(dto.Client_time),
-                Location = dto.Location
-            });
-
-            await Insert_End_User_Login_Time_Stamp(new Login_Time_StampDTO
-            {
-                User_id = ID_Record.ID,
-                Login_on = TimeStamp,
-                Client_time = ulong.Parse(dto.Client_time),
-                Location = dto.Location
-            });
+            obj.text_alignment = AES.Process_Encryption($"{dto.Text_alignment}"); ;
 
             await Update_End_User_Selected_Theme(new Selected_ThemeDTO
             {
                 User_id = ID_Record.ID,
                 Theme = dto.Theme
             });
-            obj.theme = dto.Theme;
+            obj.theme = AES.Process_Encryption($"{dto.Theme}");
 
-            obj.id = AES.Process_Encryption(ID_Record.ID.ToString());
-            obj.email_address = AES.Process_Encryption(dto.Email_Address);
-            obj.language = AES.Process_Encryption(dto.Language);
-            obj.region = AES.Process_Encryption(dto.Region);
-            obj.token = JWT.Create_Token(@$"{ID_Record.ID}").Result;
+            await Update_End_User_Account_Roles(new Account_RolesDTO
+            {
+                User_id = ID_Record.ID,
+                Roles = "User"
+            });
+            obj.roles = AES.Process_Encryption(JsonSerializer.Serialize("User"));
+
+            await Update_End_User_Account_Groups(new Account_GroupsDTO
+            {
+                User_id = ID_Record.ID,
+                Groups = ""
+            });
+            obj.groups = AES.Process_Encryption(JsonSerializer.Serialize(""));
+
+            await Update_End_User_Account_Type(new Account_TypeDTO
+            {
+                User_id = ID_Record.ID,
+                Type = 1
+            });
             obj.account_type = AES.Process_Encryption("1");
+
+            await Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
+            {
+                User_id = ID_Record.ID,
+                Login_on = TimeStamp,
+                Client_time = ulong.Parse(dto.Client_time),
+                Location = dto.Location
+            });
+
+            await Insert_End_User_Login_Time_Stamp_History(new Login_Time_StampDTO
+            {
+                User_id = ID_Record.ID,
+                Login_on = TimeStamp,
+                Client_time = ulong.Parse(dto.Client_time),
+                Location = dto.Location
+            });
+
+            obj.token = JWT.Create_Token(ID_Record.ID.ToString()).Result;
             string time = TimeStamp.ToString();
             obj.created_on = AES.Process_Encryption(time);
             obj.login_on = AES.Process_Encryption(time);
 
             return JsonSerializer.Serialize(obj);
+        }
+        public async Task<string> Update_End_User_Account_Groups(Account_GroupsDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Account_GroupsTbl.Any(x => x.User_id == dto.User_id))
+                {//Insert
+                    await _UsersDBC.Account_GroupsTbl.AddAsync(new Account_GroupsTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Account_GroupsTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Groups = dto.Groups,
+                        Updated_on = TimeStamp,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {//Update
+                    await _UsersDBC.Account_GroupsTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Groups, dto.Groups)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.groups = dto.Groups;
+                return JsonSerializer.Serialize(obj);
+            } catch {
+                obj.error = "Server Error: Update Text Alignment Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Account_Roles(Account_RolesDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Account_RolesTbl.Any(x => x.User_id == dto.User_id))
+                {//Insert
+                    await _UsersDBC.Account_RolesTbl.AddAsync(new Account_RolesTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Account_RolesTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Roles = dto.Roles,
+                        Updated_on = TimeStamp,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                } else {//Update
+                    await _UsersDBC.Account_RolesTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Roles, dto.Roles)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.roles = dto.Roles;
+                return JsonSerializer.Serialize(obj);
+            } catch {
+                obj.error = "Server Error: Update End User Roles Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
         }
         public async Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto)
         {
@@ -259,7 +338,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
 
             obj.id = ID_Record.ID;
-            obj.token = JWT.Create_Token(@$"{ID_Record.ID}");
+            //obj.token = JWT.Create_Token(@$"{ID_Record.ID}");
             //obj.token_expire = DateTime.UtcNow.AddMinutes(TokenExpireTime);
             obj.created_on = TimeStamp;
             obj.phone = dto.Phone;
@@ -1008,7 +1087,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         .SetProperty(col => col.Updated_by, dto.User_id)
                     );
                 }
-                obj.text_alignment = "error";
+                await _UsersDBC.SaveChangesAsync();
+                obj.text_alignment = "error";//...
                 return JsonSerializer.Serialize(obj);
             } catch {
                 obj.error = "Server Error: Update Text Alignment Failed.";
@@ -1351,8 +1431,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Update_End_User_Login_Time_Stamp(Login_Time_StampDTO dto)
         {
-            try { 
-                if(!_UsersDBC.Login_Time_StampTbl.Any(x=>x.User_id == dto.User_id))
+            try {
+                if (!_UsersDBC.Login_Time_StampTbl.Any(x => x.User_id == dto.User_id))
+                {
                     await _UsersDBC.Login_Time_StampTbl.AddAsync(new Login_Time_StampTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Login_Time_StampTbl.Count() + 1),
@@ -1365,16 +1446,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Location = dto.Location,
                         Client_time = dto.Client_time
                     });
-
-
-                await _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                } else {
+                    await _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Updated_by, dto.User_id)
                     .SetProperty(col => col.Login_on, TimeStamp)
                     .SetProperty(col => col.Location, dto.Location)
                     .SetProperty(col => col.Client_time, dto.Client_time)
-                    .SetProperty(col => col.Updated_on, TimeStamp)
-                );
-                await _UsersDBC.SaveChangesAsync();
+                    .SetProperty(col => col.Updated_on, TimeStamp));
+                    await _UsersDBC.SaveChangesAsync();
+                }
                 obj.login_on = TimeStamp;
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;            
             } catch {
@@ -1382,7 +1462,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
-        public async Task<string> Insert_End_User_Login_Time_Stamp(Login_Time_StampDTO dto)
+        public async Task<string> Insert_End_User_Login_Time_Stamp_History(Login_Time_StampDTO dto)
         {
             try
             {
@@ -1396,10 +1476,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Created_by = dto.User_id,
                     Login_on = TimeStamp,
                     Location = dto.Location,
-                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
-                    Client_Networking_Port = dto.Client_Networking_Port,
-                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
-                    Server_Networking_Port = dto.Server_Networking_Port,
+                    Client_IP = dto.Client_Networking_IP_Address,
+                    Client_Port = dto.Client_Networking_Port,
+                    Server_IP = dto.Server_Networking_IP_Address,
+                    Server_Port = dto.Server_Networking_Port,
                     Client_time = dto.Client_time
                 });
                 await _UsersDBC.SaveChangesAsync();
@@ -1545,7 +1625,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Create_Integration_Twitch_Record(DTO dto)
         {
-
             obj.id = dto.ID;
             return JsonSerializer.Serialize(obj);
         }

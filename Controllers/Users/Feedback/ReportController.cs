@@ -48,6 +48,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                 return StatusCode(500, $"{e.Message}");
             }
         }
+
         [HttpPost("Contact_Us")]
         public async Task<ActionResult<bool>> ContactUsRegister([FromBody] DTO dto)
         {
@@ -153,6 +154,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                 return StatusCode(500, $"{e.Message}");
             }
         }
+
         [HttpPost("Website_Bug")]
         public async Task<ActionResult<bool>> Website_BugRegister([FromBody] DTO dto)
         {

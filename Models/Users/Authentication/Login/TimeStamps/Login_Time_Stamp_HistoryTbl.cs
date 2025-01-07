@@ -14,9 +14,9 @@
         public ulong Deleted_on { get; set; }
         public ulong Deleted_by { get; set; }
         public string Location { get; set; } = string.Empty;
-        public string Client_Networking_IP_Address { get; set; } = string.Empty;
-        public string Server_Networking_IP_Address { get; set; } = string.Empty;
-        public int Client_Networking_Port { get; set; }
-        public int Server_Networking_Port { get; set; }
+        public string Client_IP { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
+        public int Client_Port { get; set; }
+        public int Server_Port { get; set; }
     }
 }

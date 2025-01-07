@@ -1,4 +1,6 @@
-﻿using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
+﻿using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
@@ -28,6 +30,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Create_WebSocket_Log_Record(Websocket_Chat_PermissionDTO dto);
         Task<bool> Create_Website_Bug_Record(DTO dto);
         Task<bool> Create_End_User_Status_Record(Selected_StatusDTO dto);
+        Task<string> Update_End_User_Account_Roles(Account_RolesDTO dto);
+        Task<string> Update_End_User_Account_Groups(Account_GroupsDTO dto);
         Task<bool> Create_Contact_Us_Record(DTO dto);
         Task<byte[]> Create_Salted_Hash_String(byte[] text, byte[] salt);
         Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
@@ -37,7 +41,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Create_Account_By_Phone(DTO dto);
         Task<string> Create_Reported_User_Profile_Record(DTO dto);
         Task<string> Delete_Account_By_User_id(DTO dto);
-        Task<string> Insert_End_User_Login_Time_Stamp(Login_Time_StampDTO dto);
+        Task<string> Insert_End_User_Login_Time_Stamp_History(Login_Time_StampDTO dto);
         Task<string> Insert_Report_Email_RegistrationTbl(Report_Email_RegistrationDTO dto);
         Task<string> Read_User(ulong end_user_id);
         Task<string> Read_Users();
