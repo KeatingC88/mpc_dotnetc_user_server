@@ -4,7 +4,9 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using mpc_dotnetc_user_server.Models.Users.Identity;
+using mpc_dotnetc_user_server.Models.Users.Integration;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
+using mpc_dotnetc_user_server.Models.Users._Index;
 using mpc_dotnetc_user_server.Models.Users.BirthDate;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Controllers;
@@ -27,6 +29,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
+using mpc_dotnetc_user_server.Controllers.Users.JWT;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -177,7 +180,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Location = dto.Location
             });
 
-            obj.token = JWT.Create_Token(ID_Record.ID.ToString()).Result;
+            obj.token = JWT.Create_Token(new JWT_DTO { 
+                user_id = ID_Record.ID,
+                user_groups = "",
+                user_roles = "User",
+                account_type = 1
+            }).Result;
+
             string time = TimeStamp.ToString();
             obj.created_on = AES.Process_Encryption(time);
             obj.login_on = AES.Process_Encryption(time);
@@ -276,84 +285,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Any(x => x.Email_Address == email_address));
         }
-        public async Task<string> Create_Unconfirmed_Phone(DTO dto)
-        {
-            await _UsersDBC.Pending_Telephone_RegistrationTbl.AddAsync(new Pending_Telephone_RegistrationTbl
-            {
-                ID = Convert.ToUInt64(_UsersDBC.Pending_Telephone_RegistrationTbl.Count() + 1),
-                Country = dto.Country,
-                Phone = dto.Phone,
-                Code = dto.Code,
-                Carrier = dto.Carrier,
-                Updated_on = TimeStamp,
-                Created_on = TimeStamp,
-                Updated_by = 0,
-            });
-
-            await _UsersDBC.SaveChangesAsync();
-
-            obj.phone = dto.Phone;
-            obj.country = dto.Country;
-            obj.carrier = dto.Carrier;
-            obj.code = dto.Code;
-
-            return JsonSerializer.Serialize(obj);
-        }
-        public async Task<string> Create_Account_By_Phone(DTO dto)
-        {
-            await _UsersDBC.Pending_Telephone_RegistrationTbl.Where(x => x.Phone == dto.Phone).ExecuteUpdateAsync(s => s
-                .SetProperty(col => col.Deleted, 1)
-                .SetProperty(col => col.Deleted_on, TimeStamp)
-                .SetProperty(col => col.Updated_on, TimeStamp)
-            );
-
-            await _UsersDBC.Completed_Telephone_RegistrationTbl.AddAsync(new Completed_Telephone_RegistrationTbl
-            {
-                Country = dto.Country,
-                Phone = dto.Phone,
-                Code = dto.Code,
-                Carrier = dto.Carrier,
-                Updated_on = TimeStamp
-            });
-            await _UsersDBC.SaveChangesAsync();
-
-            User_IDsTbl ID_Record = new User_IDsTbl
-            {
-                ID = Convert.ToUInt64(_UsersDBC.User_IDsTbl.Count() + 1),
-                Created_on = TimeStamp
-            };
-            await _UsersDBC.User_IDsTbl.AddAsync(ID_Record);
-            await _UsersDBC.SaveChangesAsync();
-
-            await _UsersDBC.Login_TelephoneTbl.AddAsync(new Login_TelephoneTbl
-            {
-                ID = Convert.ToUInt64(_UsersDBC.Login_TelephoneTbl.Count() + 1),
-                User_id = ID_Record.ID,
-                Phone = dto.Phone,
-                Country = dto.Country,
-                Carrier = dto.Carrier,
-                Created_on = TimeStamp,
-                Updated_by = ID_Record.ID
-            });
-            await _UsersDBC.SaveChangesAsync();
-
-            obj.id = ID_Record.ID;
-            //obj.token = JWT.Create_Token(@$"{ID_Record.ID}");
-            //obj.token_expire = DateTime.UtcNow.AddMinutes(TokenExpireTime);
-            obj.created_on = TimeStamp;
-            obj.phone = dto.Phone;
-            obj.country = dto.Country;
-            obj.carrier = dto.Carrier;
-            return JsonSerializer.Serialize(obj);
-        }
-        public async Task<bool> Create_Contact_Us_Record(DTO obj)
+        public async Task<bool> Create_Contact_Us_Record(Contact_UsDTO dto)
         {
             await _UsersDBC.Contact_UsTbl.AddAsync(new Contact_UsTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Contact_UsTbl.Count() + 1),
-                USER_ID = obj.ID,
-                Subject_Line = obj.Subject_line,
-                Summary = obj.Summary,
+                USER_ID = dto.ID,
+                Subject_Line = dto.Subject_line,
+                Summary = dto.Summary,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Updated_by = 0
@@ -376,14 +315,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> Create_Website_Bug_Record(DTO obj)
+        public async Task<bool> Create_Website_Bug_Record(Reported_Website_BugDTO dto)
         {
             await _UsersDBC.Reported_Website_BugTbl.AddAsync(new Reported_Website_BugTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Reported_Website_BugTbl.Count() + 1),
-                USER_ID = obj.ID,
-                URL = obj.URL,
-                Detail = obj.Detail,
+                USER_ID = dto.ID,
+                URL = dto.URL,
+                Detail = dto.Detail,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Updated_by = 0
@@ -416,7 +355,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return JsonSerializer.Serialize(obj);
             }
         }
-        public async Task<bool> Create_Discord_Bot_Bug_Record(DTO obj)
+        public async Task<bool> Create_Discord_Bot_Bug_Record(Reported_Discord_Bot_BugDTO obj)
         {
             await _UsersDBC.Reported_Discord_Bot_BugTbl.AddAsync(new Reported_Discord_Bot_BugTbl
             {
@@ -431,13 +370,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> Create_Comment_Box_Record(DTO obj)
+        public async Task<bool> Create_Comment_Box_Record(Comment_BoxDTO dto)
         {
             await _UsersDBC.Comment_BoxTbl.AddAsync(new Comment_BoxTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Comment_BoxTbl.Count() + 1),
-                USER_ID = obj.ID,
-                Comment = obj.Comment,
+                USER_ID = dto.ID,
+                Comment = dto.Comment,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Updated_by = 0
@@ -445,7 +384,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> Create_Broken_Link_Record(DTO obj)
+        public async Task<bool> Create_Broken_Link_Record(Reported_Broken_LinkDTO obj)
         {
             await _UsersDBC.Reported_Broken_LinkTbl.AddAsync(new Reported_Broken_LinkTbl
             {
@@ -459,7 +398,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             return true;
         }
-        public async Task<string> Create_Reported_User_Profile_Record(DTO dto)
+        public async Task<string> Create_Reported_User_Profile_Record(Reported_ProfileDTO dto)
         {
             Reported_ProfileTbl record = new Reported_ProfileTbl
             {
@@ -482,12 +421,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.reported_user_id = record.Reported_ID;
             obj.created_on = record.Created_on;
             obj.read_reported_user = Read_User(dto.Reported_ID).ToString();
-            obj.read_reported_profile = Read_User_Profile(new DTO { ID = dto.Reported_ID }).ToString();
+            obj.read_reported_profile = Read_User_Profile_By_ID(dto.Reported_ID).ToString();
             return JsonSerializer.Serialize(obj);
         }
-        public async Task<string> Delete_Account_By_User_id(DTO dto)
+        public async Task<string> Delete_Account_By_User_id(Delete_UserDTO dto)
         {
-            await _UsersDBC.User_IDsTbl.Where(x => x.ID == dto.Target_ID).ExecuteUpdateAsync(s => s
+            await _UsersDBC.User_IDsTbl.Where(x => x.ID == dto.Target_User).ExecuteUpdateAsync(s => s
                 .SetProperty(User_IDsTbl => User_IDsTbl.Deleted, 1)
                 .SetProperty(User_IDsTbl => User_IDsTbl.Deleted_by, dto.ID)
                 .SetProperty(User_IDsTbl => User_IDsTbl.Deleted_on, TimeStamp)
@@ -496,8 +435,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 .SetProperty(User_IDsTbl => User_IDsTbl.Updated_by, dto.ID)
             );
             await _UsersDBC.SaveChangesAsync();
-            obj.id = dto.ID;
-            obj.Target_id = dto.Target_ID;
+            obj.deleted_by = dto.ID;
+            obj.target_user = dto.Target_User;
             return JsonSerializer.Serialize(obj);
         }
         public Task<string> Read_User(ulong end_user_id)
@@ -601,58 +540,57 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             return Task.FromResult(JsonSerializer.Serialize(obj));
         }
-        public async Task<string> Read_User_Profile(DTO dto)
+        public async Task<string> Read_User_Profile_By_ID(ulong user_id)
         {
             //Get Information About the End User for the client sidx.
-            byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.ID).Select(x => x.Online).SingleOrDefault();
-            byte status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.ID).Select(x => x.Offline).SingleOrDefault();
-            byte status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.ID).Select(x => x.Hidden).SingleOrDefault();
-            byte status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.ID).Select(x => x.Away).SingleOrDefault();
-            byte status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.ID).Select(x => x.DND).SingleOrDefault();
-            byte status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.ID).Select(x => x.Custom).SingleOrDefault();
-            string? customLbl = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.ID).Select(x => x.Custom_lbl).SingleOrDefault();
+            byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Online).SingleOrDefault();
+            byte status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Offline).SingleOrDefault();
+            byte status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Hidden).SingleOrDefault();
+            byte status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Away).SingleOrDefault();
+            byte status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.DND).SingleOrDefault();
+            byte status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Custom).SingleOrDefault();
+            string? custom_label = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Custom_lbl).SingleOrDefault();
 
             //Send Information to Client Side going below...
-            byte Status = 0;
+            byte status_code = 0;
 
-            ulong LoginTS = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == dto.ID).Select(x => x.Login_on).SingleOrDefault();
-            ulong LogoutTS = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == dto.ID).Select(x => x.Logout_on).SingleOrDefault();
-            ulong Created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == dto.ID).Select(x => x.Created_on).SingleOrDefault();
+            ulong LoginTS = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == user_id).Select(x => x.Login_on).SingleOrDefault();
+            ulong LogoutTS = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == user_id).Select(x => x.Logout_on).SingleOrDefault();
+            ulong created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == user_id).Select(x => x.Created_on).SingleOrDefault();
 
-            string? Email = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_id == dto.ID).Select(x => x.Email_Address).SingleOrDefault();
-            string? RegionCode = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == dto.ID).Select(x => x.Region_code).SingleOrDefault();
-            string? LanguageCode = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == dto.ID).Select(x => x.Language_code).SingleOrDefault();
-            string? Avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == dto.ID).Select(x => x.Avatar_url_path).SingleOrDefault();
-            string? Avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == dto.ID).Select(x => x.Avatar_title).SingleOrDefault();
-            string? DisplayName = _UsersDBC.Selected_NameTbl.Where(x => x.User_id == dto.ID).Select(x => x.Name).SingleOrDefault();
+            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_id == user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == user_id).Select(x => x.Region_code).SingleOrDefault();
+            string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == user_id).Select(x => x.Language_code).SingleOrDefault();
+            string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
+            string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == user_id).Select(x => x.Avatar_title).SingleOrDefault();
+            string? name = _UsersDBC.Selected_NameTbl.Where(x => x.User_id == user_id).Select(x => x.Name).SingleOrDefault();
 
             if (status_offline == 1)
-                Status = 0;
+                status_code = 0;
             if (status_hidden == 1)
-                Status = 1;
+                status_code = 1;
             if (status_online == 1)
-                Status = 2;
+                status_code = 2;
             if (status_away == 1)
-                Status = 3;
+                status_code = 3;
             if (status_dnd == 1)
-                Status = 4;
+                status_code = 4;
             if (status_custom == 1)
-                Status = 5;
+                status_code = 5;
 
-            return await Task.FromResult(JsonSerializer.Serialize(new DTO
-            {
-                ID = dto.ID,
-                Email_Address = Email,
-                Display_name = DisplayName,
-                Login_on = LoginTS,
-                Logout_on = LogoutTS,
-                Language = @$"{LanguageCode}-{RegionCode}",
-                Online_status = Status,
-                Custom_lbl = customLbl,
-                Created_on = Created_on,
-                Avatar_url_path = Avatar_url_path,
-                Avatar_title = Avatar_title
-            }));
+            obj.id = user_id;
+            obj.email_address = email_address;
+            obj.name = name;
+            obj.login_on = LoginTS;
+            obj.logout_on = LogoutTS;
+            obj.language = @$"{language_code}-{region_code}";
+            obj.online_status = status_code;
+            obj.custom_lbl = custom_label;
+            obj.created_on = created_on;
+            obj.avatar_url_path = avatar_url_path;
+            obj.avatar_title = avatar_title;
+
+            return await Task.FromResult(JsonSerializer.Serialize(obj));
         }
         public Task<string> Read_WebSocket_Permission_Record(Websocket_Chat_PermissionDTO dto)
         {
@@ -835,24 +773,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return JsonSerializer.Serialize(obj);
             } catch {
                 obj.error = "Server Error: Record Creation Failed.";
-                return JsonSerializer.Serialize(obj);
-            }
-        }
-        public async Task<string> Update_Unconfirmed_Phone(DTO dto)
-        {
-            try { 
-                await _UsersDBC.Pending_Telephone_RegistrationTbl.Where(x => x.Phone == dto.Phone).ExecuteUpdateAsync(s => s
-                    .SetProperty(col => col.Country, dto.Country)
-                    .SetProperty(col => col.Carrier, dto.Carrier)
-                    .SetProperty(col => col.Code, dto.Code)
-                    .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, 0F)
-                    .SetProperty(col => col.Created_on, TimeStamp));
-                await _UsersDBC.SaveChangesAsync();
-                obj.Updated_on = TimeStamp;
-                return JsonSerializer.Serialize(obj);            
-            } catch {
-                obj.error = "Server Error: Updated Phone Failed.";
                 return JsonSerializer.Serialize(obj);
             }
         }
@@ -1623,10 +1543,40 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             return await Task.FromResult(_UsersDBC.Login_PasswordTbl.Where(user => user.User_id == user_id).Select(user => user.Password).SingleOrDefault());
         }
-        public async Task<string> Create_Integration_Twitch_Record(DTO dto)
+        public async Task<string> Create_Integration_Twitch_Record(Integration_TwitchDTO dto)
         {
-            obj.id = dto.ID;
+            obj.id = null;
             return JsonSerializer.Serialize(obj);
+        }
+        public void Create_Chat_WebSocket_Log_Records(Websocket_Chat_PermissionDTO dto)
+        {
+            _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
+            {
+                ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
+                User_A_id = dto.User_id,
+                User_B_id = dto.User_B_id,
+                Updated_on = TimeStamp,
+                Created_on = TimeStamp,
+                Updated_by = dto.User_id,
+                Requested = 1,
+                Blocked = 0,
+                Approved = 0
+            });
+            _UsersDBC.SaveChangesAsync();
+
+            _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
+            {
+                ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
+                User_A_id = dto.User_B_id,//Swapped so we are to create the record for the other user.
+                User_B_id = dto.User_id,//Both Users have a permission record now for eachother.
+                Updated_on = TimeStamp,
+                Created_on = TimeStamp,
+                Updated_by = dto.User_id,
+                Requested = 1,
+                Blocked = 0,
+                Approved = 0
+            });
+            _UsersDBC.SaveChangesAsync();
         }
         public async Task<string> Update_End_User_First_Name(IdentityDTO dto)
         {
@@ -1826,35 +1776,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.birth_year = dto.Year;
             return JsonSerializer.Serialize(obj);
         }
-        public void Create_Chat_WebSocket_Log_Records(Websocket_Chat_PermissionDTO dto)
-        {
-            _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
-            {
-                ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
-                User_A_id = dto.User_id,
-                User_B_id = dto.User_B_id,
-                Updated_on = TimeStamp,
-                Created_on = TimeStamp,
-                Updated_by = dto.User_id,
-                Requested = 1,
-                Blocked = 0,
-                Approved = 0
-            });
-            _UsersDBC.SaveChangesAsync();
 
-            _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
-            {
-                ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
-                User_A_id = dto.User_B_id,//Swapped so we are to create the record for the other user.
-                User_B_id = dto.User_id,//Both Users have a permission record now for eachother.
-                Updated_on = TimeStamp,
-                Created_on = TimeStamp,
-                Updated_by = dto.User_id,
-                Requested = 1,
-                Blocked = 0,
-                Approved = 0
-            });
-            _UsersDBC.SaveChangesAsync();
-        }
     }
 }

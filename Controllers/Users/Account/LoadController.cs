@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Models.Users.Index;
+using mpc_dotnetc_user_server.Models.Users._Index;
+using mpc_dotnetc_user_server.Models.Users.Profile;
 
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -30,16 +32,16 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         }
 
         [HttpPost("User")]
-        public async Task<ActionResult<string>> LoadUser([FromBody] DTO dto)
+        public async Task<ActionResult<string>> LoadUser([FromBody] UserDTO dto)
         {
             try
             {
-                ulong user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                DTO obj = new DTO
+                UserDTO obj = new UserDTO
                 {
                     ID = user_id,
                     Token = dto.Token
@@ -52,11 +54,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         }
 
         [HttpPost("User/Profile")]
-        public async Task<ActionResult<string>> LoadUserProfile([FromBody] DTO dto)
+        public async Task<ActionResult<string>> LoadUserProfile([FromBody] Read_User_ProfileDTO dto)
         {
             try
             {
-                ulong user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Ok();
@@ -64,11 +66,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
 
-                return await _UsersRepository.Read_User_Profile(new DTO
-                {
-                    ID = dto.ID,//Targetted User's ID that we use to retrieve data.
-                    Token = dto.Token//Authorizing End User Requesting the Targetted ID.
-                });
+                return await _UsersRepository.Read_User_Profile_By_ID(dto.ID);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

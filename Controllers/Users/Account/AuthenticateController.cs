@@ -26,8 +26,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             _configuration = configuration;
             _UsersRepository = UsersRepository;
         }
-
-        JWT JWT = new JWT();
         AES AES = new AES();
 
         [HttpPut("Login/Email")]
@@ -122,7 +120,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong end_user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong end_user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(end_user_id).Result)
                     return Unauthorized();

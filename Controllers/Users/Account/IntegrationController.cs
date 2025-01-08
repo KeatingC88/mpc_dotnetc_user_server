@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Models.Users.Index;
+using mpc_dotnetc_user_server.Models.Users.Integration;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -19,7 +20,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         }
 
         [HttpPost("Twitch")]
-        public async Task<ActionResult<string>> Create_Twitch_Record([FromBody] DTO obj)
+        public async Task<ActionResult<string>> Create_Twitch_Record([FromBody] Integration_TwitchDTO obj)
         {
             try
             {

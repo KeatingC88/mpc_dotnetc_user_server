@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
+using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Index;
+using mpc_dotnetc_user_server.Models.Users._Index;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
 {
@@ -23,7 +22,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
             _UsersRepository = UsersRepository;
         }
         [HttpPost("Broken_Link")]
-        public async Task<ActionResult<bool>> EmailRegister([FromBody] DTO dto)
+        public async Task<ActionResult<bool>> EmailRegister([FromBody] Reported_Broken_LinkDTO dto)
         {
             try
             {
@@ -31,7 +30,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(dto.URL) || string.IsNullOrWhiteSpace(dto.URL))
                     return BadRequest();
 
-                ulong user_id =JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id =JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -50,7 +49,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
         }
 
         [HttpPost("Contact_Us")]
-        public async Task<ActionResult<bool>> ContactUsRegister([FromBody] DTO dto)
+        public async Task<ActionResult<bool>> ContactUsRegister([FromBody] Contact_UsDTO dto)
         {
             try
             {
@@ -59,7 +58,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(dto.Summary) || string.IsNullOrWhiteSpace(dto.Summary))
                     return BadRequest();
 
-                ulong user_id =JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id =JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -78,7 +77,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
         }
 
         [HttpPost("Discord_Bot_Bug")]
-        public async Task<ActionResult<bool>> DiscordBotBugRegisterRegister([FromBody] DTO dto)
+        public async Task<ActionResult<bool>> DiscordBotBugRegisterRegister([FromBody] Reported_Discord_Bot_BugDTO dto)
         {
             try
             {
@@ -87,7 +86,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(dto.Detail) || string.IsNullOrWhiteSpace(dto.Detail))
                     return BadRequest();
 
-                ulong user_id =JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id =JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -106,15 +105,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
         }
 
         [HttpPost("Comment_Box")]
-        public async Task<ActionResult<bool>> Comment_BoxRegister([FromBody] DTO dto)
+        public async Task<ActionResult<bool>> Comment_BoxRegister([FromBody] Comment_BoxDTO dto)
         {
             try
             {
-                if (string.IsNullOrEmpty(dto.Token) || string.IsNullOrWhiteSpace(dto.Token) ||
-                    string.IsNullOrEmpty(dto.Comment) || string.IsNullOrWhiteSpace(dto.Comment))
+                if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id =JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -133,11 +131,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
         }
 
         [HttpPost("User")]
-        public async Task<ActionResult<string>> ReportUserProfile([FromBody] DTO dto)
+        public async Task<ActionResult<string>> ReportUserProfile([FromBody] Reported_ProfileDTO dto)
         {
             try
             {
-                ulong user_id =JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -156,7 +154,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
         }
 
         [HttpPost("Website_Bug")]
-        public async Task<ActionResult<bool>> Website_BugRegister([FromBody] DTO dto)
+        public async Task<ActionResult<bool>> Website_BugRegister([FromBody] Reported_Website_BugDTO dto)
         {
             try
             {
@@ -165,7 +163,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(dto.Detail) || string.IsNullOrWhiteSpace(dto.Detail))
                     return BadRequest();
 
-                ulong user_id = JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();

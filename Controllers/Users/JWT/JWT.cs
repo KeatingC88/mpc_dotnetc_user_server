@@ -1,12 +1,9 @@
-﻿using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using mpc_dotnetc_user_server.Models.Users._Index;
-using mpc_dotnetc_user_server.Models.Users.Index;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace mpc_dotnetc_user_server.Controllers
+namespace mpc_dotnetc_user_server.Controllers.Users.JWT
 {
     public class JWT
     {
@@ -14,11 +11,15 @@ namespace mpc_dotnetc_user_server.Controllers
         private static AES AES = new AES();
 
 
-        public static async Task<string> Create_Token(string id)
+        public static async Task<string> Create_Token(JWT_DTO dto)
         {
             List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, $"{AES.Process_Encryption(id)}")
+            {                
+                new Claim(ClaimTypes.Actor, $"{AES.Process_Encryption(dto.account_type.ToString())}"),
+                new Claim(ClaimTypes.NameIdentifier, $"{AES.Process_Encryption(dto.user_id.ToString())}"),
+                new Claim(ClaimTypes.Role, $"{AES.Process_Encryption($"{dto.user_roles}")}"),
+                new Claim(ClaimTypes.GroupSid, $"{AES.Process_Encryption(dto.user_groups)}"),
+                new Claim(ClaimTypes.Webpage, $"{AES.Process_Encryption("http://localhost:6499")}")
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("9!5@a$59#%8^7MPC]1MPC999587)($@!53DataMonkey78912345645447890#%^2345vvcczxxedddg!#$%132577979798dA&*($##$$%@!^&*DFGGFFFFA^%YHBFSSDFTYG"));

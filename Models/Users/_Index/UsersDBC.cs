@@ -23,6 +23,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Language;
 using mpc_dotnetc_user_server.Models.Users.Selected.Name;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
+using mpc_dotnetc_user_server.Models.Users.Profile;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
