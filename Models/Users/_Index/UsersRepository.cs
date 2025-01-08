@@ -66,6 +66,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 .SetProperty(col => col.Updated_on, TimeStamp)
                 .SetProperty(col => col.Updated_by, ID_Record.ID)
                 .SetProperty(col => col.Deleted_by, ID_Record.ID)
+                .SetProperty(col=>col.Client_time, ulong.Parse(dto.Client_time))
+                .SetProperty(col=>col.Server_Port, dto.Server_Networking_Port)
+                .SetProperty(col=>col.Server_IP, dto.Server_Networking_IP_Address)
+                .SetProperty(col=>col.Client_IP, dto.Client_Networking_IP_Address)
+                .SetProperty(col=>col.Client_Port, dto.Client_Networking_Port)
             );
             await _UsersDBC.SaveChangesAsync();
 
@@ -76,7 +81,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Updated_by = (ulong)0,
                 Language_Region = @$"{dto.Language}-{dto.Region}",
                 Created_on = TimeStamp,
-                Created_by = ID_Record.ID
+                Created_by = ID_Record.ID,
+                Code = dto.Code,
+                Client_IP = dto.Client_Networking_IP_Address,
+                Client_Port = dto.Client_Networking_Port,
+                Server_IP = dto.Server_Networking_IP_Address,
+                Server_Port = dto.Server_Networking_Port,
+                Client_time = ulong.Parse(dto.Client_time)
             });
             await _UsersDBC.SaveChangesAsync();
 
@@ -153,9 +164,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await Update_End_User_Account_Groups(new Account_GroupsDTO
             {
                 User_id = ID_Record.ID,
-                Groups = ""
+                Groups = "0"
             });
-            obj.groups = AES.Process_Encryption(JsonSerializer.Serialize(""));
+            obj.groups = AES.Process_Encryption(JsonSerializer.Serialize("0"));
 
             await Update_End_User_Account_Type(new Account_TypeDTO
             {
@@ -177,20 +188,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 User_id = ID_Record.ID,
                 Login_on = TimeStamp,
                 Client_time = ulong.Parse(dto.Client_time),
-                Location = dto.Location
+                Location = dto.Location,
+                Client_Networking_Port = dto.Client_Networking_Port,
+                Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
+                Server_Networking_Port = dto.Server_Networking_Port,
+                Server_Networking_IP_Address = dto.Server_Networking_IP_Address
             });
 
-            obj.token = JWT.Create_Token(new JWT_DTO { 
-                user_id = ID_Record.ID,
-                user_groups = "",
-                user_roles = "User",
-                account_type = 1
+            obj.token = JWT.Create_Email_Account_Token(new JWT_DTO { 
+                User_id = ID_Record.ID,
+                User_groups = "0",
+                User_roles = "User",
+                Account_type = 1,
+                Email_address = dto.Email_Address
             }).Result;
 
             string time = TimeStamp.ToString();
             obj.created_on = AES.Process_Encryption(time);
             obj.login_on = AES.Process_Encryption(time);
-
+            obj.location = AES.Process_Encryption(dto.Location);
             return JsonSerializer.Serialize(obj);
         }
         public async Task<string> Update_End_User_Account_Groups(Account_GroupsDTO dto)
@@ -221,7 +237,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 obj.groups = dto.Groups;
                 return JsonSerializer.Serialize(obj);
             } catch {
-                obj.error = "Server Error: Update Text Alignment Failed.";
+                obj.error = "Server Error: Update Account Groups Failed.";
                 return JsonSerializer.Serialize(obj);
             }
         }
@@ -836,7 +852,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
-                        obj.alignment = "left";
                         return JsonSerializer.Serialize(obj);
                     case 2:
                         if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
@@ -860,7 +875,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
-                        obj.alignment = "right";
                         return JsonSerializer.Serialize(obj);
                     case 1:
                         if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
@@ -884,10 +898,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
-                        obj.alignment = "center";
                         return JsonSerializer.Serialize(obj);
                     default:
-                        obj.alignment = "error";
                         return JsonSerializer.Serialize(obj);
                 }                
             } catch {
@@ -924,7 +936,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
-                        obj.text_alignment = "Left";
                         return JsonSerializer.Serialize(obj);
                     case 2:
                         if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
@@ -950,7 +961,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
-                        obj.text_alignment = "Right";
                         return JsonSerializer.Serialize(obj);
                     case 1:
                         if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
@@ -976,10 +986,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
-                        obj.text_alignment = "Center";
                         return JsonSerializer.Serialize(obj);
                     default:
-                        obj.text_alignment = "error";
                         return JsonSerializer.Serialize(obj);
                 }            
             } catch {
@@ -1406,7 +1414,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 obj.insert = "completed";
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             } catch {
-                obj.error = "Server Error: Insert Login Timestamp Failed.";
+                obj.error = "Server Error: Login Time Stamp Failed.";
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
@@ -1436,7 +1444,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             }
             catch
             {
-                obj.error = "Server Error: Insert Login Timestamp Failed.";
+                obj.error = "Server Error: Reported Email Registration Failed.";
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }

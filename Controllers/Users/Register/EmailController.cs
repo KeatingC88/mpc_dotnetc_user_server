@@ -6,7 +6,6 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
 using mpc_dotnetc_user_server.Models.Users.Notification.Email;
-using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {

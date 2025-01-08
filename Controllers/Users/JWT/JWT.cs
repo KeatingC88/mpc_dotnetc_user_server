@@ -10,16 +10,16 @@ namespace mpc_dotnetc_user_server.Controllers.Users.JWT
         private static readonly ushort token_expire_time = 2;
         private static AES AES = new AES();
 
-
-        public static async Task<string> Create_Token(JWT_DTO dto)
+        public static async Task<string> Create_Email_Account_Token(JWT_DTO dto)
         {
             List<Claim> claims = new List<Claim>
             {                
-                new Claim(ClaimTypes.Actor, $"{AES.Process_Encryption(dto.account_type.ToString())}"),
-                new Claim(ClaimTypes.NameIdentifier, $"{AES.Process_Encryption(dto.user_id.ToString())}"),
-                new Claim(ClaimTypes.Role, $"{AES.Process_Encryption($"{dto.user_roles}")}"),
-                new Claim(ClaimTypes.GroupSid, $"{AES.Process_Encryption(dto.user_groups)}"),
-                new Claim(ClaimTypes.Webpage, $"{AES.Process_Encryption("http://localhost:6499")}")
+                new Claim(ClaimTypes.Actor, $"{AES.Process_Encryption(dto.Account_type.ToString())}"),
+                new Claim(ClaimTypes.NameIdentifier, $"{AES.Process_Encryption(dto.User_id.ToString())}"),
+                new Claim(ClaimTypes.Role, $"{AES.Process_Encryption($"{dto.User_roles}")}"),
+                new Claim(ClaimTypes.GroupSid, $"{AES.Process_Encryption(dto.User_groups)}"),
+                new Claim(ClaimTypes.Webpage, $"{AES.Process_Encryption("http://localhost:6499")}"),
+                new Claim(ClaimTypes.Email, $"{AES.Process_Encryption(dto.Email_address)}"),
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("9!5@a$59#%8^7MPC]1MPC999587)($@!53DataMonkey78912345645447890#%^2345vvcczxxedddg!#$%132577979798dA&*($##$$%@!^&*DFGGFFFFA^%YHBFSSDFTYG"));
@@ -34,7 +34,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.JWT
 
             return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
         }
-
         public static async Task<ulong> Read_User_ID_By_JWToken(string jwtToken)
         {
             var handler = new JwtSecurityTokenHandler();
@@ -49,7 +48,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.JWT
 
             return await Task.FromResult(Convert.ToUInt64(AES.Process_Decryption($"{values[0].ToString()}")));
         }
-
         public static async Task<ulong> Read_User_Role_By_JWToken(string jwtToken)
         {
             var handler = new JwtSecurityTokenHandler();
