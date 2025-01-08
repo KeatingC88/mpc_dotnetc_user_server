@@ -94,51 +94,53 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         }
 
         [HttpPost("Register")]
-        public async Task<ActionResult<string>> Registering_An_Email_Account_For_New_User([FromBody] Pending_Email_RegistrationDTO obj)
+        public async Task<ActionResult<string>> Registering_An_Email_Account_For_New_User([FromBody] Pending_Email_RegistrationDTO dto)
         {
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest();
                 
-                obj.Email_Address = AES.Process_Decryption(obj.Email_Address);
-                obj.Language = AES.Process_Decryption(obj.Language);
-                obj.Region = AES.Process_Decryption(obj.Region);
-                obj.Client_time = AES.Process_Decryption(obj.Client_time);
-                obj.Location = AES.Process_Decryption(obj.Location);
+                dto.Email_Address = AES.Process_Decryption(dto.Email_Address);
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+                dto.Location = AES.Process_Decryption(dto.Location);
 
-                if (!Valid.Email(obj.Email_Address) ||
-                    !Valid.Language_Code(obj.Language) ||
-                    !Valid.Region_Code(obj.Region) ||
-                    _UsersRepository.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address).Result)
+                if (!Valid.Email(dto.Email_Address) ||
+                    !Valid.Language_Code(dto.Language) ||
+                    !Valid.Region_Code(dto.Region) ||
+                    _UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
                     return Conflict();
 
                 await _UsersRepository.Insert_Pending_Email_Registration_History_Record(new Pending_Email_Registration_HistoryDTO
                 {
-                    Email_Address = obj.Email_Address,
-                    Language = obj.Language,
-                    Region = obj.Region,
-                    Client_time = obj.Client_time,
-                    Location = obj.Location,
+                    Email_Address = dto.Email_Address,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Client_time = dto.Client_time,
+                    Location = dto.Location,
                     Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
                     Client_Networking_Port = HttpContext.Connection.RemotePort,
                     Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Code = dto.Code
                 });
 
-                if (_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(obj.Email_Address).Result)
-                    return await Task.FromResult(_UsersRepository.Update_Pending_Email_Registration_Record(obj)).Result;
+                if (_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(dto.Email_Address).Result)
+                    return await Task.FromResult(_UsersRepository.Update_Pending_Email_Registration_Record(dto)).Result;
 
                 return await _UsersRepository.Create_Pending_Email_Registration_Record(new Pending_Email_RegistrationDTO {
-                    Email_Address = obj.Email_Address,
-                    Language = obj.Language,
-                    Region = obj.Region,
-                    Client_time = obj.Client_time,
-                    Location = obj.Location,
+                    Email_Address = dto.Email_Address,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Client_time = dto.Client_time,
+                    Location = dto.Location,
                     Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
                     Client_Networking_Port = HttpContext.Connection.RemotePort,
                     Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Code = dto.Code
                 });
 
             } catch (Exception e) {

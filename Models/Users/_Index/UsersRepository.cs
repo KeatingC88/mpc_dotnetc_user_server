@@ -285,8 +285,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Language_Region = $"{dto.Language}-{dto.Region}",
                 Email_Address = dto.Email_Address,
                 Location = dto.Location,
-                Client_time = ulong.Parse(dto.Client_time)
-
+                Client_time = ulong.Parse(dto.Client_time),
+                Code = dto.Code
             });
             await _UsersDBC.SaveChangesAsync();
 
@@ -734,7 +734,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language_Region = $"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
                     Location = dto.Location,
-                    Client_time = ulong.Parse(dto.Client_time)
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Code = dto.Code
                 });
                 await _UsersDBC.SaveChangesAsync();
                 return JsonSerializer.Serialize(obj);
