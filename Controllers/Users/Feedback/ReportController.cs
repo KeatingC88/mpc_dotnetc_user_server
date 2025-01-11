@@ -180,42 +180,5 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                 return StatusCode(500, $"{e.Message}");
             }
         }
-
-        [HttpPost("Email/Reregistration/Attempt")]
-        public async Task<ActionResult<string>> Record_Email_Reregistration_Attempt([FromBody] Report_Email_RegistrationDTO dto)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest();
-
-                dto.Email_Address = AES.Process_Decryption(dto.Email_Address);
-                dto.Language = AES.Process_Decryption(dto.Language);
-                dto.Region = AES.Process_Decryption(dto.Region);
-                dto.Client_time = AES.Process_Decryption(dto.Client_time);
-                dto.Location = AES.Process_Decryption(dto.Location);
-
-                if (!Valid.Email(dto.Email_Address) ||
-                    !Valid.Language_Code(dto.Language) ||
-                    !Valid.Region_Code(dto.Region))
-                    return BadRequest();
-
-                return await Task.FromResult(_UsersRepository.Insert_Report_Email_RegistrationTbl(new Report_Email_RegistrationDTO
-                {
-                    User_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result,
-                    Client_time = dto.Client_time,
-                    Location = dto.Location,
-                    Language = dto.Language,
-                    Region = dto.Region,
-                    Email_Address = dto.Email_Address,
-                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                    Client_Networking_Port = HttpContext.Connection.RemotePort,
-                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                    Server_Networking_Port = HttpContext.Connection.LocalPort,
-                })).Result;
-            } catch (Exception e) {
-                return StatusCode(500, $"{e.Message}");
-            }
-        }
     }//Controller.
 }//NameSpace.

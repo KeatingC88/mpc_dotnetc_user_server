@@ -11,16 +11,12 @@ using mpc_dotnetc_user_server.Models.Users.BirthDate;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Controllers;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Phone;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Phone;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Telephone;
 using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
-using mpc_dotnetc_user_server.Models.Users.Notification.Email;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
@@ -30,6 +26,9 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
 using mpc_dotnetc_user_server.Controllers.Users.JWT;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -183,7 +182,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Location = dto.Location
             });
 
-            await Insert_End_User_Login_Time_Stamp_History(new Login_Time_StampDTO
+            await Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
             {
                 User_id = ID_Record.ID,
                 Login_on = TimeStamp,
@@ -734,7 +733,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language_Region = $"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
                     Location = dto.Location,
-                    Client_time = ulong.Parse(dto.Client_time),
+                    Client_time = dto.Client_time,
                     Code = dto.Code
                 });
                 await _UsersDBC.SaveChangesAsync();
@@ -773,7 +772,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 await _UsersDBC.Reported_Email_RegistrationTbl.AddAsync(new Reported_Email_RegistrationTbl
                 {
-                    User_ID = dto.User_ID,
+                    User_id = dto.User_id,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Client_IP = dto.Client_Networking_IP_Address,
@@ -783,7 +782,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language_Region = $"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
                     Location = dto.Location,
-                    Client_time = ulong.Parse(dto.Client_time)
+                    Client_time = dto.Client_time
                 });
                 await _UsersDBC.SaveChangesAsync();
                 obj.recorded_on = TimeStamp;
@@ -1017,7 +1016,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
-                obj.text_alignment = "error";//...
                 return JsonSerializer.Serialize(obj);
             } catch {
                 obj.error = "Server Error: Update Text Alignment Failed.";
@@ -1391,12 +1389,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
-        public async Task<string> Insert_End_User_Login_Time_Stamp_History(Login_Time_StampDTO dto)
+        public async Task<string> Insert_End_User_Login_Time_Stamp_History(Login_Time_Stamp_HistoryDTO dto)
         {
             try
             {
-                await _UsersDBC.Login_Time_Stamp_HistoryTbl.AddAsync(new Login_Time_Stamp_HistoryTbl
-                {
+                await _UsersDBC.Login_Time_Stamp_HistoryTbl.AddAsync(new Login_Time_Stamp_HistoryTbl {
                     ID = Convert.ToUInt64(_UsersDBC.Login_Time_Stamp_HistoryTbl.Count() + 1),
                     User_id = dto.User_id,
                     Updated_on = TimeStamp,
@@ -1412,21 +1409,19 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_time = dto.Client_time
                 });
                 await _UsersDBC.SaveChangesAsync();
-                obj.insert = "completed";
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             } catch {
-                obj.error = "Server Error: Login Time Stamp Failed.";
-                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+                return Task.FromResult(JsonSerializer.Serialize("Login TS History Failed.")).Result;
             }
         }
-        public async Task<string> Insert_Report_Email_RegistrationTbl(Report_Email_RegistrationDTO dto)
+        public async Task<string> Insert_Report_Email_RegistrationTbl(Reported_Email_RegistrationDTO dto)
         {
             try
             {
                 await _UsersDBC.Reported_Email_RegistrationTbl.AddAsync(new Reported_Email_RegistrationTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.Reported_Email_RegistrationTbl.Count() + 1),
-                    User_ID = dto.User_id,
+                    User_id = dto.User_id,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Updated_by = 0,
@@ -1437,7 +1432,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = ulong.Parse(dto.Client_time)
+                    Client_time = dto.Client_time
                 });
                 await _UsersDBC.SaveChangesAsync();
                 obj.insert = "completed";
@@ -1446,6 +1441,63 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             catch
             {
                 obj.error = "Server Error: Reported Email Registration Failed.";
+                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+            }
+        }
+        public async Task<string> Insert_Reported_Unregistered_EmailTbl(Reported_Unregistered_EmailDTO dto)
+        {
+            try
+            {
+                await _UsersDBC.Reported_Unregistered_EmailTbl.AddAsync(new Reported_Unregistered_EmailTbl
+                {
+                    ID = Convert.ToUInt64(_UsersDBC.Reported_Unregistered_EmailTbl.Count() + 1),
+                    Language_Region = $"{dto.Language}-{dto.Region}",
+                    Updated_on = TimeStamp,
+                    Created_on = TimeStamp,
+                    Updated_by = 0,
+                    Created_by = 0,
+                    Email_Address = dto.Email_Address,
+                    Location = dto.Location,
+                    Client_IP = dto.Client_Networking_IP_Address,
+                    Client_Port = dto.Client_Networking_Port,
+                    Server_IP = dto.Server_Networking_IP_Address,
+                    Server_Port = dto.Server_Networking_Port,
+                    Client_time = dto.Client_time
+                });
+                await _UsersDBC.SaveChangesAsync();
+                obj.insert = "completed";
+                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+            }
+            catch
+            {
+                obj.error = "Server Error: Reported Email Login Failed.";
+                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+            }
+        }
+        public async Task<string> Insert_Reported_Failed_Email_Login_HistoryTbl(Reported_Failed_Email_Login_HistoryDTO dto)
+        {
+            try
+            {
+                await _UsersDBC.Reported_Failed_Email_Login_HistoryTbl.AddAsync(new Reported_Failed_Email_Login_HistoryTbl
+                {
+                    ID = Convert.ToUInt64(_UsersDBC.Reported_Failed_Email_Login_HistoryTbl.Count() + 1),
+                    User_id = dto.User_id,
+                    Updated_on = TimeStamp,
+                    Created_on = TimeStamp,
+                    Updated_by = 0,
+                    Created_by = 0,
+                    Location = dto.Location,
+                    Client_IP = dto.Client_Networking_IP_Address,
+                    Client_Port = dto.Client_Networking_Port,
+                    Server_IP = dto.Server_Networking_IP_Address,
+                    Server_Port = dto.Server_Networking_Port,
+                    Client_time = dto.Client_time
+                });
+                await _UsersDBC.SaveChangesAsync();
+                obj.insert = "completed";
+                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+            } catch {
+                obj.error = "Server Error: Reported Email Login History.";
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }

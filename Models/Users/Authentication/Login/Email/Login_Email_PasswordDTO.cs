@@ -6,31 +6,33 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
     public class Login_Email_PasswordDTO
     {
         [Required]
-        [StringLength(25, ErrorMessage = "{0} length must be between {2} and {1]", MinimumLength = 9)]
         public string Email_Address { get; set; } = string.Empty;
 
         [Required]
-        [StringLength(25, ErrorMessage = "{0} length must be between {2} and {1]", MinimumLength = 8)]
         public string Password { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Language_Code is Missing.")]
-        [StringLength(3, MinimumLength = 2, ErrorMessage = "Language Code length must equal 2-3 letters.")]
+        [Required]
         public string Language { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Region_Code is Missing.")]
-        [StringLength(3, MinimumLength = 2, ErrorMessage = "Region Code length must equal 2-3 letters.")]
+        [Required]
         public string Region { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Alignment values must be 0, 1, xor 2.")]
-        public byte Alignment { get; set; }
-
-        [Required(ErrorMessage = "Alignment values must be 0, 1, xor 2.")]
-        public byte Text_alignment { get; set; }
+        [Required]
+        public string Alignment { get; set; } = string.Empty;
 
         [Required]
-        public bool Locked { get; set; }
+        public string Text_alignment { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Application Theme is Missing.")]
-        public byte Theme { get; set; }
+        [Required]
+        public string Locked { get; set; } = string.Empty;
+
+        [Required]
+        public string Theme { get; set; } = string.Empty;
+
+        [Required]
+        public string Location { get; set; } = string.Empty;
+
+        [Required]
+        public string Client_time { get; set; } = string.Empty;
     }
 }

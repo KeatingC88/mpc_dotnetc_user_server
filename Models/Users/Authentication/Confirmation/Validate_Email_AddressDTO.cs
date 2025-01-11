@@ -11,5 +11,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
         public string Language { get; set; } = string.Empty;
         [Required]
         public string Region { get; set; } = string.Empty;
+        [Required]
+        public string Location { get;set; } = string.Empty;
+        [Required]
+        public string Client_time { get; set; }
     }
 }

@@ -32,6 +32,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
         [Required(ErrorMessage = "Alignment is Missing.")]
         public string Alignment { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Alignment is Missing.")]
+        public string Text_alignment { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Nav_Lock is Missing.")]
         public string Nav_Lock { get; set; } = string.Empty;
     }

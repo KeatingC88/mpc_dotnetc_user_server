@@ -17,7 +17,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
         public string Code { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Client Time is Missing.")]
-        public string Client_time { get; set; } = string.Empty;
+        public ulong Client_time { get; set; }
 
         [Required(ErrorMessage = "Location is Missing.")]
         public string Location { get; set; } = string.Empty;

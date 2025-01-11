@@ -16,7 +16,7 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
-using mpc_dotnetc_user_server.Models.Users.Notification.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
@@ -38,6 +38,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Pending_Email_RegistrationTbl> Pending_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_Registration_HistoryTbl> Pending_Email_Registration_HistoryTbl { get; set; } = null!;
         public DbSet<Reported_Email_RegistrationTbl> Reported_Email_RegistrationTbl { get; set; } = null!;
+        public DbSet<Reported_Failed_Email_Login_HistoryTbl> Reported_Failed_Email_Login_HistoryTbl { get; set; } = null!;
+        public DbSet<Reported_Unregistered_EmailTbl> Reported_Unregistered_EmailTbl { get; set; } = null!;
         public DbSet<Completed_Telephone_RegistrationTbl> Completed_Telephone_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Telephone_RegistrationTbl> Pending_Telephone_RegistrationTbl { get; set; } = null!;
         public DbSet<Contact_UsTbl> Contact_UsTbl { get; set; } = null!;
