@@ -1,13 +1,10 @@
-﻿using Microsoft.AspNetCore.Components.Routing;
-using System.ComponentModel.DataAnnotations;
-using static System.Net.Mime.MediaTypeNames;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Reported
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
 {
-    public class Reported_Email_RegistrationTbl
+    public class Report_Failed_Pending_Email_Registration_HistoryTbl
     {
         public ulong ID { get; set; }
-        public ulong User_id { get; set; }
         public bool Deleted { get; set; }
         public ulong Updated_by { get; set; }
         public ulong Created_on { get; set; }
@@ -22,6 +19,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Reported
         public int Server_Port { get; set; }
         public string Language_Region { get; set; } = string.Empty;
         public string Email_Address { get; set; } = string.Empty;
-        public string Location {get;set;} = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string Reason { get; set; } = string.Empty;
+
     }
 }
+
+

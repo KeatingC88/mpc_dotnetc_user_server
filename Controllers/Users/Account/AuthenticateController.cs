@@ -9,7 +9,7 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 using System.Security.Claims;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account

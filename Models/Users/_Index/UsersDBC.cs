@@ -16,7 +16,7 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
@@ -38,7 +38,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Completed_Email_RegistrationTbl> Completed_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_RegistrationTbl> Pending_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_Registration_HistoryTbl> Pending_Email_Registration_HistoryTbl { get; set; } = null!;
-        public DbSet<Reported_Email_RegistrationTbl> Reported_Email_RegistrationTbl { get; set; } = null!;
+        public DbSet<Report_Email_RegistrationTbl> Report_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Report_Failed_Email_Login_HistoryTbl> Report_Failed_Email_Login_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_Unregistered_Email_Login_HistoryTbl> Report_Failed_Unregistered_Email_Login_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_Pending_Email_Registration_HistoryTbl> Report_Failed_Pending_Email_Registration_HistoryTbl { get; set; } = null!;

@@ -5,7 +5,7 @@ using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
@@ -101,7 +101,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 {
                     ulong user_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
 
-                    await _UsersRepository.Insert_Report_Email_RegistrationTbl(new Reported_Email_RegistrationDTO
+                    await _UsersRepository.Insert_Report_Email_RegistrationTbl(new Report_Email_RegistrationDTO
                     {
                         Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
                         Client_Networking_Port = HttpContext.Connection.RemotePort,
@@ -112,7 +112,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Language = dto.Language,
                         Region = dto.Region,
                         Location = dto.Location,
-                        Client_time = ulong.Parse(dto.Client_time)
+                        Client_time = ulong.Parse(dto.Client_time),
+                        Reason = "Email Already Exists."
                     });
 
                     return Conflict();
@@ -181,7 +182,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result) 
                 {
-                    await _UsersRepository.Insert_Report_Email_RegistrationTbl(new Reported_Email_RegistrationDTO {
+                    await _UsersRepository.Insert_Report_Email_RegistrationTbl(new Report_Email_RegistrationDTO {
                         Email_Address = dto.Email_Address,
                         Language = dto.Language,
                         Region = dto.Region,

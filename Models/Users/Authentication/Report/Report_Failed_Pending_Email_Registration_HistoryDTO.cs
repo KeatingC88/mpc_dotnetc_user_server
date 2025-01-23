@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Reported
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
 {
     public class Report_Failed_Pending_Email_Registration_HistoryDTO
     {

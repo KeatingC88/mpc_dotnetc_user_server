@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Reported
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
 {
-    public class Report_Failed_Email_Login_HistoryDTO
+    public class Report_Failed_Unregistered_Email_Login_HistoryDTO
     {
         [Required(ErrorMessage = "Email Address is Missing.")]
         public string Email_Address { get; set; } = string.Empty;
@@ -21,9 +21,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Reported
         public string Client_Networking_IP_Address { get; set; } = string.Empty;
         public int Client_Networking_Port { get; set; }
         public string Server_Networking_IP_Address { get; set; }  = string.Empty;
+        public string Reason { get; set; }  = string.Empty;
         public int Server_Networking_Port { get; set; }
-        public ulong User_id { get; set; }
-        public string Reason { get;set; } = string.Empty;
     }
 }
 

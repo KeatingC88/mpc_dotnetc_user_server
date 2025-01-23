@@ -14,6 +14,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
         [Required]
         public string Location { get;set; } = string.Empty;
         [Required]
-        public string Client_time { get; set; }
+        public string Client_time { get; set; } = string.Empty;
+        [Required]
+        public string JWT_issuer_key { get; set; } = string.Empty;
+
+        [Required]
+        public string JWT_client_key { get; set; } = string.Empty;
+
+        [Required]
+        public string JWT_client_address { get; set; } = string.Empty;
+
     }
 }

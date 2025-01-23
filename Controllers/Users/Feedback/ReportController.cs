@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users._Index;

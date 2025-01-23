@@ -16,7 +16,7 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
@@ -186,7 +186,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 User_id = ID_Record.ID,
                 Login_on = TimeStamp,
                 Client_time = ulong.Parse(dto.Client_time),
-                Location = dto.Location
+                Location = dto.Location,
+                Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
+                Client_Networking_Port = dto.Client_Networking_Port,
+                Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
+                Server_Networking_Port = dto.Server_Networking_Port
             });
 
             await Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
@@ -794,11 +798,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return JsonSerializer.Serialize(obj);
             }
         }
-        public async Task<string> Create_Reported_Email_Registration_Record(Reported_Email_RegistrationDTO dto) 
+        public async Task<string> Create_Reported_Email_Registration_Record(Report_Email_RegistrationDTO dto) 
         {
             try
             {
-                await _UsersDBC.Reported_Email_RegistrationTbl.AddAsync(new Reported_Email_RegistrationTbl
+                await _UsersDBC.Report_Email_RegistrationTbl.AddAsync(new Report_Email_RegistrationTbl
                 {
                     User_id = dto.User_id,
                     Updated_on = TimeStamp,
@@ -1483,13 +1487,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return Task.FromResult(JsonSerializer.Serialize("Login TS History Failed.")).Result;
             }
         }
-        public async Task<string> Insert_Report_Email_RegistrationTbl(Reported_Email_RegistrationDTO dto)
+        public async Task<string> Insert_Report_Email_RegistrationTbl(Report_Email_RegistrationDTO dto)
         {
             try
             {
-                await _UsersDBC.Reported_Email_RegistrationTbl.AddAsync(new Reported_Email_RegistrationTbl
+                await _UsersDBC.Report_Email_RegistrationTbl.AddAsync(new Report_Email_RegistrationTbl
                 {
-                    ID = Convert.ToUInt64(_UsersDBC.Reported_Email_RegistrationTbl.Count() + 1),
+                    ID = Convert.ToUInt64(_UsersDBC.Report_Email_RegistrationTbl.Count() + 1),
                     User_id = dto.User_id,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
@@ -1501,7 +1505,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = dto.Client_time
+                    Client_time = dto.Client_time,
+                    Language_Region = $@"{dto.Language}-{dto.Region}",
+                    Reason = dto.Reason
                 });
                 await _UsersDBC.SaveChangesAsync();
                 obj.insert = "completed";
@@ -1513,7 +1519,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
-        
         public async Task<string> Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(Report_Failed_Pending_Email_Registration_HistoryDTO dto)
         {
             try
