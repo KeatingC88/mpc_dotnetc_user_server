@@ -20,6 +20,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<SelectedController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
+        private AES AES = new AES();
         public SelectedController(ILogger<SelectedController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
         {
             _logger = logger;
@@ -28,21 +29,23 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         }
 
         [HttpPut("Alignment")]
-        public async Task<ActionResult<string>> ChangeEndUserSelectedAlignment([FromBody] Selected_App_AlignmentDTO obj)
+        public async Task<ActionResult<string>> Change_End_User_Selected_Application_Alignment([FromBody] Selected_App_AlignmentDTO dto)
         {
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id =JWT.JWT.Read_User_ID_By_JWToken(obj.Token).Result;
+                dto.User_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                dto.Alignment = AES.Process_Decryption(dto.Alignment);
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(dto.User_id).Result)
                     return Conflict();
 
-                obj.User_id = user_id;
-
-                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Alignment(obj)).Result;
+                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO { 
+                    Alignment = dto.Alignment,
+                    User_id = dto.User_id
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

@@ -10,6 +10,7 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Reported;
+using System.Security.Claims;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -17,16 +18,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
     [Route("api/Authenticate")]
     public class AuthenticateController : ControllerBase
     {
+        private readonly Constants _Constants;
         private readonly ILogger<AuthenticateController> _logger;
         private static IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
 
-        public AuthenticateController(ILogger<AuthenticateController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
+        public AuthenticateController(ILogger<AuthenticateController> logger, IConfiguration configuration, IUsersRepository UsersRepository, Constants constants)
         {
             _logger = logger;
             _configuration = configuration;
             _UsersRepository = UsersRepository;
+            _Constants = constants;
         }
+
         AES AES = new AES();
 
         [HttpPut("Login/Email")]
@@ -47,10 +51,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Alignment = AES.Process_Decryption(dto.Alignment);
                 dto.Text_alignment = AES.Process_Decryption(dto.Text_alignment);
                 dto.Theme = AES.Process_Decryption(dto.Theme);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
 
-                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result) 
-                {
-                    await _UsersRepository.Insert_Reported_Unregistered_EmailTbl(new Reported_Unregistered_EmailDTO
+                if (dto.JWT_issuer_key != _Constants.JWT_ISSUER_KEY || 
+                    dto.JWT_client_key != _Constants.JWT_CLIENT_KEY || 
+                    dto.JWT_client_address != _Constants.JWT_CLAIM_WEBPAGE) {
+                    await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
                     {
                         Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
                         Client_Networking_Port = HttpContext.Connection.RemotePort,
@@ -60,22 +68,55 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Language = dto.Language,
                         Region = dto.Region,
                         Location = dto.Location,
-                        Client_time = ulong.Parse(dto.Client_time)
+                        Client_time = ulong.Parse(dto.Client_time),
+                        Reason = "JWT Mismatch"
+                    });
+                    return Conflict();
+                }
+
+                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result) 
+                {
+                    await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
+                    {
+                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                        Client_Networking_Port = HttpContext.Connection.RemotePort,
+                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        Email_Address = dto.Email_Address,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Location = dto.Location,
+                        Client_time = ulong.Parse(dto.Client_time),
+                        Reason = "Unregistered Email"
                     });
                     return Conflict();
                 }
                 
                 ulong user_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result) {
+                    await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
+                    {
+                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                        Client_Networking_Port = HttpContext.Connection.RemotePort,
+                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        Email_Address = dto.Email_Address,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Location = dto.Location,
+                        Client_time = ulong.Parse(dto.Client_time),
+                        Reason = "User ID Mismatch"
+                    });
                     return Conflict();
+                }
                     
                 byte[]? user_password_hash_in_the_database = _UsersRepository.Read_User_Password_Hash_By_ID(user_id).Result;
                 byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}MPCSalt")).Result;
 
                 if (user_password_hash_in_the_database != null) {
                     if (!_UsersRepository.Compare_Password_Byte_Arrays(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash)) {
-                        await _UsersRepository.Insert_Reported_Failed_Email_Login_HistoryTbl(new Reported_Failed_Email_Login_HistoryDTO
+                        await _UsersRepository.Insert_Report_Failed_Email_Login_HistoryTbl(new Report_Failed_Email_Login_HistoryDTO
                         {
                             Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
                             Client_Networking_Port = HttpContext.Connection.RemotePort,
@@ -116,13 +157,29 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 await _UsersRepository.Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
                 {
-                    User_id = user_id
+                    User_id = user_id,
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time)
+                });
+
+                await _UsersRepository.Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO {
+                    User_id = user_id,
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time)
                 });
 
                 await _UsersRepository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO 
                 { 
                     User_id = user_id,
-                    Alignment = byte.Parse(dto.Alignment)
+                    Alignment = dto.Alignment
                 });
 
                 await _UsersRepository.Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
@@ -150,7 +207,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Theme = byte.Parse(dto.Theme)
                 });
 
-                return await Task.FromResult(_UsersRepository.Read_User(user_id)).Result;
+                return await Task.FromResult(_UsersRepository.Read_Email_User_Data_By_ID(user_id)).Result;
 
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");

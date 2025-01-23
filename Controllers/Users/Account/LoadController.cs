@@ -47,7 +47,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Token = dto.Token
                 };
 
-                return await _UsersRepository.Read_User(obj.ID);
+                return await _UsersRepository.Read_Email_User_Data_By_ID(obj.ID);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

@@ -25,5 +25,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
         public int Client_Networking_Port { get; set; }
         public string Server_Networking_IP_Address { get; set; } = string.Empty;
         public int Server_Networking_Port { get; set; }
+        [Required(ErrorMessage = "JWT Issuer Key is Missing.")]
+        public string JWT_issuer_key { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "JWT Client Key is Missing.")]
+        public string JWT_client_key { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "JWT Client Address is Missing.")]
+        public string JWT_client_address { get; set; } = string.Empty;
     }
 }

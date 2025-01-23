@@ -44,7 +44,12 @@ builder.Services.AddCors(options => {
 /*
     Initiate Token Service Provider for this server.
  */
+builder.Services.AddSingleton<Constants>();
+/*
+    Initiate Cryptography Class for this server.
+*/
 AES AES = new AES();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.RequireHttpsMetadata = false;
@@ -54,7 +59,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidAudience = $"{AES.Process_Encryption("JWT-Servicing-MPC-Client-As-Audience")}",
-        ValidIssuer = $"{AES.Process_Encryption("JWT-Authentication-MPC-User-Server-As-Issuer")}",
+        ValidIssuer = $"{AES.Process_Encryption(@$"JWT-Authentication-MPC-User-Server-As-Issuer")}",
         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("9!5@a$59#%8^7MPC]1MPC999587)($@!53DataMonkey78912345645447890#%^2345vvcczxxedddg!#$%132577979798dA&*($##$$%@!^&*DFGGFFFFA^%YHBFSSDFTYG"))
     };
 });
@@ -71,3 +76,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+public class Constants
+{
+    public string JWT_ISSUER_KEY { get; set; } = "JWT-Authentication-MPC-User-Server-As-Issuer";
+    public string JWT_CLIENT_KEY { get; set; } = "JWT-Servicing-MPC-Client-As-Audience";
+    public string JWT_SECURITY_KEY { get; set; } = "9!5@a$59#%8^7MPC]1MPC999587)($@!53DataMonkey78912345645447890#%^2345vvcczxxedddg!#$%132577979798dA&*($##$$%@!^&*DFGGFFFFA^%YHBFSSDFTYG";
+    public string JWT_CLAIM_WEBPAGE { get; set; } = "http://localhost:6499/";
+}

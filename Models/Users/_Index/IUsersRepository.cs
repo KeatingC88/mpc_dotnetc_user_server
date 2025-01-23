@@ -43,7 +43,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Delete_Account_By_User_id(Delete_UserDTO dto);
         Task<string> Insert_End_User_Login_Time_Stamp_History(Login_Time_Stamp_HistoryDTO dto);
         Task<string> Insert_Report_Email_RegistrationTbl(Reported_Email_RegistrationDTO dto);
-        Task<string> Read_User(ulong end_user_id);
+        Task<string> Read_Email_User_Data_By_ID(ulong end_user_id);
         Task<string> Read_Users();
         Task<string> Read_User_Profile_By_ID(ulong end_user_id);
         Task<string> Read_WebSocket_Permission_Record(Websocket_Chat_PermissionDTO dto);
@@ -53,8 +53,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<ulong> Read_User_ID_By_Email_Address(string email_address);
         Task<string?> Read_User_Email_By_ID(ulong id);
         Task<string> Insert_Pending_Email_Registration_History_Record(Pending_Email_Registration_HistoryDTO dto);
-        Task<string> Insert_Reported_Unregistered_EmailTbl(Reported_Unregistered_EmailDTO dto);
-        Task<string> Insert_Reported_Failed_Email_Login_HistoryTbl(Reported_Failed_Email_Login_HistoryDTO dto);
+        Task<string> Insert_Report_Failed_Email_Login_HistoryTbl(Report_Failed_Email_Login_HistoryDTO dto);
+        Task<string> Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(Report_Failed_Unregistered_Email_Login_HistoryDTO dto);
+        Task<string> Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(Report_Failed_Pending_Email_Registration_HistoryDTO dto);
         Task<string> Update_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
         Task<string> Update_End_User_Avatar(Selected_AvatarDTO dto);
         Task<string> Update_End_User_Name(Selected_NameDTO dto);
@@ -66,6 +67,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Update_End_User_Selected_Nav_Lock(Selected_Navbar_LockDTO dto);
         Task<string> Update_End_User_Selected_Status(Selected_StatusDTO dto);
         Task<string> Update_End_User_Selected_Theme(Selected_ThemeDTO dto);
+        Task<string> Update_End_User_Selected_Grid_Type(Selected_App_Grid_TypeDTO dto);
         Task<string> Update_End_User_First_Name(IdentityDTO dto);
         Task<string> Update_End_User_Last_Name(IdentityDTO dto);
         Task<string> Update_End_User_Middle_Name(IdentityDTO dto);
@@ -77,8 +79,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Update_End_User_Birth_Date(Birth_DateDTO dto);
         void Create_Chat_WebSocket_Log_Records(Websocket_Chat_PermissionDTO dto);
         bool Compare_Password_Byte_Arrays(byte[] array1, byte[] array2);
-        Task<bool> Telephone_Exists_In_Login_Telephone_Tbl(string telephone_number);
-        Task<bool> Phone_Exists_In_Telephone_Not_Confirmed_Tbl(string telephone_number);
         Task<bool> Email_Exists_In_Pending_Email_RegistrationTbl(string email_address);
         Task<bool> Email_Exists_In_Login_Email_AddressTbl(string email_address);
         Task<bool> ID_Exists_In_Users_Tbl(ulong id);

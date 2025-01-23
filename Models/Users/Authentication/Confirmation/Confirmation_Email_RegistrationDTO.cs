@@ -21,5 +21,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
 
         [Required(ErrorMessage = "Client Time is Missing.")]
         public string Client_time { get; set; } = string.Empty;
+        [Required]
+        public string JWT_issuer_key { get; set; } = string.Empty;
+
+        [Required]
+        public string JWT_client_key { get; set; } = string.Empty;
+
+        [Required]
+        public string JWT_client_address { get; set; } = string.Empty;
     }
 }

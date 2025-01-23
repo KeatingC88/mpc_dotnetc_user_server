@@ -28,6 +28,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
         public byte Text_alignment { get; set; }
         public bool Nav_lock { get; set; }
         public byte Theme { get; set; }
+        public byte Grid_type { get; set; }
         public string Location { get; set; } = string.Empty;
         public string Client_time { get; set; } = string.Empty;
         public string Client_Networking_IP_Address { get; set; } = string.Empty;

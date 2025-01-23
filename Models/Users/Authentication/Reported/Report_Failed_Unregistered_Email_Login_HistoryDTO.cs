@@ -2,7 +2,7 @@
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Reported
 {
-    public class Reported_Unregistered_EmailDTO
+    public class Report_Failed_Unregistered_Email_Login_HistoryDTO
     {
         [Required(ErrorMessage = "Email Address is Missing.")]
         public string Email_Address { get; set; } = string.Empty;
@@ -21,6 +21,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Reported
         public string Client_Networking_IP_Address { get; set; } = string.Empty;
         public int Client_Networking_Port { get; set; }
         public string Server_Networking_IP_Address { get; set; }  = string.Empty;
+        public string Reason { get; set; }  = string.Empty;
         public int Server_Networking_Port { get; set; }
     }
 }

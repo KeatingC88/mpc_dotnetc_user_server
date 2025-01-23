@@ -32,16 +32,16 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         private readonly IConfiguration _configuration;
         public DbSet<User_IDsTbl> User_IDsTbl { get; set; } = null!;
         public DbSet<Account_TypeTbl> Account_TypeTbl { get; set; } = null!;
+        public DbSet<Selected_App_Grid_TypeTbl> Selected_App_Grid_TypeTbl { get; set; } = null!;
         public DbSet<Account_RolesTbl> Account_RolesTbl { get; set; } = null!;
         public DbSet<Account_GroupsTbl> Account_GroupsTbl { get; set; } = null!;
         public DbSet<Completed_Email_RegistrationTbl> Completed_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_RegistrationTbl> Pending_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_Registration_HistoryTbl> Pending_Email_Registration_HistoryTbl { get; set; } = null!;
         public DbSet<Reported_Email_RegistrationTbl> Reported_Email_RegistrationTbl { get; set; } = null!;
-        public DbSet<Reported_Failed_Email_Login_HistoryTbl> Reported_Failed_Email_Login_HistoryTbl { get; set; } = null!;
-        public DbSet<Reported_Unregistered_EmailTbl> Reported_Unregistered_EmailTbl { get; set; } = null!;
-        public DbSet<Completed_Telephone_RegistrationTbl> Completed_Telephone_RegistrationTbl { get; set; } = null!;
-        public DbSet<Pending_Telephone_RegistrationTbl> Pending_Telephone_RegistrationTbl { get; set; } = null!;
+        public DbSet<Report_Failed_Email_Login_HistoryTbl> Report_Failed_Email_Login_HistoryTbl { get; set; } = null!;
+        public DbSet<Report_Failed_Unregistered_Email_Login_HistoryTbl> Report_Failed_Unregistered_Email_Login_HistoryTbl { get; set; } = null!;
+        public DbSet<Report_Failed_Pending_Email_Registration_HistoryTbl> Report_Failed_Pending_Email_Registration_HistoryTbl { get; set; } = null!;
         public DbSet<Contact_UsTbl> Contact_UsTbl { get; set; } = null!;
         public DbSet<Comment_BoxTbl> Comment_BoxTbl { get; set; } = null!;
         public DbSet<Login_PasswordTbl> Login_PasswordTbl { get; set; } = null!;
@@ -72,5 +72,5 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             _configuration = configuration;
         }
-    }//DbContext    
-}//NameSpace
+    }   
+}

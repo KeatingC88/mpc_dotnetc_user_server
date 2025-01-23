@@ -128,7 +128,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO
             {
                 User_id = ID_Record.ID,
-                Alignment = dto.Alignment,
+                Alignment = dto.Alignment.ToString(),
             });
             obj.alignment = AES.Process_Encryption($"{dto.Alignment}");
             
@@ -174,6 +174,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             obj.account_type = AES.Process_Encryption("1");
 
+            await Update_End_User_Selected_Grid_Type(new Selected_App_Grid_TypeDTO
+            {
+                User_id = ID_Record.ID,
+                Grid = dto.Grid_type
+            });
+            obj.grid_type = AES.Process_Encryption(dto.Grid_type.ToString());
+
             await Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
             {
                 User_id = ID_Record.ID,
@@ -206,6 +213,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.created_on = AES.Process_Encryption(time);
             obj.login_on = AES.Process_Encryption(time);
             obj.location = AES.Process_Encryption(dto.Location);
+            obj.login_type = AES.Process_Encryption($@"email");
+
             return JsonSerializer.Serialize(obj);
         }
         public async Task<string> Update_End_User_Account_Groups(Account_GroupsDTO dto)
@@ -435,7 +444,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.report_record_id = record.ID;
             obj.reported_user_id = record.Reported_ID;
             obj.created_on = record.Created_on;
-            obj.read_reported_user = Read_User(dto.Reported_ID).ToString();
+            obj.read_reported_user = Read_Email_User_Data_By_ID(dto.Reported_ID).ToString();
             obj.read_reported_profile = Read_User_Profile_By_ID(dto.Reported_ID).ToString();
             return JsonSerializer.Serialize(obj);
         }
@@ -454,10 +463,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.target_user = dto.Target_User;
             return JsonSerializer.Serialize(obj);
         }
-        public Task<string> Read_User(ulong end_user_id)
+        public Task<string> Read_Email_User_Data_By_ID(ulong end_user_id)
         {
             bool nav_lock = _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.User_id == end_user_id).Select(x => x.Locked).SingleOrDefault();
             byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Type).SingleOrDefault();
+            byte grid_type = _UsersDBC.Selected_App_Grid_TypeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Grid).SingleOrDefault();
             byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Online).SingleOrDefault();
             byte status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Offline).SingleOrDefault();
             byte status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Hidden).SingleOrDefault();
@@ -480,22 +490,24 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             ulong login_timestamp = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == end_user_id).Select(x => x.Login_on).SingleOrDefault();
             ulong logout_timestamp = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == end_user_id).Select(x => x.Logout_on).SingleOrDefault();
             ulong created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Created_on).SingleOrDefault();
+            byte? gender = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Gender).SingleOrDefault();
+            byte? birth_day = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Day).SingleOrDefault();
+            byte? birth_month = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Month).SingleOrDefault();
+            ulong? birth_year = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Year).SingleOrDefault();
             string? customLbl = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Custom_lbl).SingleOrDefault();
             string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_id == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
             string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == end_user_id).Select(x => x.Region_code).SingleOrDefault();
             string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == end_user_id).Select(x => x.Language_code).SingleOrDefault();
             string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == end_user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
             string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == end_user_id).Select(x => x.Avatar_title).SingleOrDefault();
-            string? display_name = _UsersDBC.Selected_NameTbl.Where(x => x.User_id == end_user_id).Select(x => x.Name).SingleOrDefault();
-            byte? gender = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Gender).SingleOrDefault();
-            byte? birth_day = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Day).SingleOrDefault();
-            byte? birth_month = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Month).SingleOrDefault();
-            ulong? birth_year = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Year).SingleOrDefault();
+            string? name = _UsersDBC.Selected_NameTbl.Where(x => x.User_id == end_user_id).Select(x => x.Name).SingleOrDefault();
             string? first_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.First_Name).SingleOrDefault();
             string? last_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Last_Name).SingleOrDefault();
             string? middle_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Middle_Name).SingleOrDefault();
             string? maiden_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Maiden_Name).SingleOrDefault();
             string? ethnicity = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Ethnicity).SingleOrDefault();
+            string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.User_id == end_user_id).Select(x => x.Groups).SingleOrDefault();
+            string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.User_id == end_user_id).Select(x => x.Roles).SingleOrDefault();
 
             if (status_offline == 1)
                 status_type = 0;
@@ -528,30 +540,46 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             if (right_text_aligned == 1)
                 text_alignment_type = 2;
 
-            obj.id = end_user_id;
-            obj.account_type = account_type;
-            obj.email_address = email_address;
-            obj.display_name = display_name;
-            obj.login_on = login_timestamp;
-            obj.logout_on = logout_timestamp;
-            obj.language = @$"{language_code}-{region_code}";
-            obj.online_status = status_type;
-            obj.custom_lbl = customLbl;
-            obj.created_on = created_on;
-            obj.avatar_url_path = avatar_url_path;
-            obj.avatar_title = avatar_title;
-            obj.theme = theme_type;
-            obj.alignment = alignment_type;
-            obj.text_alignment = text_alignment_type;
-            obj.gender = gender;
-            obj.birth_day = birth_day;
-            obj.birth_month = birth_month;
-            obj.birth_year = birth_year;
-            obj.first_name = first_name;
-            obj.last_name = last_name;
-            obj.middle_name = middle_name;
-            obj.maiden_name = maiden_name;
-            obj.ethnicity = ethnicity;
+            obj.id = AES.Process_Encryption($@"{end_user_id}");
+            obj.account_type = AES.Process_Encryption($@"{account_type}");
+            obj.email_address = AES.Process_Encryption($@"{email_address}");
+            obj.name = AES.Process_Encryption($@"{name}");
+            obj.login_on = AES.Process_Encryption($@"{login_timestamp}");
+            obj.logout_on = AES.Process_Encryption($@"{logout_timestamp}");
+            obj.current_language = AES.Process_Encryption($@"{language_code}-{region_code}");
+            obj.language = AES.Process_Encryption($@"{language_code}");
+            obj.region = AES.Process_Encryption($@"{region_code}");
+            obj.online_status = AES.Process_Encryption($@"{status_type}");
+            obj.custom_lbl = AES.Process_Encryption($@"{customLbl}");
+            obj.created_on = AES.Process_Encryption($@"{created_on}");
+            obj.avatar_url_path = AES.Process_Encryption($@"{avatar_url_path}");
+            obj.avatar_title = AES.Process_Encryption($@"{avatar_title}");
+            obj.theme = AES.Process_Encryption($@"{theme_type}");
+            obj.alignment = AES.Process_Encryption($@"{alignment_type}");
+            obj.text_alignment = AES.Process_Encryption($@"{text_alignment_type}");
+            obj.gender = AES.Process_Encryption($@"{gender}");
+            obj.birth_day = AES.Process_Encryption($@"{birth_day}");
+            obj.birth_month = AES.Process_Encryption($@"{birth_month}");
+            obj.birth_year = AES.Process_Encryption($@"{birth_year}");
+            obj.first_name = AES.Process_Encryption($@"{first_name}");
+            obj.last_name = AES.Process_Encryption($@"{last_name}");
+            obj.middle_name = AES.Process_Encryption($@"{middle_name}");
+            obj.maiden_name = AES.Process_Encryption($@"{maiden_name}");
+            obj.ethnicity = AES.Process_Encryption($@"{ethnicity}");
+            obj.groups = AES.Process_Encryption($@"{groups}");
+            obj.roles = AES.Process_Encryption($@"{roles}");
+            obj.grid_type = AES.Process_Encryption($@"{grid_type}");
+            obj.nav_lock = AES.Process_Encryption($@"{nav_lock}");
+            obj.login_type = AES.Process_Encryption($@"email");
+
+            obj.token = JWT.Create_Email_Account_Token(new JWT_DTO
+            {
+                User_id = end_user_id,
+                User_groups = groups,
+                User_roles = roles,
+                Account_type = account_type,
+                Email_address = email_address
+            }).Result;
 
             return Task.FromResult(JsonSerializer.Serialize(obj));
         }
@@ -828,7 +856,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Selected_Alignment(Selected_App_AlignmentDTO dto)
         {
             try {
-                switch ((byte)dto.Alignment)
+                switch (byte.Parse(dto.Alignment))
                 {
                     case 0:
                         if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
@@ -1018,6 +1046,39 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 await _UsersDBC.SaveChangesAsync();
                 return JsonSerializer.Serialize(obj);
             } catch {
+                obj.error = "Server Error: Update Text Alignment Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Selected_Grid_Type(Selected_App_Grid_TypeDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Account_TypeTbl.Any(x => x.User_id == dto.User_id))
+                {//Insert
+                    await _UsersDBC.Selected_App_Grid_TypeTbl.AddAsync(new Selected_App_Grid_TypeTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Grid_TypeTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Grid = dto.Grid,
+                        Updated_on = TimeStamp,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {//Update
+                    await _UsersDBC.Selected_App_Grid_TypeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Grid, dto.Grid)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
                 obj.error = "Server Error: Update Text Alignment Failed.";
                 return JsonSerializer.Serialize(obj);
             }
@@ -1371,7 +1432,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Created_by = dto.User_id,
                         Login_on = TimeStamp,
                         Location = dto.Location,
-                        Client_time = dto.Client_time
+                        Client_time = dto.Client_time,
+                        Client_IP = dto.Client_Networking_IP_Address,
+                        Client_Port = dto.Client_Networking_Port,
+                        Server_IP = dto.Server_Networking_IP_Address,
+                        Server_Port = dto.Server_Networking_Port
                     });
                 } else {
                     await _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
@@ -1379,6 +1444,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Login_on, TimeStamp)
                     .SetProperty(col => col.Location, dto.Location)
                     .SetProperty(col => col.Client_time, dto.Client_time)
+                    .SetProperty(col => col.Client_IP, dto.Client_Networking_IP_Address)
+                    .SetProperty(col => col.Client_Port, dto.Client_Networking_Port)
+                    .SetProperty(col => col.Server_IP, dto.Server_Networking_IP_Address)
+                    .SetProperty(col => col.Server_Port, dto.Server_Networking_Port)
                     .SetProperty(col => col.Updated_on, TimeStamp));
                     await _UsersDBC.SaveChangesAsync();
                 }
@@ -1444,43 +1513,74 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
-        public async Task<string> Insert_Reported_Unregistered_EmailTbl(Reported_Unregistered_EmailDTO dto)
+        
+        public async Task<string> Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(Report_Failed_Pending_Email_Registration_HistoryDTO dto)
         {
             try
             {
-                await _UsersDBC.Reported_Unregistered_EmailTbl.AddAsync(new Reported_Unregistered_EmailTbl
+                await _UsersDBC.Report_Failed_Pending_Email_Registration_HistoryTbl.AddAsync(new Report_Failed_Pending_Email_Registration_HistoryTbl
                 {
-                    ID = Convert.ToUInt64(_UsersDBC.Reported_Unregistered_EmailTbl.Count() + 1),
-                    Language_Region = $"{dto.Language}-{dto.Region}",
+                    ID = Convert.ToUInt64(_UsersDBC.Report_Failed_Pending_Email_Registration_HistoryTbl.Count() + 1),
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Updated_by = 0,
                     Created_by = 0,
-                    Email_Address = dto.Email_Address,
                     Location = dto.Location,
                     Client_IP = dto.Client_Networking_IP_Address,
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = dto.Client_time
+                    Client_time = dto.Client_time,
+                    Language_Region = $@"{dto.Language}-{dto.Region}",
+                    Email_Address = dto.Email_Address,
+                    Reason = dto.Reason
                 });
                 await _UsersDBC.SaveChangesAsync();
-                obj.insert = "completed";
-                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+                return "Report Successful.";
             }
             catch
             {
-                obj.error = "Server Error: Reported Email Login Failed.";
+                obj.error = "Server Error: Report Pending Email Registration History Failed.";
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
-        public async Task<string> Insert_Reported_Failed_Email_Login_HistoryTbl(Reported_Failed_Email_Login_HistoryDTO dto)
+        public async Task<string> Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(Report_Failed_Unregistered_Email_Login_HistoryDTO dto)
         {
             try
             {
-                await _UsersDBC.Reported_Failed_Email_Login_HistoryTbl.AddAsync(new Reported_Failed_Email_Login_HistoryTbl
+                await _UsersDBC.Report_Failed_Unregistered_Email_Login_HistoryTbl.AddAsync(new Report_Failed_Unregistered_Email_Login_HistoryTbl
                 {
-                    ID = Convert.ToUInt64(_UsersDBC.Reported_Failed_Email_Login_HistoryTbl.Count() + 1),
+                    ID = Convert.ToUInt64(_UsersDBC.Report_Failed_Unregistered_Email_Login_HistoryTbl.Count() + 1),
+                    Updated_on = TimeStamp,
+                    Created_on = TimeStamp,
+                    Updated_by = 0,
+                    Created_by = 0,
+                    Location = dto.Location,
+                    Client_IP = dto.Client_Networking_IP_Address,
+                    Client_Port = dto.Client_Networking_Port,
+                    Server_IP = dto.Server_Networking_IP_Address,
+                    Server_Port = dto.Server_Networking_Port,
+                    Client_time = dto.Client_time,
+                    Language_Region = $@"{dto.Language}-{dto.Region}",
+                    Email_Address = dto.Email_Address,
+                    Reason = dto.Reason
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return "Report Successful.";
+            }
+            catch
+            {
+                obj.error = "Server Error: Report Unregistered Email Login History Failed.";
+                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+            }
+        }
+        public async Task<string> Insert_Report_Failed_Email_Login_HistoryTbl(Report_Failed_Email_Login_HistoryDTO dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_Email_Login_HistoryTbl.AddAsync(new Report_Failed_Email_Login_HistoryTbl
+                {
+                    ID = Convert.ToUInt64(_UsersDBC.Report_Failed_Email_Login_HistoryTbl.Count() + 1),
                     User_id = dto.User_id,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
@@ -1491,13 +1591,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = dto.Client_time
+                    Client_time = dto.Client_time,
+                    Reason = dto.Reason,
+                    Language_Region = $@"{dto.Language}-{dto.Region}",
+                    Email_Address = dto.Email_Address
                 });
                 await _UsersDBC.SaveChangesAsync();
-                obj.insert = "completed";
-                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+                return "Report Successful.";
             } catch {
-                obj.error = "Server Error: Reported Email Login History.";
+                obj.error = "Server Error: Report Email Login History Failed.";
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
@@ -1548,14 +1650,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<bool> Confirmation_Code_Exists_In_Pending_Email_Address_RegistrationTbl (string Code)
         {
             return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Code == Code));
-        }
-        public async Task<bool> Telephone_Exists_In_Login_Telephone_Tbl(string telephone_number)
-        {
-            return await Task.FromResult(_UsersDBC.Login_TelephoneTbl.Any(x => x.Phone == telephone_number));
-        }
-        public async Task<bool> Phone_Exists_In_Telephone_Not_Confirmed_Tbl(string telephone_number)
-        {
-            return await Task.FromResult(_UsersDBC.Pending_Telephone_RegistrationTbl.Any(x => x.Phone == telephone_number));
         }
         public async Task<ulong> Read_User_ID_By_Email_Address(string email_address)
         {
