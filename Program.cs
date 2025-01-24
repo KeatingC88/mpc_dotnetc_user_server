@@ -3,8 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Configuration;
 using mpc_dotnetc_user_server.Controllers;
+using System.Net;
 //...
 string server_origin = "MPC_Users_Server_Origin";
 string sqlite3_users_database_path = "";
@@ -64,6 +64,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
+static string GetLocalIpAddress()
+{
+    var host = Dns.GetHostEntry(Dns.GetHostName());
+    foreach (var ip in host.AddressList)
+    {
+        // Filter out the loopback address and ensure it's an IPv4 address
+        if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip))
+        {
+            return ip.ToString();
+        }
+    }
+    return "IP Address not found.";
+}
+
+string local_network_ip_address = GetLocalIpAddress();
+
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseSwagger();
@@ -75,7 +91,8 @@ app.UseCors(server_origin);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-//app.Run("http://192.168.0.104:5000");
+app.MapGet("/", () => @$"Users Server: Ready...{local_network_ip_address}");
+app.Urls.Add(@$"http://{local_network_ip_address}:5000");
 app.Run();
 
 public class Constants
@@ -85,3 +102,4 @@ public class Constants
     public string JWT_SECURITY_KEY { get; set; } = "9!5@a$59#%8^7MPC]1MPC999587)($@!53DataMonkey78912345645447890#%^2345vvcczxxedddg!#$%132577979798dA&*($##$$%@!^&*DFGGFFFFA^%YHBFSSDFTYG";
     public string JWT_CLAIM_WEBPAGE { get; set; } = "http://localhost:6499/";
 }
+
