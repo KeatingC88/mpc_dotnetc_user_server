@@ -75,6 +75,7 @@ app.UseCors(server_origin);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+//app.Run("http://192.168.0.104:5000");
 app.Run();
 
 public class Constants
