@@ -91,7 +91,7 @@ app.UseCors(server_origin);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapGet("/", () => @$"Users Server: Ready...{local_network_ip_address}");
+app.MapGet("/", () => @$"Users Server: Ready...\nCores are listening on\nNetwork IP Address and Port Number{local_network_ip_address}");
 app.Urls.Add(@$"http://{local_network_ip_address}:5000");
 app.Run();
 
