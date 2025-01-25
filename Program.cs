@@ -100,6 +100,6 @@ public class Constants
     public string JWT_ISSUER_KEY { get; set; } = "JWT-Authentication-MPC-User-Server-As-Issuer";
     public string JWT_CLIENT_KEY { get; set; } = "JWT-Servicing-MPC-Client-As-Audience";
     public string JWT_SECURITY_KEY { get; set; } = "9!5@a$59#%8^7MPC]1MPC999587)($@!53DataMonkey78912345645447890#%^2345vvcczxxedddg!#$%132577979798dA&*($##$$%@!^&*DFGGFFFFA^%YHBFSSDFTYG";
-    public string JWT_CLAIM_WEBPAGE { get; set; } = "http://192.168.0.102:6499/";//must change this...
+    public string JWT_CLAIM_WEBPAGE { get; set; } = "http://192.168.0.102:6499/";
 }
 
