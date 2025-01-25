@@ -142,9 +142,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
                 dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
 
-                if (dto.JWT_issuer_key != _Constants.JWT_ISSUER_KEY || 
-                    dto.JWT_client_key != _Constants.JWT_CLIENT_KEY ||
-                    dto.JWT_client_address != _Constants.JWT_CLAIM_WEBPAGE)
+                if (dto.JWT_issuer_key != _Constants.JWT_ISSUER_KEY)
                 {
                     await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
@@ -157,7 +155,44 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Region = dto.Region,
                         Location = dto.Location,
                         Client_time = ulong.Parse(dto.Client_time),
-                        Reason = "JWT Mismatch"
+                        Reason = "JWT Issuer Key Mismatch"
+                    });
+                    return Conflict();
+                }
+
+                if (dto.JWT_client_key != _Constants.JWT_CLIENT_KEY)
+                {
+                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    {
+                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                        Client_Networking_Port = HttpContext.Connection.RemotePort,
+                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        Email_Address = dto.Email_Address,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Location = dto.Location,
+                        Client_time = ulong.Parse(dto.Client_time),
+                        Reason = "JWT Client Key Mismatch"
+                    });
+                    return Conflict();
+                }
+
+
+                if (dto.JWT_client_address != _Constants.JWT_CLAIM_WEBPAGE)
+                {
+                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    {
+                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                        Client_Networking_Port = HttpContext.Connection.RemotePort,
+                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        Email_Address = dto.Email_Address,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Location = dto.Location,
+                        Client_time = ulong.Parse(dto.Client_time),
+                        Reason = "JWT Webpage Mismatch"
                     });
                     return Conflict();
                 }
