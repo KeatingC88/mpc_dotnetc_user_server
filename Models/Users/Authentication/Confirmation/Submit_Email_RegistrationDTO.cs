@@ -5,6 +5,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
 {
     public class Submit_Email_RegistrationDTO
     {
+        [Required(ErrorMessage = "Name is Missing.")]
+        public string Name { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Email Address is Missing.")]
         public string Email_Address { get; set; } = string.Empty;
 

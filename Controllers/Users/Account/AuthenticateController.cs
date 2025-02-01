@@ -11,6 +11,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 using System.Security.Claims;
+using mpc_dotnetc_user_server.Controllers.Users.JWT;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -43,38 +44,52 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Email_Address = AES.Process_Decryption(dto.Email_Address);
                 dto.Password = AES.Process_Decryption(dto.Password);
-                dto.Language = AES.Process_Decryption(dto.Language);
-                dto.Region = AES.Process_Decryption(dto.Region); 
-                dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_time = AES.Process_Decryption(dto.Client_time);
                 dto.Locked = AES.Process_Decryption(dto.Locked);
                 dto.Alignment = AES.Process_Decryption(dto.Alignment);
                 dto.Text_alignment = AES.Process_Decryption(dto.Text_alignment);
                 dto.Theme = AES.Process_Decryption(dto.Theme);
-                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
-                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
                 dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
 
-                if (dto.JWT_issuer_key != _Constants.JWT_ISSUER_KEY || 
-                    dto.JWT_client_key != _Constants.JWT_CLIENT_KEY || 
-                    dto.JWT_client_address != _Constants.JWT_CLAIM_WEBPAGE) {
-                    await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
+                dto.Client_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
+                dto.JWT_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
+
+
+                if (dto.JWT_issuer_key != _Constants.JWT_ISSUER_KEY ||
+                    dto.JWT_client_key != _Constants.JWT_CLIENT_KEY ||
+                    dto.JWT_client_address != _Constants.JWT_CLAIM_WEBPAGE)
+                {
+                    await _UsersRepository.Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
                     {
                         Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
                         Client_Networking_Port = HttpContext.Connection.RemotePort,
                         Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        Email_Address = dto.Email_Address,
+                        Client_id = dto.Client_id,
+                        JWT_id = dto.JWT_id,
                         Language = dto.Language,
                         Region = dto.Region,
                         Location = dto.Location,
-                        Client_time = ulong.Parse(dto.Client_time),
-                        Reason = "JWT Mismatch"
+                        Client_time = dto.Client_time,
+                        Reason = "JWT Client-Server Mismatch",
+                        Controller = "Authenticate",
+                        Action = "Login_Email",
+                        User_id = dto.JWT_id,
+                        Login_type = "Email",
+                        JWT_issuer_key = dto.JWT_issuer_key,
+                        JWT_client_key = dto.JWT_client_key,
+                        JWT_client_address = dto.JWT_client_address
                     });
-                    return Conflict();
                 }
 
-                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result) 
+                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result || 
+                   !_UsersRepository.ID_Exists_In_Users_Tbl(dto.Client_id).Result || 
+                    !_UsersRepository.ID_Exists_In_Users_Tbl(dto.JWT_id).Result)
                 {
                     await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
                     {
@@ -89,30 +104,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Client_time = ulong.Parse(dto.Client_time),
                         Reason = "Unregistered Email"
                     });
-                    return Conflict();
+                    return NotFound();
                 }
                 
                 ulong user_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
-
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result) {
-                    await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
-                    {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Location = dto.Location,
-                        Client_time = ulong.Parse(dto.Client_time),
-                        Reason = "User ID Mismatch"
-                    });
-                    return Conflict();
-                }
                     
                 byte[]? user_password_hash_in_the_database = _UsersRepository.Read_User_Password_Hash_By_ID(user_id).Result;
-                byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}MPCSalt")).Result;
+                byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}")).Result;
 
                 if (user_password_hash_in_the_database != null) {
                     if (!_UsersRepository.Compare_Password_Byte_Arrays(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash)) {
@@ -204,7 +202,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 await _UsersRepository.Update_End_User_Selected_Theme(new Selected_ThemeDTO
                 {
                     User_id = user_id,
-                    Theme = byte.Parse(dto.Theme)
+                    Theme = dto.Theme
                 });
 
                 return await Task.FromResult(_UsersRepository.Read_Email_User_Data_By_ID(user_id)).Result;
@@ -219,7 +217,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong end_user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong end_user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(end_user_id).Result)
                     return Unauthorized();

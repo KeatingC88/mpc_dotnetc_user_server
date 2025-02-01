@@ -1,23 +1,21 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿
 using Microsoft.IdentityModel.Tokens;
-using mpc_dotnetc_user_server.Controllers.Users.Register;
-using mpc_dotnetc_user_server.Models.Users.Index;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.JWT
 {
-    public class JWT
+    public class _JWT
     {
         private static readonly Constants Constants = new Constants();
-        private static readonly ushort token_expire_time = 2;
+        private static readonly ushort token_expire_time = 15;
         private static AES AES = new AES();
 
         public static async Task<string> Create_Email_Account_Token(JWT_DTO dto)
         {
             List<Claim> claims = new List<Claim>
-            {                
+            {
                 new Claim(ClaimTypes.Actor, $"{AES.Process_Encryption(dto.Account_type.ToString())}"),
                 new Claim(ClaimTypes.NameIdentifier, $"{AES.Process_Encryption(dto.User_id.ToString())}"),
                 new Claim(ClaimTypes.Role, $"{AES.Process_Encryption($"{dto.User_roles}")}"),
@@ -38,27 +36,31 @@ namespace mpc_dotnetc_user_server.Controllers.Users.JWT
 
             return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
         }
-        public static async Task<ulong> Read_User_ID_By_JWToken(string jwt_token)
+
+        public static async Task<ulong> Read_Email_Account_User_ID_By_JWToken(string jwt_token)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(jwt_token);
             List<object> values = jwtSecurityToken.Payload.Values.ToList();
             ulong currentTime = Convert.ToUInt64(((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds());
-            ulong token_expire = Convert.ToUInt64(values[2]);
+            ulong token_expire = Convert.ToUInt64(values[6]);
+
             bool tokenExpired = token_expire < currentTime ? true : false;
 
             if (tokenExpired)
                 return 0;
 
-            return await Task.FromResult(Convert.ToUInt64(AES.Process_Decryption($"{values[0].ToString()}")));
+            return await Task.FromResult(Convert.ToUInt64(AES.Process_Decryption($"{values[1].ToString()}")));
         }
-        public static async Task<ulong> Read_User_Role_By_JWToken(string jwt_token)
+
+        public static async Task<ulong> Read_Email_Account_User_Role_By_JWToken(string jwt_token)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(jwt_token);
             List<object> values = jwtSecurityToken.Payload.Values.ToList();
             ulong currentTime = Convert.ToUInt64(((DateTimeOffset)DateTime.UtcNow).ToUnixTimeSeconds());
             ulong token_expire = Convert.ToUInt64(values[2]);
+
             bool tokenExpired = token_expire < currentTime ? true : false;
 
             if (tokenExpired)

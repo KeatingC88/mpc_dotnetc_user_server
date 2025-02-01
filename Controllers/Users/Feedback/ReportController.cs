@@ -3,6 +3,7 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users._Index;
+using mpc_dotnetc_user_server.Controllers.Users.JWT;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
 {
@@ -30,7 +31,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(dto.URL) || string.IsNullOrWhiteSpace(dto.URL))
                     return BadRequest();
 
-                ulong user_id =JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -58,7 +59,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(dto.Summary) || string.IsNullOrWhiteSpace(dto.Summary))
                     return BadRequest();
 
-                ulong user_id =JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -86,7 +87,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(dto.Detail) || string.IsNullOrWhiteSpace(dto.Detail))
                     return BadRequest();
 
-                ulong user_id =JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -112,7 +113,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -135,7 +136,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
         {
             try
             {
-                ulong user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -163,7 +164,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                     string.IsNullOrEmpty(dto.Detail) || string.IsNullOrWhiteSpace(dto.Detail))
                     return BadRequest();
 
-                ulong user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();

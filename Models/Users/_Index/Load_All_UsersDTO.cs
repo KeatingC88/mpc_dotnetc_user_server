@@ -1,19 +1,13 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Selection
+namespace mpc_dotnetc_user_server.Models.Users._Index
 {
-    public class Selected_ThemeDTO
+    public class Load_All_UsersDTO
     {
-        public ulong User_id { get; set; }
+        [Required]
+        public string ID { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Application ID is Missing.")]
-        public string ID { get; set; }
-
-        [Required(ErrorMessage = "Application Theme is Missing.")]
-        public string Theme { get; set; }
-
-        [Required(ErrorMessage = "Application Token is Missing.")]
+        [Required]
         public string Token { get; set; } = string.Empty;
 
         [Required]
@@ -38,7 +32,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Selection
         public string JWT_client_address { get; set; } = string.Empty;
 
         [Required]
-        public string Account_type { get; set; } = string.Empty;
+        public string Account_type {  get; set; } = string.Empty;
 
         [Required]
         public string Login_type { get; set; } = string.Empty;

@@ -18,7 +18,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.Integration;
-using System.Threading.Tasks;
+using mpc_dotnetc_user_server.Controllers.Users.JWT;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -56,6 +56,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Insert_Report_Failed_Email_Login_HistoryTbl(Report_Failed_Email_Login_HistoryDTO dto);
         Task<string> Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(Report_Failed_Unregistered_Email_Login_HistoryDTO dto);
         Task<string> Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(Report_Failed_Pending_Email_Registration_HistoryDTO dto);
+        Task<string> Insert_Report_Failed_JWT_HistoryTbl(Report_Failed_JWT_HistoryDTO dto);
         Task<string> Update_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
         Task<string> Update_End_User_Avatar(Selected_AvatarDTO dto);
         Task<string> Update_End_User_Name(Selected_NameDTO dto);

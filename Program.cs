@@ -92,7 +92,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/", () => @$"Users Server: Ready on Network IP Address {local_network_ip_address} and Port Number 5177");
-app.Urls.Add(@$"http://{local_network_ip_address}:5177");
+//app.Urls.Add(@$"http://{local_network_ip_address}:5177");//do not remove
 app.Run();
 
 public class Constants
@@ -100,6 +100,6 @@ public class Constants
     public string JWT_ISSUER_KEY { get; set; } = "JWT-Authentication-MPC-User-Server-As-Issuer";
     public string JWT_CLIENT_KEY { get; set; } = "JWT-Servicing-MPC-Client-As-Audience";
     public string JWT_SECURITY_KEY { get; set; } = "9!5@a$59#%8^7MPC]1MPC999587)($@!53DataMonkey78912345645447890#%^2345vvcczxxedddg!#$%132577979798dA&*($##$$%@!^&*DFGGFFFFA^%YHBFSSDFTYG";
-    public string JWT_CLAIM_WEBPAGE { get; set; } = "http://192.168.0.102:6499/";
+    //public string JWT_CLAIM_WEBPAGE { get; set; } = "http://192.168.0.102:6499/";//do not remove
+    public string JWT_CLAIM_WEBPAGE { get; set; } = "http://localhost:6499/";
 }
-

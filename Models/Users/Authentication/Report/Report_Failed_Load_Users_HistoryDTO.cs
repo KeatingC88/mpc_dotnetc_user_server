@@ -2,8 +2,11 @@
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
 {
-    public class Report_Failed_Pending_Email_Registration_HistoryDTO
+    public class Report_Failed_Load_Users_HistoryDTO
     {
+        [Required(ErrorMessage ="User ID is Missing.")]
+        public ulong User_ID { get; set; }  
+
         [Required(ErrorMessage = "Email Address is Missing.")]
         public string Email_Address { get; set; } = string.Empty;
 
@@ -22,8 +25,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
         public int Client_Networking_Port { get; set; }
         public string Server_Networking_IP_Address { get; set; }  = string.Empty;
         public string Reason { get; set; }  = string.Empty;
-        public string Action { get; set; }  = string.Empty;
-        public string Controller { get; set; }  = string.Empty;
         public int Server_Networking_Port { get; set; }
     }
 }

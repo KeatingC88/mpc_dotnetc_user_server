@@ -2,6 +2,7 @@
 using System.Text;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users._Index;
+using mpc_dotnetc_user_server.Controllers.Users.JWT;
 
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -31,7 +32,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                user_id = JWT.JWT.Read_User_ID_By_JWToken(dto.Token).Result;
+                user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
                 target_id = dto.Target_User;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(dto.Target_User).Result)

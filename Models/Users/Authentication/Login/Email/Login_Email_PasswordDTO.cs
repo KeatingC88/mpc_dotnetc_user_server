@@ -43,5 +43,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
 
         [Required]
         public string JWT_client_address { get; set; } = string.Empty;
+        public ulong Client_id { get; set; } 
+        public ulong JWT_id { get; set; } 
     }
 }

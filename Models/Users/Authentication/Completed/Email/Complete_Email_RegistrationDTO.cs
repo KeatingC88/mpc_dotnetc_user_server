@@ -5,6 +5,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
 {
     public class Complete_Email_RegistrationDTO
     {
+        [Required(ErrorMessage = "Name is Missing.")]
+        public string Name { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Email Address is Missing.")]
         [EmailAddress(ErrorMessage = "Email Address format is 'local@domain.com'.")]
         public string Email_Address { get; set; } = string.Empty;

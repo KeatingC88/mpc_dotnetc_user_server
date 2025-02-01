@@ -29,6 +29,8 @@ using mpc_dotnetc_user_server.Controllers.Users.JWT;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
+using System.Xml.Linq;
+using System.Runtime.InteropServices;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -37,8 +39,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         private readonly ulong TimeStamp = Convert.ToUInt64(DateTimeOffset.Now.ToUnixTimeSeconds());//GMT Time
         private dynamic obj = new ExpandoObject();
         private readonly UsersDBC _UsersDBC;
-
+        private readonly Random random = new Random();
         AES AES = new AES();
+
+        //UsersDBC _UsersDBC = new UsersDBC();
+
+        public UsersRepository() { }
 
         public UsersRepository(UsersDBC UsersDBC)
         {
@@ -47,9 +53,22 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
         public async Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto)
         {
+            string character_set = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            string user_public_id = @$"{new string(Enumerable.Repeat("0123456789", 5).Select(s => s[random.Next(s.Length)]).ToArray())}";
+
             User_IDsTbl ID_Record = new User_IDsTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.User_IDsTbl.Count() + 1),
+                Public_id = user_public_id,
+                Secret_id = AES.Process_Encryption($@"
+                    {new string(Enumerable.Repeat(character_set, 64).Select(s => s[random.Next(s.Length)]).ToArray())}-
+                    {new string(Enumerable.Repeat(character_set, 64).Select(s => s[random.Next(s.Length)]).ToArray())}-
+                    {new string(Enumerable.Repeat(character_set, 64).Select(s => s[random.Next(s.Length)]).ToArray())}-
+                    {new string(Enumerable.Repeat(character_set, 64).Select(s => s[random.Next(s.Length)]).ToArray())}-
+                    {new string(Enumerable.Repeat(character_set, 64).Select(s => s[random.Next(s.Length)]).ToArray())}-
+                    {new string(Enumerable.Repeat(character_set, 64).Select(s => s[random.Next(s.Length)]).ToArray())}-
+                    {new string(Enumerable.Repeat(character_set, 64).Select(s => s[random.Next(s.Length)]).ToArray())}
+                "),
                 Created_by = 0,
                 Created_on = TimeStamp,
                 Updated_on = TimeStamp,
@@ -88,7 +107,19 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Server_Port = dto.Server_Networking_Port,
                 Client_time = ulong.Parse(dto.Client_time)
             });
+            await _UsersDBC.SaveChangesAsync(); 
+
+            await _UsersDBC.Selected_NameTbl.AddAsync(new Selected_NameTbl {
+                ID = Convert.ToUInt64(_UsersDBC.Login_Email_AddressTbl.Count() + 1),
+                Name = $@"{dto.Name}#{user_public_id}",
+                User_id = ID_Record.ID,
+                Updated_on = TimeStamp,
+                Created_on = TimeStamp,
+                Created_by = ID_Record.ID,
+                Updated_by = ID_Record.ID
+            });
             await _UsersDBC.SaveChangesAsync();
+            obj.name = AES.Process_Encryption($@"{dto.Name}#{user_public_id}");
 
             await _UsersDBC.Login_Email_AddressTbl.AddAsync(new Login_Email_AddressTbl
             {
@@ -101,20 +132,19 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Updated_by = ID_Record.ID
             });
             await _UsersDBC.SaveChangesAsync();
+            obj.email_address = AES.Process_Encryption(dto.Email_Address);
 
             await _UsersDBC.Login_PasswordTbl.AddAsync(new Login_PasswordTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_PasswordTbl.Count() + 1),
                 User_id = ID_Record.ID,
-                Password = Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}MPCSalt")).Result,
+                Password = Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}")).Result,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Created_by = ID_Record.ID,
                 Updated_by = ID_Record.ID,
             });
             await _UsersDBC.SaveChangesAsync();
-
-            obj.email_address = AES.Process_Encryption(dto.Email_Address);
 
             await _UsersDBC.Selected_LanguageTbl.AddAsync(new Selected_LanguageTbl
             {
@@ -149,7 +179,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await Update_End_User_Selected_Theme(new Selected_ThemeDTO
             {
                 User_id = ID_Record.ID,
-                Theme = dto.Theme
+                Theme = dto.Theme.ToString()
             });
             obj.theme = AES.Process_Encryption($"{dto.Theme}");
 
@@ -205,7 +235,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Server_Networking_IP_Address = dto.Server_Networking_IP_Address
             });
 
-            obj.token = JWT.Create_Email_Account_Token(new JWT_DTO { 
+            obj.token = _JWT.Create_Email_Account_Token(new JWT_DTO { 
                 User_id = ID_Record.ID,
                 User_groups = "0",
                 User_roles = "User",
@@ -576,7 +606,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.nav_lock = AES.Process_Encryption($@"{nav_lock}");
             obj.login_type = AES.Process_Encryption($@"email");
 
-            obj.token = JWT.Create_Email_Account_Token(new JWT_DTO
+            obj.token = _JWT.Create_Email_Account_Token(new JWT_DTO
             {
                 User_id = end_user_id,
                 User_groups = groups,
@@ -1316,8 +1346,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Update_End_User_Selected_Theme(Selected_ThemeDTO dto)
         { 
-            try { 
-                switch (dto.Theme)
+            try {
+                int theme = int.Parse(dto.Theme);
+                switch (theme)
                 {
                     case 0:
                         if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_id == dto.User_id))
@@ -1545,6 +1576,40 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             }
             catch
             {
+                obj.error = "Server Error: Report Pending Email Registration History Failed.";
+                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+            }
+        }
+        public async Task<string> Insert_Report_Failed_JWT_HistoryTbl(Report_Failed_JWT_HistoryDTO dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_JWT_HistoryTbl.AddAsync(new Report_Failed_JWT_HistoryTbl
+                {
+                    ID = Convert.ToUInt64(_UsersDBC.Report_Failed_JWT_HistoryTbl.Count() + 1),
+                    Updated_on = TimeStamp,
+                    Created_on = TimeStamp,
+                    Location = dto.Location,
+                    Client_IP = dto.Client_Networking_IP_Address,
+                    Client_Port = dto.Client_Networking_Port,
+                    Server_IP = dto.Server_Networking_IP_Address,
+                    Server_Port = dto.Server_Networking_Port,
+                    Client_time = dto.Client_time,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    JWT_id = dto.JWT_id,
+                    Client_id = dto.Client_id,
+                    Language_Region = $@"{dto.Language}-{dto.Region}",
+                    Reason = dto.Reason,
+                    Action = dto.Action,
+                    Controller = dto.Controller,
+                    User_id = dto.User_id,
+                    Login_type = dto.Login_type,
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return "Report Successful.";
+            } catch {
                 obj.error = "Server Error: Report Pending Email Registration History Failed.";
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
