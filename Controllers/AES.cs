@@ -7,18 +7,18 @@ namespace mpc_dotnetc_user_server.Controllers
     public class AES
     {
         private static readonly string secretKey = "z0nz0fb!gb0sz664";// The same secret key (must be 16 bytes for AES-128)
-        private readonly byte[] key = Encoding.UTF8.GetBytes(secretKey);
-        public string Process_Decryption(string encryption_code)
+        private static readonly byte[] key = Encoding.UTF8.GetBytes(secretKey);
+        public static string Process_Decryption(string encryption_code)
         {
             return Decrypt(encryption_code);
         }
 
-        public string Process_Encryption(string cipherBytes)
+        public static string Process_Encryption(string cipherBytes)
         {
             return Encrypt(cipherBytes);
         }
 
-        private string Decrypt(string str)
+        private static string Decrypt(string str)
         {
             byte[] decrypted_bytes;
             byte[] string_bytes = Convert.FromBase64String(str);
@@ -38,7 +38,7 @@ namespace mpc_dotnetc_user_server.Controllers
             return Encoding.UTF8.GetString(decrypted_bytes);
         }
 
-        private string Encrypt(string str)
+        private static string Encrypt(string str)
         {
             byte[] encrypted_bytes;
             byte[] string_bytes = Encoding.UTF8.GetBytes(str);

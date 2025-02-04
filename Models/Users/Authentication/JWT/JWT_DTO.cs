@@ -1,4 +1,4 @@
-﻿namespace mpc_dotnetc_user_server.Controllers.Users.JWT
+﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication.JWT
 {
     public class JWT_DTO
     {

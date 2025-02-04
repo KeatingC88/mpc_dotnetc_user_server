@@ -4,7 +4,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock
 {
     public class Selected_Navbar_LockDTO
     {
-        public bool? Locked { get; set; }
+        [Required]
+        public bool Locked { get; set; }
         public ulong User_id { get; set; }
 
         [Required(ErrorMessage = "Application Token is Missing.")]

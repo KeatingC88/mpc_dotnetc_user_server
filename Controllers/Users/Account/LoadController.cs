@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users._Index;
-using mpc_dotnetc_user_server.Controllers.Users.JWT;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -15,7 +15,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
 
-        AES AES = new AES();
+        
 
         public LoadController(ILogger<LoadController> logger, IConfiguration configuration, IUsersRepository UsersRepository, Constants constants)
         {
@@ -41,7 +41,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Location = AES.Process_Decryption(dto.Location);
                 dto.Client_time = AES.Process_Decryption(dto.Client_time);
                 dto.ID = AES.Process_Decryption(dto.ID);
-                ulong user_id_from_jwt = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id_from_jwt = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (dto.JWT_issuer_key != _Constants.JWT_ISSUER_KEY ||
                     dto.JWT_client_key != _Constants.JWT_CLIENT_KEY ||
@@ -81,7 +81,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Ok();
@@ -107,7 +107,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
 
                 ulong client_given_user_id = ulong.Parse(AES.Process_Decryption(dto.ID));
-                ulong jwt_given_user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                ulong jwt_given_user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
                 dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
                 dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
                 dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);

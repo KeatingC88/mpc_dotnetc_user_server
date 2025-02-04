@@ -1,16 +1,16 @@
 ﻿
 using Microsoft.IdentityModel.Tokens;
+using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace mpc_dotnetc_user_server.Controllers.Users.JWT
+namespace mpc_dotnetc_user_server.Controllers
 {
-    public class _JWT
+    public class JWT
     {
         private static readonly Constants Constants = new Constants();
         private static readonly ushort token_expire_time = 15;
-        private static AES AES = new AES();
 
         public static async Task<string> Create_Email_Account_Token(JWT_DTO dto)
         {

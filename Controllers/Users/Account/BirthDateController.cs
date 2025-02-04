@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.BirthDate;
-using mpc_dotnetc_user_server.Controllers.Users.JWT;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -25,7 +24,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Conflict();

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Controllers.Users.JWT;
 using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Index;
@@ -27,7 +26,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             if (string.IsNullOrEmpty(token) || string.IsNullOrWhiteSpace(token))
                 return BadRequest();
 
-            ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(token).Result;
+            ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(token).Result;
             return await Task.FromResult(_UsersRepository.Read_End_User_Web_Socket_Data(user_id).Result);
         }
 
@@ -37,7 +36,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+            ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
             Websocket_Chat_PermissionTbl Approver = new Websocket_Chat_PermissionTbl
             {
@@ -68,7 +67,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+            ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
             Websocket_Chat_PermissionTbl permission_obj = new Websocket_Chat_PermissionTbl
             {
@@ -88,7 +87,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+            ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
             Reported_WebSocket_AbuseDTO abuse_obj = new Reported_WebSocket_AbuseDTO
             {
@@ -118,7 +117,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             if (!ModelState.IsValid)
                 return BadRequest();
 
-            ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+            ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
             if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result || 
                 !_UsersRepository.ID_Exists_In_Users_Tbl(dto.User_B_id).Result)

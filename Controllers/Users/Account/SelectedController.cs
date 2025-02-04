@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Controllers.Users.JWT;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
@@ -22,8 +21,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<SelectedController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
-
-        private AES AES = new AES();
         public SelectedController(ILogger<SelectedController> logger, IConfiguration configuration, IUsersRepository UsersRepository, Constants constants)
         {
             _logger = logger;
@@ -40,7 +37,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                dto.User_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                dto.User_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
                 dto.Alignment = AES.Process_Decryption(dto.Alignment);
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(dto.User_id).Result)
@@ -63,7 +60,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
@@ -85,7 +82,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Conflict();
@@ -106,7 +103,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (string.IsNullOrEmpty(dto.Name) || string.IsNullOrWhiteSpace(dto.Name))
                 {
@@ -132,7 +129,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Conflict();
@@ -151,7 +148,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id =_JWT.Read_Email_Account_User_ID_By_JWToken(obj.Token).Result;
+                ulong user_id =JWT.Read_Email_Account_User_ID_By_JWToken(obj.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return Conflict();
@@ -171,7 +168,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id =_JWT.Read_Email_Account_User_ID_By_JWToken(obj.Token).Result;
+                ulong user_id =JWT.Read_Email_Account_User_ID_By_JWToken(obj.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
                     return NotFound();
@@ -201,7 +198,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (dto.Online_status < 1 && dto.Online_status > 5)
                     return BadRequest();
 
-                ulong user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (user_id == 0)
                     return Unauthorized();
@@ -225,7 +222,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-/*                bool authentication_result = _JWT.Authenticate_Client_JWT_Credentials(new _JWT.JWT_AuthenticationDTO { 
+/*                bool authentication_result = JWT.Authenticate_Client_JWT_Credentials(new JWT.JWT_AuthenticationDTO { 
                     JWT_client_address = AES.Process_Decryption(dto.JWT_client_address),
                     JWT_client_key = AES.Process_Decryption(dto.JWT_client_key),
                     JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key),
@@ -235,7 +232,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Client_time = AES.Process_Decryption(dto.Client_time),
                     Controller = "Selected",
                     Action = "Theme",
-                    JWT_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result,
+                    JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result,
                     Client_id = ulong.Parse(AES.Process_Decryption(dto.ID)),
                     Login_type = AES.Process_Decryption(dto.Login_type)
                 }).Result;*/

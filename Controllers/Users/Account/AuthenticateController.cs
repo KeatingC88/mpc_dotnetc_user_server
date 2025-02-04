@@ -11,7 +11,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 using System.Security.Claims;
-using mpc_dotnetc_user_server.Controllers.Users.JWT;
+using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -32,7 +32,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             _Constants = constants;
         }
 
-        AES AES = new AES();
+        
 
         [HttpPut("Login/Email")]
         public async Task<ActionResult<string>> Login_Login_Email_Address_And_Password([FromBody] Login_Email_PasswordDTO dto)
@@ -48,17 +48,71 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Alignment = AES.Process_Decryption(dto.Alignment);
                 dto.Text_alignment = AES.Process_Decryption(dto.Text_alignment);
                 dto.Theme = AES.Process_Decryption(dto.Theme);
+
                 dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
                 dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
                 dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
+
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
                 dto.Client_time = AES.Process_Decryption(dto.Client_time);
-
+                
                 dto.Client_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
-                dto.JWT_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
+                dto.JWT_id = dto.Client_id;
 
+                dto.User_agent = AES.Process_Decryption(dto.User_agent);
+                var user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+
+                if (user_agent == "error" || dto.User_agent != user_agent)
+                {
+                    await _UsersRepository.Insert_Report_Failed_User_Agent_HistoryTbl(new Report_Failed_User_Agent_HistoryDTO
+                    {
+                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                        Client_Networking_Port = HttpContext.Connection.RemotePort,
+                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Location = dto.Location,
+                        Client_time = dto.Client_time,
+                        Reason = "User-Agent Client-Server Mismatch",
+                        Controller = "Authenticate",
+                        Action = "Login_Email",
+                        Login_type = "Email",
+                        Server_User_Agent = user_agent,
+                        Client_User_Agent = dto.User_agent,
+                        User_id = dto.Client_id,
+                        Window_height = dto.Window_height,
+                        Window_width = dto.Window_width,
+                        Screen_extend = dto.Screen_extend,
+                        Screen_height = dto.Screen_height,
+                        Screen_width = dto.Screen_width,
+                        RTT = dto.RTT,
+                        Orientation = dto.Orientation,
+                        Data_saver = dto.Data_saver,
+                        Color_depth = dto.Color_depth,
+                        Pixel_depth = dto.Pixel_depth,
+                        Connection_type = dto.Connection_type,
+                        Down_link = dto.Down_link,
+                        Device_ram_gb = dto.Device_ram_gb
+                    });
+                    return Conflict();
+                }
 
                 if (dto.JWT_issuer_key != _Constants.JWT_ISSUER_KEY ||
                     dto.JWT_client_key != _Constants.JWT_CLIENT_KEY ||
@@ -70,6 +124,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Client_Networking_Port = HttpContext.Connection.RemotePort,
                         Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        User_agent = user_agent,
                         Client_id = dto.Client_id,
                         JWT_id = dto.JWT_id,
                         Language = dto.Language,
@@ -83,13 +138,97 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Login_type = "Email",
                         JWT_issuer_key = dto.JWT_issuer_key,
                         JWT_client_key = dto.JWT_client_key,
-                        JWT_client_address = dto.JWT_client_address
+                        JWT_client_address = dto.JWT_client_address,
+                        Window_height = dto.Window_height,
+                        Window_width = dto.Window_width,
+                        Screen_extend = dto.Screen_extend,
+                        Screen_height = dto.Screen_height,
+                        Screen_width = dto.Screen_width,
+                        RTT = dto.RTT,
+                        Orientation = dto.Orientation,
+                        Data_saver = dto.Data_saver,
+                        Color_depth = dto.Color_depth,
+                        Pixel_depth = dto.Pixel_depth,
+                        Connection_type = dto.Connection_type,
+                        Down_link = dto.Down_link,
+                        Device_ram_gb = dto.Device_ram_gb
                     });
+                    return Conflict();
                 }
 
-                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result || 
-                   !_UsersRepository.ID_Exists_In_Users_Tbl(dto.Client_id).Result || 
-                    !_UsersRepository.ID_Exists_In_Users_Tbl(dto.JWT_id).Result)
+                if (dto.Client_id != dto.JWT_id) 
+                {
+                    await _UsersRepository.Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
+                    {
+                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                        Client_Networking_Port = HttpContext.Connection.RemotePort,
+                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        User_agent = user_agent,
+                        Client_id = dto.Client_id,
+                        JWT_id = dto.JWT_id,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Location = dto.Location,
+                        Client_time = dto.Client_time,
+                        Reason = "JWT Client-ID Mismatch",
+                        Controller = "Authenticate",
+                        Action = "Login_Email",
+                        User_id = dto.JWT_id,
+                        Login_type = "Email",
+                        JWT_issuer_key = dto.JWT_issuer_key,
+                        JWT_client_key = dto.JWT_client_key,
+                        JWT_client_address = dto.JWT_client_address,
+                        Window_height = dto.Window_height,
+                        Window_width = dto.Window_width,
+                        Screen_extend = dto.Screen_extend,
+                        Screen_height = dto.Screen_height,
+                        Screen_width = dto.Screen_width,
+                        RTT = dto.RTT,
+                        Orientation = dto.Orientation,
+                        Data_saver = dto.Data_saver,
+                        Color_depth = dto.Color_depth,
+                        Pixel_depth = dto.Pixel_depth,
+                        Connection_type = dto.Connection_type,
+                        Down_link = dto.Down_link,
+                        Device_ram_gb = dto.Device_ram_gb
+                    });
+                    return Conflict();
+                }
+
+                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
+                {
+                    await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
+                    {
+                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                        Client_Networking_Port = HttpContext.Connection.RemotePort,
+                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        User_agent = user_agent,
+                        Email_Address = dto.Email_Address,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Location = dto.Location,
+                        Client_time = ulong.Parse(dto.Client_time),
+                        Reason = "Unregistered Email",
+                        Window_height = dto.Window_height,
+                        Window_width = dto.Window_width,
+                        Screen_extend = dto.Screen_extend,
+                        Screen_height = dto.Screen_height,
+                        Screen_width = dto.Screen_width,
+                        RTT = dto.RTT,
+                        Orientation = dto.Orientation,
+                        Data_saver = dto.Data_saver,
+                        Color_depth = dto.Color_depth,
+                        Pixel_depth = dto.Pixel_depth,
+                        Connection_type = dto.Connection_type,
+                        Down_link = dto.Down_link,
+                        Device_ram_gb = dto.Device_ram_gb
+                    });
+                    return NotFound();
+                }
+
+                if (!_UsersRepository.ID_Exists_In_Users_Tbl(dto.Client_id).Result)
                 {
                     await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
                     {
@@ -102,11 +241,25 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Region = dto.Region,
                         Location = dto.Location,
                         Client_time = ulong.Parse(dto.Client_time),
-                        Reason = "Unregistered Email"
+                        Reason = "Unregistered Email ID",
+                        User_agent = user_agent,
+                        Window_height = dto.Window_height,
+                        Window_width = dto.Window_width,
+                        Screen_extend = dto.Screen_extend,
+                        Screen_height = dto.Screen_height,
+                        Screen_width = dto.Screen_width,
+                        RTT = dto.RTT,
+                        Orientation = dto.Orientation,
+                        Data_saver = dto.Data_saver,
+                        Color_depth = dto.Color_depth,
+                        Pixel_depth = dto.Pixel_depth,
+                        Connection_type = dto.Connection_type,
+                        Down_link = dto.Down_link,
+                        Device_ram_gb = dto.Device_ram_gb
                     });
                     return NotFound();
                 }
-                
+
                 ulong user_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
                     
                 byte[]? user_password_hash_in_the_database = _UsersRepository.Read_User_Password_Hash_By_ID(user_id).Result;
@@ -120,13 +273,27 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                             Client_Networking_Port = HttpContext.Connection.RemotePort,
                             Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                             Server_Networking_Port = HttpContext.Connection.LocalPort,
+                            User_agent = user_agent,
                             Email_Address = dto.Email_Address,
                             Language = dto.Language,
                             Region = dto.Region,
                             Location = dto.Location,
                             Client_time = ulong.Parse(dto.Client_time),
                             Reason = "Incorrect Password",
-                            User_id = user_id
+                            User_id = user_id,
+                            Window_height = dto.Window_height,
+                            Window_width = dto.Window_width,
+                            Screen_extend = dto.Screen_extend,
+                            Screen_height = dto.Screen_height,
+                            Screen_width = dto.Screen_width,
+                            RTT = dto.RTT,
+                            Orientation = dto.Orientation,
+                            Data_saver = dto.Data_saver,
+                            Color_depth = dto.Color_depth,
+                            Pixel_depth = dto.Pixel_depth,
+                            Connection_type = dto.Connection_type,
+                            Down_link = dto.Down_link,
+                            Device_ram_gb = dto.Device_ram_gb
                         });
                         return Unauthorized();
                     }
@@ -160,6 +327,20 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Client_Networking_Port = HttpContext.Connection.RemotePort,
                     Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    User_agent = user_agent,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
                     Location = dto.Location,
                     Client_time = ulong.Parse(dto.Client_time)
                 });
@@ -170,8 +351,22 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Client_Networking_Port = HttpContext.Connection.RemotePort,
                     Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    User_agent = user_agent,
                     Location = dto.Location,
-                    Client_time = ulong.Parse(dto.Client_time)
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb
                 });
 
                 await _UsersRepository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO 
@@ -217,7 +412,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                ulong end_user_id = _JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                ulong end_user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 if (!_UsersRepository.ID_Exists_In_Users_Tbl(end_user_id).Result)
                     return Unauthorized();

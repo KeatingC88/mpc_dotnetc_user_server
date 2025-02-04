@@ -48,7 +48,7 @@ builder.Services.AddSingleton<Constants>();
 /*
     Initiate Cryptography Class for this server.
 */
-AES AES = new AES();
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
