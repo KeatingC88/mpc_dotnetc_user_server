@@ -3,13 +3,12 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
 {
-    public class Login_Email_PasswordDTO
+    public class LogoutDTO
     {
         [Required]
-        public string Email_Address { get; set; } = string.Empty;
+        public string ID { get; set; } = string.Empty;
 
-        [Required]
-        public string Password { get; set; } = string.Empty;
+        public ulong User_id { get; set; } 
 
         [Required]
         public string Language { get; set; } = string.Empty;
@@ -33,10 +32,16 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
         public string Theme { get; set; } = string.Empty;
 
         [Required]
+        public string Token { get; set; } = string.Empty;
+
+        [Required]
         public string Location { get; set; } = string.Empty;
 
         [Required]
         public string Client_time { get; set; } = string.Empty;
+
+        [Required]
+        public string Online_status { get; set; } = string.Empty;
 
         [Required]
         public string JWT_issuer_key { get;set; } = string.Empty;
@@ -46,6 +51,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
 
         [Required]
         public string JWT_client_address { get; set; } = string.Empty;
+
         public ulong Client_id { get; set; } 
         public ulong JWT_id { get; set; } 
 

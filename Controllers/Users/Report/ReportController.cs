@@ -35,7 +35,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return NotFound();
 
                 dto.ID = user_id;
@@ -63,7 +63,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return NotFound();
 
                 dto.ID = user_id;
@@ -91,7 +91,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return NotFound();
 
                 dto.ID = user_id;
@@ -117,7 +117,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return NotFound();
 
                 dto.ID = user_id;
@@ -140,7 +140,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return NotFound();
 
                 dto.ID = user_id;
@@ -168,7 +168,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Feedback
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return NotFound();
 
                 dto.ID = user_id;

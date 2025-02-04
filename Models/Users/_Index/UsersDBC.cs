@@ -22,6 +22,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Name;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Profile;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -38,6 +39,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Pending_Email_Registration_HistoryTbl> Pending_Email_Registration_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Email_RegistrationTbl> Report_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Report_Failed_Email_Login_HistoryTbl> Report_Failed_Email_Login_HistoryTbl { get; set; } = null!;
+        public DbSet<Report_Failed_Logout_HistoryTbl> Report_Failed_Logout_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_Unregistered_Email_Login_HistoryTbl> Report_Failed_Unregistered_Email_Login_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_JWT_HistoryTbl> Report_Failed_JWT_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_User_Agent_HistoryTbl> Report_Failed_User_Agent_HistoryTbl { get; set; } = null!;
@@ -50,6 +52,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Login_Time_StampTbl> Login_Time_StampTbl { get; set; } = null!;
         public DbSet<Login_Time_Stamp_HistoryTbl> Login_Time_Stamp_HistoryTbl { get; set; } = null!;
         public DbSet<Logout_Time_StampTbl> Logout_Time_StampTbl { get; set; } = null!;
+        public DbSet<Logout_Time_Stamp_HistoryTbl> Logout_Time_Stamp_HistoryTbl { get; set; } = null!;
         public DbSet<IdentityTbl> IdentityTbl { get; set; } = null!;
         public DbSet<Birth_DateTbl> Birth_DateTbl { get; set; } = null!;
         public DbSet<ProfilePageTbl> ProfilePageTbl { get; set; } = null!;

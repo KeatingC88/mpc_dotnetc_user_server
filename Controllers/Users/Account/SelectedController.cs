@@ -40,7 +40,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.User_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
                 dto.Alignment = AES.Process_Decryption(dto.Alignment);
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(dto.User_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(dto.User_id).Result)
                     return Conflict();
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO { 
@@ -63,7 +63,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return Conflict();
 
                 dto.User_id = user_id;
@@ -84,7 +84,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return Conflict();
 
                 dto.User_id = user_id;
@@ -110,7 +110,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     dto.Name = $"Recruit#{user_id}";
                 }
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return NotFound();
 
                 dto.User_id = user_id;
@@ -131,7 +131,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return Conflict();
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Language(dto)).Result;
@@ -150,7 +150,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 ulong user_id =JWT.Read_Email_Account_User_ID_By_JWToken(obj.Token).Result;
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return Conflict();
 
                 obj.User_id = user_id;
@@ -170,7 +170,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 ulong user_id =JWT.Read_Email_Account_User_ID_By_JWToken(obj.Token).Result;
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return NotFound();
 
                 byte[]? usersdb_SavedPasswordHash = _UsersRepository.Read_User_Password_Hash_By_ID(user_id).Result;
@@ -203,7 +203,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (user_id == 0)
                     return Unauthorized();
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return NotFound();
 
                 dto.User_id = user_id;

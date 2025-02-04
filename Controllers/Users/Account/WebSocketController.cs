@@ -119,8 +119,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-            if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result || 
-                !_UsersRepository.ID_Exists_In_Users_Tbl(dto.User_B_id).Result)
+            if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result || 
+                !_UsersRepository.ID_Exists_In_Users_IDTbl(dto.User_B_id).Result)
                 return BadRequest();
 
             dto.User_A_id = user_id;

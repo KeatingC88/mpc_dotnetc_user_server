@@ -975,7 +975,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Pixel_depth = dto.Pixel_depth,
                         Connection_type = dto.Connection_type,
                         Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb
+                        Device_ram_gb = dto.Device_ram_gb,
+                        Token = ""
                     });
                     return Conflict();
                 }

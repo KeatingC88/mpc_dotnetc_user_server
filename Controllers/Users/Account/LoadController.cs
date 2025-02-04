@@ -83,7 +83,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             {
                 ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return Ok();
 
                 UserDTO obj = new UserDTO
@@ -158,7 +158,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return Conflict();
                 }
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(client_given_user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(client_given_user_id).Result)
                 {
                     dto.Language = AES.Process_Decryption(dto.Language);
                     dto.Region = AES.Process_Decryption(dto.Region);
@@ -180,7 +180,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return NotFound();
                 }
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(jwt_given_user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(jwt_given_user_id).Result)
                 {
                     await _UsersRepository.Insert_Report_Failed_User_ID_HistoryTbl(new Report_Failed_User_ID_HistoryDTO
                     {

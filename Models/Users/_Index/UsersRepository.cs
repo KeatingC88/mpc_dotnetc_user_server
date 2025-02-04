@@ -26,6 +26,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -35,13 +36,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         private dynamic obj = new ExpandoObject();
         private readonly UsersDBC _UsersDBC;
         private readonly Random random = new Random();
+        private readonly Constants _Constants;
         
 
         public UsersRepository() { }
 
-        public UsersRepository(UsersDBC UsersDBC)
+        public UsersRepository(UsersDBC UsersDBC, Constants constants)
         {
             _UsersDBC = UsersDBC;
+            _Constants = constants;
         }
 
         public async Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto)
@@ -159,7 +162,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_PasswordTbl.Count() + 1),
                 User_id = ID_Record.ID,
-                Password = Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}")).Result,
+                Password = Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Created_by = ID_Record.ID,
@@ -237,6 +240,21 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             obj.grid_type = AES.Process_Encryption(dto.Grid_type.ToString());
 
+            await Update_End_User_Selected_Status(new Selected_StatusDTO { 
+                User_id = ID_Record.ID,
+                Online_status = 2,
+            });
+            obj.online_status = AES.Process_Encryption("2");
+
+            obj.token = JWT.Create_Email_Account_Token(new JWT_DTO
+            {
+                User_id = ID_Record.ID,
+                User_groups = "0",
+                User_roles = "User",
+                Account_type = 1,
+                Email_address = dto.Email_Address
+            }).Result;
+
             await Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
             {
                 User_id = ID_Record.ID,
@@ -260,7 +278,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Pixel_depth = dto.Pixel_depth,
                 Connection_type = dto.Connection_type,
                 Down_link = dto.Down_link,
-                Device_ram_gb = dto.Device_ram_gb
+                Device_ram_gb = dto.Device_ram_gb,
+                Token = obj.token
             });
 
             await Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
@@ -286,27 +305,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Pixel_depth = dto.Pixel_depth,
                 Connection_type = dto.Connection_type,
                 Down_link = dto.Down_link,
-                Device_ram_gb = dto.Device_ram_gb
+                Device_ram_gb = dto.Device_ram_gb,
+                Token = obj.token
             });
-
-            await Update_End_User_Selected_Status(new Selected_StatusDTO { 
-                User_id = ID_Record.ID,
-                Online_status = 1,
-            });
-
-            obj.token = JWT.Create_Email_Account_Token(new JWT_DTO { 
-                User_id = ID_Record.ID,
-                User_groups = "0",
-                User_roles = "User",
-                Account_type = 1,
-                Email_address = dto.Email_Address
-            }).Result;
 
             string time = TimeStamp.ToString();
             obj.created_on = AES.Process_Encryption(time);
             obj.login_on = AES.Process_Encryption(time);
             obj.location = AES.Process_Encryption(dto.Location);
-            obj.login_type = AES.Process_Encryption($@"email");
+            obj.login_type = AES.Process_Encryption("email");
 
             return JsonSerializer.Serialize(obj);
         }
@@ -615,7 +622,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.roles = AES.Process_Encryption($@"{roles}");
             obj.grid_type = AES.Process_Encryption($@"{grid_type}");
             obj.nav_lock = AES.Process_Encryption($@"{nav_lock}");
-            obj.login_type = AES.Process_Encryption($@"email");
+            obj.login_type = AES.Process_Encryption("email");
 
             obj.token = JWT.Create_Email_Account_Token(new JWT_DTO
             {
@@ -1212,95 +1219,233 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 switch (dto.Online_status)
                 {
                     case 0:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Offline, 1)
-                            .SetProperty(col => col.Hidden, 0)
-                            .SetProperty(col => col.Online, 0)
-                            .SetProperty(col => col.Away, 0)
-                            .SetProperty(col => col.DND, 0)
-                            .SetProperty(col => col.Custom, 0)
-                            .SetProperty(col => col.Custom_lbl, "")
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                        );
-                        await _UsersDBC.SaveChangesAsync();
-                        obj.online_status = "Offline";
-                        return JsonSerializer.Serialize(obj);
+                        try
+                        {
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            {
+                                await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
+                                {
+                                    ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
+                                    User_id = dto.User_id,
+                                    Updated_on = TimeStamp,
+                                    Created_on = TimeStamp,
+                                    Updated_by = dto.User_id,
+                                    Created_by = dto.User_id,
+                                    Offline = 1
+                                });
+                            } else {
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                    .SetProperty(col => col.Offline, 1)
+                                    .SetProperty(col => col.Hidden, 0)
+                                    .SetProperty(col => col.Online, 0)
+                                    .SetProperty(col => col.Away, 0)
+                                    .SetProperty(col => col.DND, 0)
+                                    .SetProperty(col => col.Custom, 0)
+                                    .SetProperty(col => col.Custom_lbl, "")
+                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_on, TimeStamp)
+                                );
+                            }
+                            await _UsersDBC.SaveChangesAsync();
+                            obj.online_status = "Offline";
+                            return JsonSerializer.Serialize(obj);
+                        } catch {
+                            obj.error = "Server Error: Update User Display Status Failed.";
+                            return JsonSerializer.Serialize(obj);
+                        }
                     case 1:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Offline, 0)
-                            .SetProperty(col => col.Hidden, 1)
-                            .SetProperty(col => col.Online, 0)
-                            .SetProperty(col => col.Away, 0)
-                            .SetProperty(col => col.DND, 0)
-                            .SetProperty(col => col.Custom, 0)
-                            .SetProperty(col => col.Custom_lbl, "")
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                        );
-                        await _UsersDBC.SaveChangesAsync();
-                        obj.online_status = "Hidden";
-                        return JsonSerializer.Serialize(obj);
+                        try
+                        {
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            {
+                                await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
+                                {
+                                    ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
+                                    User_id = dto.User_id,
+                                    Updated_on = TimeStamp,
+                                    Created_on = TimeStamp,
+                                    Updated_by = dto.User_id,
+                                    Created_by = dto.User_id,
+                                    Hidden = 1
+                                });
+                            }
+                            else
+                            {
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                    .SetProperty(col => col.Offline, 0)
+                                    .SetProperty(col => col.Hidden, 1)
+                                    .SetProperty(col => col.Online, 0)
+                                    .SetProperty(col => col.Away, 0)
+                                    .SetProperty(col => col.DND, 0)
+                                    .SetProperty(col => col.Custom, 0)
+                                    .SetProperty(col => col.Custom_lbl, "")
+                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_on, TimeStamp)
+                                );
+                            }
+                            await _UsersDBC.SaveChangesAsync();
+                            obj.online_status = "Hidden";
+                            return JsonSerializer.Serialize(obj);
+                        } catch  {
+                            obj.error = "Server Error: Update User Display Status Failed.";
+                            return JsonSerializer.Serialize(obj);
+                        }
                     case 2:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Offline, 0)
-                            .SetProperty(col => col.Hidden, 0)
-                            .SetProperty(col => col.Online, 1)
-                            .SetProperty(col => col.Away, 0)
-                            .SetProperty(col => col.DND, 0)
-                            .SetProperty(col => col.Custom, 0)
-                            .SetProperty(col => col.Custom_lbl, "")
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                        );
-                        await _UsersDBC.SaveChangesAsync();
-                        obj.online_status = "Online";
-                        return JsonSerializer.Serialize(obj);
+                        try
+                        {
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            {
+                                await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
+                                {
+                                    ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
+                                    User_id = dto.User_id,
+                                    Updated_on = TimeStamp,
+                                    Created_on = TimeStamp,
+                                    Updated_by = dto.User_id,
+                                    Created_by = dto.User_id,
+                                    Online = 1
+                                });
+                            }
+                            else
+                            {
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                    .SetProperty(col => col.Offline, 0)
+                                    .SetProperty(col => col.Hidden, 0)
+                                    .SetProperty(col => col.Online, 1)
+                                    .SetProperty(col => col.Away, 0)
+                                    .SetProperty(col => col.DND, 0)
+                                    .SetProperty(col => col.Custom, 0)
+                                    .SetProperty(col => col.Custom_lbl, "")
+                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_on, TimeStamp)
+                                );
+                            }
+                            await _UsersDBC.SaveChangesAsync();
+                            obj.online_status = "Online";
+                            return JsonSerializer.Serialize(obj);
+                        }
+                        catch
+                        {
+                            obj.error = "Server Error: Update User Display Status Failed.";
+                            return JsonSerializer.Serialize(obj);
+                        }
                     case 3:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Offline, 0)
-                            .SetProperty(col => col.Hidden, 0)
-                            .SetProperty(col => col.Online, 0)
-                            .SetProperty(col => col.Away, 1)
-                            .SetProperty(col => col.DND, 0)
-                            .SetProperty(col => col.Custom, 0)
-                            .SetProperty(col => col.Custom_lbl, "")
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                        );
-                        await _UsersDBC.SaveChangesAsync();
-                        obj.online_status = "Away";
-                        return JsonSerializer.Serialize(obj);
+                        try
+                        {
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            {
+                                await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
+                                {
+                                    ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
+                                    User_id = dto.User_id,
+                                    Updated_on = TimeStamp,
+                                    Created_on = TimeStamp,
+                                    Updated_by = dto.User_id,
+                                    Created_by = dto.User_id,
+                                    Away = 1
+                                });
+                            }
+                            else
+                            {
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                    .SetProperty(col => col.Offline, 0)
+                                    .SetProperty(col => col.Hidden, 0)
+                                    .SetProperty(col => col.Online, 0)
+                                    .SetProperty(col => col.Away, 1)
+                                    .SetProperty(col => col.DND, 0)
+                                    .SetProperty(col => col.Custom, 0)
+                                    .SetProperty(col => col.Custom_lbl, "")
+                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_on, TimeStamp)
+                                );
+                            }
+                            await _UsersDBC.SaveChangesAsync();
+                            obj.online_status = "Away";
+                            return JsonSerializer.Serialize(obj);
+                        }
+                        catch
+                        {
+                            obj.error = "Server Error: Update User Display Status Failed.";
+                            return JsonSerializer.Serialize(obj);
+                        }
                     case 4:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Offline, 0)
-                            .SetProperty(col => col.Hidden, 0)
-                            .SetProperty(col => col.Online, 0)
-                            .SetProperty(col => col.Away, 0)
-                            .SetProperty(col => col.DND, 1)
-                            .SetProperty(col => col.Custom, 0)
-                            .SetProperty(col => col.Custom_lbl, "")
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                        );
-                        await _UsersDBC.SaveChangesAsync();
-                        obj.online_status = "Do Not Disturb";
-                        return JsonSerializer.Serialize(obj);
+                        try
+                        {
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            {
+                                await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
+                                {
+                                    ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
+                                    User_id = dto.User_id,
+                                    Updated_on = TimeStamp,
+                                    Created_on = TimeStamp,
+                                    Updated_by = dto.User_id,
+                                    Created_by = dto.User_id,
+                                    DND = 1
+                                });
+                            }
+                            else
+                            {
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                    .SetProperty(col => col.Offline, 0)
+                                    .SetProperty(col => col.Hidden, 0)
+                                    .SetProperty(col => col.Online, 0)
+                                    .SetProperty(col => col.Away, 0)
+                                    .SetProperty(col => col.DND, 1)
+                                    .SetProperty(col => col.Custom, 0)
+                                    .SetProperty(col => col.Custom_lbl, "")
+                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_on, TimeStamp)
+                                );
+                            }
+                            await _UsersDBC.SaveChangesAsync();
+                            obj.online_status = "DND";
+                            return JsonSerializer.Serialize(obj);
+                        }
+                        catch
+                        {
+                            obj.error = "Server Error: Update User Display Status Failed.";
+                            return JsonSerializer.Serialize(obj);
+                        }
                     case 5:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                            .SetProperty(col => col.Offline, 0)
-                            .SetProperty(col => col.Hidden, 0)
-                            .SetProperty(col => col.Online, 0)
-                            .SetProperty(col => col.Away, 0)
-                            .SetProperty(col => col.DND, 0)
-                            .SetProperty(col => col.Custom, 1)
-                            .SetProperty(col => col.Custom_lbl, dto.Custom_lbl)
-                            .SetProperty(col => col.Updated_by, dto.User_id)
-                            .SetProperty(col => col.Updated_on, TimeStamp)
-                        );
-                        await _UsersDBC.SaveChangesAsync();
-                        obj.online_status = "Custom";
-                        return JsonSerializer.Serialize(obj);
+                        try
+                        {
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            {
+                                await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
+                                {
+                                    ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
+                                    User_id = dto.User_id,
+                                    Updated_on = TimeStamp,
+                                    Created_on = TimeStamp,
+                                    Updated_by = dto.User_id,
+                                    Created_by = dto.User_id,
+                                    Custom = 1
+                                });
+                            }
+                            else
+                            {
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                    .SetProperty(col => col.Offline, 0)
+                                    .SetProperty(col => col.Hidden, 1)
+                                    .SetProperty(col => col.Online, 0)
+                                    .SetProperty(col => col.Away, 0)
+                                    .SetProperty(col => col.DND, 0)
+                                    .SetProperty(col => col.Custom, 0)
+                                    .SetProperty(col => col.Custom_lbl, dto.Custom_lbl)
+                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_on, TimeStamp)
+                                );
+                            }
+                            await _UsersDBC.SaveChangesAsync();
+                            obj.online_status = "Custom";
+                            return JsonSerializer.Serialize(obj);
+                        }
+                        catch
+                        {
+                            obj.error = "Server Error: Update User Display Status Failed.";
+                            return JsonSerializer.Serialize(obj);
+                        }
                     case 10:
                         await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                             .SetProperty(col => col.Offline, 1)
@@ -1526,7 +1671,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
                         Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth
+                        Pixel_depth = dto.Pixel_depth,
+                        Token = dto.Token
 
                     });
                 } else {
@@ -1539,7 +1685,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Client_Port, dto.Client_Networking_Port)
                     .SetProperty(col => col.Server_IP, dto.Server_Networking_IP_Address)
                     .SetProperty(col => col.Server_Port, dto.Server_Networking_Port)
-                    .SetProperty(col => col.Updated_on, TimeStamp));
+                    .SetProperty(col => col.Updated_on, TimeStamp)
+                    .SetProperty(col => col.Token, dto.Token));
                     await _UsersDBC.SaveChangesAsync();
                 }
                 obj.login_on = TimeStamp;
@@ -1580,7 +1727,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
                     Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth
+                    Pixel_depth = dto.Pixel_depth,
+                    Token = dto.Token
                 });
                 await _UsersDBC.SaveChangesAsync();
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
@@ -1706,6 +1854,50 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
+        
+        public async Task<string> Insert_Report_Failed_Logout_HistoryTbl(Report_Failed_Logout_HistoryDTO dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_Logout_HistoryTbl.AddAsync(new Report_Failed_Logout_HistoryTbl
+                {
+                    ID = Convert.ToUInt64(_UsersDBC.Report_Failed_Logout_HistoryTbl.Count() + 1),
+                    Updated_on = TimeStamp,
+                    Created_on = TimeStamp,
+                    Location = dto.Location,
+                    Client_IP = dto.Client_Networking_IP_Address,
+                    Client_Port = dto.Client_Networking_Port,
+                    Server_IP = dto.Server_Networking_IP_Address,
+                    Server_Port = dto.Server_Networking_Port,
+                    Client_time = dto.Client_time,
+                    Action = dto.Action,
+                    Controller = dto.Controller,
+                    Language_Region = $@"{dto.Language}-{dto.Region}",
+                    Reason = dto.Reason,
+                    User_id = dto.User_id,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Token = dto.Token
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return "Logout Successful.";
+            } catch {
+                obj.error = "Server Error: Report Pending Email Registration History Failed.";
+                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+            }
+        }
         public async Task<string> Insert_Report_Failed_JWT_HistoryTbl(Report_Failed_JWT_HistoryDTO dto)
         {
             try
@@ -1745,7 +1937,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
                     Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth
+                    Pixel_depth = dto.Pixel_depth,
+                    Token = dto.Token
                 });
                 await _UsersDBC.SaveChangesAsync();
                 return "Report Successful.";
@@ -1842,33 +2035,116 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
-        public async Task<string> Update_End_User_Logout(ulong id)
+        
+        public async Task<string> Insert_End_User_Logout_HistoryTbl(Logout_Time_StampDTO dto)
         {
-            if (_UsersDBC.Logout_Time_StampTbl.Any(x=>x.User_id == id))
-            {//update
-                await _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == id).ExecuteUpdateAsync(s => s
+            await _UsersDBC.Logout_Time_Stamp_HistoryTbl.AddAsync(new Logout_Time_Stamp_HistoryTbl
+            {
+                User_id = dto.User_id,
+                Logout_on = TimeStamp,
+                Token = dto.Token,
+                Updated_by = dto.User_id,
+                Updated_on = TimeStamp,
+                Created_on = TimeStamp,
+                Client_IP = dto.Client_Networking_IP_Address,
+                Client_Port = dto.Client_Networking_Port,
+                Server_IP = dto.Server_Networking_IP_Address,
+                Server_Port = dto.Server_Networking_Port,
+                Client_time = dto.Client_time,
+                User_agent = dto.User_agent,
+                Window_height = dto.Window_height,
+                Window_width = dto.Window_width,
+                Screen_extend = dto.Screen_extend,
+                Screen_height = dto.Screen_height,
+                Screen_width = dto.Screen_width,
+                RTT = dto.RTT,
+                Orientation = dto.Orientation,
+                Data_saver = dto.Data_saver,
+                Color_depth = dto.Color_depth,
+                Pixel_depth = dto.Pixel_depth,
+                Connection_type = dto.Connection_type,
+                Down_link = dto.Down_link,
+                Device_ram_gb = dto.Device_ram_gb
+            });
+            await _UsersDBC.SaveChangesAsync();
+            
+            obj.id = dto.User_id;
+            obj.logout_on = TimeStamp;
+            return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+        }
+
+        public async Task<string> Update_End_User_Logout(Logout_Time_StampDTO dto)
+        {
+            if (_UsersDBC.Logout_Time_StampTbl.Any(x=>x.User_id == dto.User_id))
+            {
+                await _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Logout_on, TimeStamp)
                     .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, id)
+                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    .SetProperty(col => col.Logout_on, TimeStamp)
+                    .SetProperty(col => col.Updated_on, TimeStamp)
+                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    .SetProperty(col => col.Client_time, dto.Client_time)
+                    .SetProperty(col => col.Server_Port, dto.Server_Networking_Port)
+                    .SetProperty(col => col.Server_IP, dto.Server_Networking_IP_Address)
+                    .SetProperty(col => col.Client_IP, dto.Client_Networking_IP_Address)
+                    .SetProperty(col => col.Client_Port, dto.Client_Networking_Port)
+                    .SetProperty(col => col.User_agent, dto.User_agent)
+                    .SetProperty(col => col.Window_width, dto.Window_width)
+                    .SetProperty(col => col.Window_height, dto.Window_height)
+                    .SetProperty(col => col.Screen_extend, dto.Screen_extend)
+                    .SetProperty(col => col.Screen_width, dto.Screen_width)
+                    .SetProperty(col => col.Screen_height, dto.Screen_height)
+                    .SetProperty(col => col.RTT, dto.RTT)
+                    .SetProperty(col => col.Token, dto.Token)
+                    .SetProperty(col => col.Orientation, dto.Orientation)
+                    .SetProperty(col => col.Data_saver, dto.Data_saver)
+                    .SetProperty(col => col.Color_depth, dto.Color_depth)
+                    .SetProperty(col => col.Pixel_depth, dto.Pixel_depth)
+                    .SetProperty(col => col.Connection_type, dto.Connection_type)
+                    .SetProperty(col => col.Down_link, dto.Down_link)
+                    .SetProperty(col => col.Device_ram_gb, dto.Device_ram_gb)
+                    .SetProperty(col=>col.Token, dto.Token)
                 );
                 await _UsersDBC.SaveChangesAsync();
             }
             else
-            {//insert
+            {
                 await _UsersDBC.Logout_Time_StampTbl.AddAsync(new Logout_Time_StampTbl
                 {
-                    User_id = id,
+                    User_id = dto.User_id,
                     Logout_on = TimeStamp,
-                    Updated_by = id,
+                    Token = dto.Token,
+                    Updated_by = dto.User_id,
                     Updated_on = TimeStamp,
-                    Created_on = TimeStamp
+                    Created_on = TimeStamp,
+                    Client_IP = dto.Client_Networking_IP_Address,
+                    Client_Port = dto.Client_Networking_Port,
+                    Server_IP = dto.Server_Networking_IP_Address,
+                    Server_Port = dto.Server_Networking_Port,
+                    Client_time = dto.Client_time,
+                    User_agent = dto.User_agent,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb
                 });
                 await _UsersDBC.SaveChangesAsync();
             }
-            obj.id = id;
+            obj.User_id = dto.User_id;
             obj.logout_on = TimeStamp;
             return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
         }
+
         public Task<string> Read_Users()
         {
             obj.logoutsTS = _UsersDBC.Logout_Time_StampTbl.Select(x => x).ToList();
@@ -1879,7 +2155,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.account_types = _UsersDBC.Account_TypeTbl.Select(x => x).ToList();
             return Task.FromResult(JsonSerializer.Serialize(obj));
         }
-        public Task<bool> ID_Exists_In_Users_Tbl(ulong user_id) {
+        public Task<bool> ID_Exists_In_Users_IDTbl(ulong user_id) {
             return Task.FromResult(_UsersDBC.User_IDsTbl.Any(x => x.ID == user_id));
         }
         public async Task<bool> Email_Exists_In_Pending_Email_RegistrationTbl(string email_address)
@@ -1940,7 +2216,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Create_Integration_Twitch_Record(Integration_TwitchDTO dto)
         {
             obj.id = null;
-            return JsonSerializer.Serialize(obj);
+            return await JsonSerializer.Serialize(obj);
         }
         public void Create_Chat_WebSocket_Log_Records(Websocket_Chat_PermissionDTO dto)
         {

@@ -31,7 +31,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     if (!UsersDBC.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address))
                         return NotFound();
                     ulong user_id = UsersDBC.Read_User_id_By_Email_Address(obj.Email_Address);
-                    if (user_id == 0 || !_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                    if (user_id == 0 || !_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                         return NotFound();
                     obj.ID = user_id;
                 */

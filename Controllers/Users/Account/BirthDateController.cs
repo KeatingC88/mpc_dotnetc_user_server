@@ -26,7 +26,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             {
                 ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(user_id).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
                     return Conflict();
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Birth_Date(dto)).Result;

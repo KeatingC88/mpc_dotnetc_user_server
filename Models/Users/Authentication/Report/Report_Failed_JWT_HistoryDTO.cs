@@ -30,6 +30,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
         public ulong Client_id { get; set; }
         public ulong JWT_id { get; set; }
         public ulong User_id { get; set; }
+        public string Token { get; set; } = string.Empty;
 
         [Required]
         public string User_agent { get; set; } = string.Empty;

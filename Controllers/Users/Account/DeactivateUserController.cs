@@ -34,7 +34,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
                 target_id = dto.Target_User;
 
-                if (!_UsersRepository.ID_Exists_In_Users_Tbl(dto.Target_User).Result)
+                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(dto.Target_User).Result)
                         return NotFound();
 
                 string? email = _UsersRepository.Read_User_Email_By_ID(user_id).Result;

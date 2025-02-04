@@ -1,28 +1,71 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Logout
 {
-    public class Login_Time_Stamp_HistoryDTO
+    public class Logout_Time_StampDTO
     {
         public ulong User_id { get; set; }
 
-        [Required(ErrorMessage = "Application Login Time is Missing.")]
-        public ulong Login_on { get; set; }
+        [Required(ErrorMessage = "Application Logout Time is Missing.")]
+        public ulong Logout_on { get; set; }
 
         [Required(ErrorMessage = "Application Client Time is Missing.")]
         public ulong Client_time { get; set; }
 
-        [Required(ErrorMessage = "Application Location is Missing.")]
+        [Required(ErrorMessage = "Application Logout Location is Missing.")]
         public string Location { get; set; } = string.Empty;
         public string Client_Networking_IP_Address { get; set; } = string.Empty;
         public int Client_Networking_Port { get; set; }
         public string Server_Networking_IP_Address { get; set; } = string.Empty;
         public int Server_Networking_Port { get; set; }
         [Required]
+        public string ID { get; set; } = string.Empty;
+
+        [Required]
+        public string Language { get; set; } = string.Empty;
+
+        [Required]
+        public string Region { get; set; } = string.Empty;
+
+        [Required]
+        public string Alignment { get; set; } = string.Empty;
+
+        [Required]
+        public string Text_alignment { get; set; } = string.Empty;
+
+        [Required]
+        public string Locked { get; set; } = string.Empty;
+
+        [Required]
+        public string Grid_type { get; set; } = string.Empty;
+
+        [Required]
+        public string Theme { get; set; } = string.Empty;
+
+        [Required]
         public string Token { get; set; } = string.Empty;
 
         [Required]
+        public string Online_status { get; set; } = string.Empty;
+
+
+        [Required]
+        public string JWT_issuer_key { get; set; } = string.Empty;
+
+        [Required]
+        public string JWT_client_key { get; set; } = string.Empty;
+
+        [Required]
+        public string JWT_client_address { get; set; } = string.Empty;
+
+        public ulong Client_id { get; set; }
+        public ulong JWT_id { get; set; }
+
+        [Required]
         public string User_agent { get; set; } = string.Empty;
+        public string Client_user_Agent { get; set; } = string.Empty;
+
+        public string Server_user_Agent { get; set; } = string.Empty;
         [Required]
 
         public string Down_link { get; set; } = string.Empty;

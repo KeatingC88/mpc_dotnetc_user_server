@@ -18,6 +18,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
         public string Reason { get; set; } = string.Empty;
         public string Controller { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
         public int Server_Port { get; set; }
         public ulong Client_id { get; set; }
         public ulong JWT_id { get; set; }
