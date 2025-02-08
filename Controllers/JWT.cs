@@ -10,7 +10,7 @@ namespace mpc_dotnetc_user_server.Controllers
     public class JWT
     {
         private static readonly Constants Constants = new Constants();
-        private static readonly ushort token_expire_time = 15;
+        private static readonly ushort token_expire_time = 16;
 
         public static async Task<string> Create_Email_Account_Token(JWT_DTO dto)
         {
@@ -27,6 +27,7 @@ namespace mpc_dotnetc_user_server.Controllers
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Constants.JWT_SECURITY_KEY));
 
             var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
             var token = new JwtSecurityToken(
                 $"{AES.Process_Encryption(Constants.JWT_ISSUER_KEY)}",
                 $"{AES.Process_Encryption(Constants.JWT_CLIENT_KEY)}",

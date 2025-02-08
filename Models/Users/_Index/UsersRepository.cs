@@ -2046,6 +2046,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Updated_by = dto.User_id,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
+                Location = dto.Location,
                 Client_IP = dto.Client_Networking_IP_Address,
                 Client_Port = dto.Client_Networking_Port,
                 Server_IP = dto.Server_Networking_IP_Address,
@@ -2089,6 +2090,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Server_IP, dto.Server_Networking_IP_Address)
                     .SetProperty(col => col.Client_IP, dto.Client_Networking_IP_Address)
                     .SetProperty(col => col.Client_Port, dto.Client_Networking_Port)
+                    .SetProperty(col => col.Location, dto.Location)
                     .SetProperty(col => col.User_agent, dto.User_agent)
                     .SetProperty(col => col.Window_width, dto.Window_width)
                     .SetProperty(col => col.Window_height, dto.Window_height)
@@ -2118,6 +2120,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_by = dto.User_id,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
+                    Location = dto.Location,
                     Client_IP = dto.Client_Networking_IP_Address,
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,

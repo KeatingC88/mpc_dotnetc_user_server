@@ -1,24 +1,25 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users._Index
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.JWT
 {
-    public class Load_All_UsersDTO
+    public class Renew_JWTDTO
     {
-        [Required]
         public string ID { get; set; } = string.Empty;
-        public ulong User_id { get; set; } 
-
-        [Required]
+        public string Account_type { get; set; } = string.Empty;
+        public ulong User_id { get; set; }
+        public string Account_roles { get; set; } = string.Empty;
+        public string Account_groups { get; set; } = string.Empty;
+        public string Login_type { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
-
-        [Required]
-        public string Location { get; set; } = string.Empty;
 
         [Required]
         public string Language { get; set; } = string.Empty;
 
         [Required]
         public string Region { get; set; } = string.Empty;
+
+        [Required]
+        public string Location { get; set; } = string.Empty;
 
         [Required]
         public string Client_time { get; set; } = string.Empty;
@@ -31,13 +32,6 @@ namespace mpc_dotnetc_user_server.Models.Users._Index
 
         [Required]
         public string JWT_client_address { get; set; } = string.Empty;
-
-        [Required]
-        public string Account_type { get; set; } = string.Empty;
-
-        [Required]
-        public string Login_type { get; set; } = string.Empty;
-
         public ulong Client_id { get; set; }
         public ulong JWT_id { get; set; }
 
