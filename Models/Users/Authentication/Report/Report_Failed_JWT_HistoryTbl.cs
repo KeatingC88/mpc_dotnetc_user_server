@@ -32,12 +32,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
         public string User_agent { get; set; } = string.Empty;
         [Required]
 
-        public string Client_user_Agent { get; set; } = string.Empty;
-        [Required]
-
-        public string Server_user_Agent { get; set; } = string.Empty;
-        [Required]
-
         public string Down_link { get; set; } = string.Empty;
         [Required]
 
