@@ -64,8 +64,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Client_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
                 dto.JWT_id = dto.Client_id;
 
-                dto.User_agent = AES.Process_Decryption(dto.User_agent);
-                var user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -81,125 +81,41 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (user_agent == "error" || dto.User_agent != user_agent)
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
-                    await _UsersRepository.Insert_Report_Failed_User_Agent_HistoryTbl(new Report_Failed_User_Agent_HistoryDTO
-                    {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Location = dto.Location,
-                        Client_time = dto.Client_time,
-                        Reason = "User-Agent Client-Server Mismatch",
-                        Controller = "Authenticate",
-                        Action = "Login_Email",
-                        Login_type = "Email",
-                        Server_User_Agent = user_agent,
-                        Client_User_Agent = dto.User_agent,
-                        User_id = dto.Client_id,
-                        Window_height = dto.Window_height,
-                        Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
-                        Screen_height = dto.Screen_height,
-                        Screen_width = dto.Screen_width,
-                        RTT = dto.RTT,
-                        Orientation = dto.Orientation,
-                        Data_saver = dto.Data_saver,
-                        Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Connection_type = dto.Connection_type,
-                        Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb
-                    });
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_client_address = dto.JWT_client_address,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Email",
+                    Action = "Login"
+                }).Result)
                     return Conflict();
-                }
-
-                if (dto.JWT_issuer_key != _Constants.JWT_ISSUER_KEY ||
-                    dto.JWT_client_key != _Constants.JWT_CLIENT_KEY ||
-                    dto.JWT_client_address != _Constants.JWT_CLAIM_WEBPAGE)
-                {
-                    await _UsersRepository.Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
-                    {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        User_agent = user_agent,
-                        Client_id = dto.Client_id,
-                        JWT_id = dto.JWT_id,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Location = dto.Location,
-                        Client_time = dto.Client_time,
-                        Reason = "JWT Client-Server Mismatch",
-                        Controller = "Authenticate",
-                        Action = "Login_Email",
-                        User_id = dto.JWT_id,
-                        Login_type = "Email",
-                        JWT_issuer_key = dto.JWT_issuer_key,
-                        JWT_client_key = dto.JWT_client_key,
-                        JWT_client_address = dto.JWT_client_address,
-                        Window_height = dto.Window_height,
-                        Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
-                        Screen_height = dto.Screen_height,
-                        Screen_width = dto.Screen_width,
-                        RTT = dto.RTT,
-                        Orientation = dto.Orientation,
-                        Data_saver = dto.Data_saver,
-                        Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Connection_type = dto.Connection_type,
-                        Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb,
-                        Token = ""
-                    });
-                    return Conflict();
-                }
-
-                if (dto.Client_id != dto.JWT_id) 
-                {
-                    await _UsersRepository.Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
-                    {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        User_agent = user_agent,
-                        Client_id = dto.Client_id,
-                        JWT_id = dto.JWT_id,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Location = dto.Location,
-                        Client_time = dto.Client_time,
-                        Reason = "JWT Client-ID Mismatch",
-                        Controller = "Authenticate",
-                        Action = "Login_Email",
-                        User_id = dto.JWT_id,
-                        Login_type = "Email",
-                        JWT_issuer_key = dto.JWT_issuer_key,
-                        JWT_client_key = dto.JWT_client_key,
-                        JWT_client_address = dto.JWT_client_address,
-                        Window_height = dto.Window_height,
-                        Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
-                        Screen_height = dto.Screen_height,
-                        Screen_width = dto.Screen_width,
-                        RTT = dto.RTT,
-                        Orientation = dto.Orientation,
-                        Data_saver = dto.Data_saver,
-                        Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Connection_type = dto.Connection_type,
-                        Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb,
-                        Token = "",
-                    });
-                    return Conflict();
-                }
 
                 if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
                 {
@@ -209,45 +125,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Client_Networking_Port = HttpContext.Connection.RemotePort,
                         Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        User_agent = user_agent,
+                        User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
                         Language = dto.Language,
                         Region = dto.Region,
                         Location = dto.Location,
                         Client_time = ulong.Parse(dto.Client_time),
                         Reason = "Unregistered Email",
-                        Window_height = dto.Window_height,
-                        Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
-                        Screen_height = dto.Screen_height,
-                        Screen_width = dto.Screen_width,
-                        RTT = dto.RTT,
-                        Orientation = dto.Orientation,
-                        Data_saver = dto.Data_saver,
-                        Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Connection_type = dto.Connection_type,
-                        Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb
-                    });
-                    return NotFound();
-                }
-
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(dto.Client_id).Result)
-                {
-                    await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
-                    {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Location = dto.Location,
-                        Client_time = ulong.Parse(dto.Client_time),
-                        Reason = "Unregistered Email ID",
-                        User_agent = user_agent,
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
                         Screen_extend = dto.Screen_extend,
@@ -278,7 +162,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                             Client_Networking_Port = HttpContext.Connection.RemotePort,
                             Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                             Server_Networking_Port = HttpContext.Connection.LocalPort,
-                            User_agent = user_agent,
+                            User_agent = dto.Server_user_agent,
                             Email_Address = dto.Email_Address,
                             Language = dto.Language,
                             Region = dto.Region,
@@ -321,7 +205,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
                     {
                         User_id = user_id,
-                        Online_status = 2
+                        Online_status = 2.ToString()
                     });
                 }
 
@@ -334,13 +218,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 await _UsersRepository.Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
                 {
                     User_id = user_id,
-                    Text_alignment = byte.Parse(dto.Text_alignment)
+                    Text_alignment = dto.Text_alignment
                 });
 
                 await _UsersRepository.Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
                 {
                     User_id = user_id,
-                    Locked = bool.Parse(dto.Locked)
+                    Locked = dto.Locked
                 });
 
                 await _UsersRepository.Update_End_User_Selected_Language(new Selected_LanguageDTO
@@ -354,11 +238,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 {
                     User_id = user_id,
                     Theme = dto.Theme
-                });
-
-                await _UsersRepository.Update_End_User_Selected_Grid_Type(new Selected_App_Grid_TypeDTO { 
-                    User_id = user_id,
-                    Grid = byte.Parse(dto.Grid_type)
                 });
 
                 string user_data = await Task.FromResult(_UsersRepository.Read_Email_User_Data_By_ID(user_id)).Result;
@@ -377,7 +256,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Client_Networking_Port = HttpContext.Connection.RemotePort,
                     Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Networking_Port = HttpContext.Connection.LocalPort,
-                    User_agent = user_agent,
+                    User_agent = dto.Server_user_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
                     Screen_extend = dto.Screen_extend,
@@ -403,7 +282,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Client_Networking_Port = HttpContext.Connection.RemotePort,
                     Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Networking_Port = HttpContext.Connection.LocalPort,
-                    User_agent = user_agent,
+                    User_agent = dto.Server_user_agent,
                     Location = dto.Location,
                     Client_time = ulong.Parse(dto.Client_time),
                     Window_height = dto.Window_height,
@@ -456,8 +335,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                dto.User_agent = AES.Process_Decryption(dto.User_agent);
-                var user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -473,234 +352,78 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-
-                if (user_agent == "error" || dto.User_agent != user_agent)
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
-                    await _UsersRepository.Insert_Report_Failed_User_Agent_HistoryTbl(new Report_Failed_User_Agent_HistoryDTO
-                    {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Location = dto.Location,
-                        Client_time = dto.Client_time,
-                        Reason = "User-Agent Client-Server Mismatch",
-                        Controller = "Authenticate",
-                        Action = "Logout",
-                        Server_User_Agent = user_agent,
-                        Client_User_Agent = dto.User_agent,
-                        User_id = dto.Client_id,
-                        Window_height = dto.Window_height,
-                        Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
-                        Screen_height = dto.Screen_height,
-                        Screen_width = dto.Screen_width,
-                        RTT = dto.RTT,
-                        Orientation = dto.Orientation,
-                        Data_saver = dto.Data_saver,
-                        Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Connection_type = dto.Connection_type,
-                        Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb
-                    });
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Status"
+                }).Result)
                     return Conflict();
-                }
 
-                if (dto.JWT_issuer_key != _Constants.JWT_ISSUER_KEY ||
-                    dto.JWT_client_key != _Constants.JWT_CLIENT_KEY ||
-                    dto.JWT_client_address != _Constants.JWT_CLAIM_WEBPAGE)
-                {
-                    await _UsersRepository.Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
-                    {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        User_agent = user_agent,
-                        Client_id = dto.Client_id,
-                        JWT_id = dto.JWT_id,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Location = dto.Location,
-                        Client_time = dto.Client_time,
-                        Reason = "JWT Client-Server Mismatch",
-                        Controller = "Authenticate",
-                        Action = "Logout",
-                        User_id = dto.JWT_id,
-                        JWT_issuer_key = dto.JWT_issuer_key,
-                        JWT_client_key = dto.JWT_client_key,
-                        JWT_client_address = dto.JWT_client_address,
-                        Window_height = dto.Window_height,
-                        Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
-                        Screen_height = dto.Screen_height,
-                        Screen_width = dto.Screen_width,
-                        RTT = dto.RTT,
-                        Orientation = dto.Orientation,
-                        Data_saver = dto.Data_saver,
-                        Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Connection_type = dto.Connection_type,
-                        Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb,
-                        Token = dto.Token
-                    });
-                    return Conflict();
-                }
-
-                if (dto.Client_id != dto.JWT_id)
-                {
-                    await _UsersRepository.Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
-                    {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        User_agent = user_agent,
-                        Client_id = dto.Client_id,
-                        JWT_id = dto.JWT_id,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Location = dto.Location,
-                        Client_time = dto.Client_time,
-                        Reason = "JWT Client-ID Mismatch",
-                        Controller = "Authenticate",
-                        Action = "Logout",
-                        User_id = dto.JWT_id,
-                        JWT_issuer_key = dto.JWT_issuer_key,
-                        JWT_client_key = dto.JWT_client_key,
-                        JWT_client_address = dto.JWT_client_address,
-                        Window_height = dto.Window_height,
-                        Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
-                        Screen_height = dto.Screen_height,
-                        Screen_width = dto.Screen_width,
-                        RTT = dto.RTT,
-                        Orientation = dto.Orientation,
-                        Data_saver = dto.Data_saver,
-                        Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Connection_type = dto.Connection_type,
-                        Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb,
-                        Token = dto.Token
-                    });
-                    return Conflict();
-                }
-
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(dto.JWT_id).Result)
-                {
-                    await _UsersRepository.Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
-                    {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        User_agent = user_agent,
-                        Client_id = dto.Client_id,
-                        JWT_id = dto.JWT_id,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Location = dto.Location,
-                        Client_time = dto.Client_time,
-                        Reason = "JWT ID DNE Users_IDTbl",
-                        Controller = "Authenticate",
-                        Action = "Logout",
-                        User_id = dto.JWT_id,
-                        JWT_issuer_key = dto.JWT_issuer_key,
-                        JWT_client_key = dto.JWT_client_key,
-                        JWT_client_address = dto.JWT_client_address,
-                        Window_height = dto.Window_height,
-                        Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
-                        Screen_height = dto.Screen_height,
-                        Screen_width = dto.Screen_width,
-                        RTT = dto.RTT,
-                        Orientation = dto.Orientation,
-                        Data_saver = dto.Data_saver,
-                        Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Connection_type = dto.Connection_type,
-                        Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb,
-                        Token = dto.Token
-                    });
-                    return Conflict();
-                }
-
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(dto.Client_id).Result)
-                {
-                    await _UsersRepository.Insert_Report_Failed_Logout_HistoryTbl(new Report_Failed_Logout_HistoryDTO
-                    {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
-                        User_agent = user_agent,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Location = dto.Location,
-                        Client_time = ulong.Parse(dto.Client_time),
-                        Reason = "Client ID DNE Users_IDTbl",
-                        Controller = "Authenticate",
-                        Action = "Logout",
-                        User_id = dto.JWT_id,
-                        Window_height = dto.Window_height,
-                        Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
-                        Screen_height = dto.Screen_height,
-                        Screen_width = dto.Screen_width,
-                        RTT = dto.RTT,
-                        Orientation = dto.Orientation,
-                        Data_saver = dto.Data_saver,
-                        Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Connection_type = dto.Connection_type,
-                        Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb,
-                        Token = dto.Token,
-                    });
-                    return Conflict();
-                }
-                
                 dto.User_id = dto.JWT_id;
 
                 switch (int.Parse(dto.Online_status)) {
                     case 1:
                         await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO { 
                             User_id = dto.User_id,
-                            Online_status = 10
+                            Online_status = 10.ToString()
                         });
                         break;
                     case 2:
                         await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
                         {
                             User_id = dto.User_id,
-                            Online_status = 20
+                            Online_status = 20.ToString()
                         });
                         break;
                     case 3:
                         await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
                         {
                             User_id = dto.User_id,
-                            Online_status = 30
+                            Online_status = 30.ToString()
                         });
                         break;
                     case 4:
                         await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
                         {
                             User_id = dto.User_id,
-                            Online_status = 40
+                            Online_status = 40.ToString()
                         });
                         break;
                     case 5:
                         await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
                         {
                             User_id = dto.User_id,
-                            Online_status = 50
+                            Online_status = 50.ToString()
                         });
                         break;
                 }
@@ -710,7 +433,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Client_Networking_Port = HttpContext.Connection.RemotePort,
                     Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Networking_Port = HttpContext.Connection.LocalPort,
-                    User_agent = user_agent,
+                    User_agent = dto.Server_user_agent,
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
@@ -737,7 +460,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Client_Networking_Port = HttpContext.Connection.RemotePort,
                     Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Networking_Port = HttpContext.Connection.LocalPort,
-                    User_agent = user_agent,
+                    User_agent = dto.Server_user_agent,
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,

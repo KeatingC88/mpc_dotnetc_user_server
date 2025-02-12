@@ -46,10 +46,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
         public string User_agent { get; set; } = string.Empty;
         [Required]
 
-        public string Client_user_Agent { get; set; } = string.Empty;
+        public string Client_user_agent { get; set; } = string.Empty;
         [Required]
 
-        public string Server_user_Agent { get; set; } = string.Empty;
+        public string Server_user_agent { get; set; } = string.Empty;
         [Required]
 
         public string Down_link { get; set; } = string.Empty;

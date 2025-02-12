@@ -1,7 +1,6 @@
 ﻿using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
@@ -19,6 +18,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.Integration;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
+using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -61,10 +61,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Insert_Report_Failed_User_Agent_HistoryTbl(Report_Failed_User_Agent_HistoryDTO dto);
         Task<string> Update_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
         Task<string> Update_End_User_Avatar(Selected_AvatarDTO dto);
+        Task<string> Update_End_User_Avatar_Title(Selected_Avatar_TitleDTO dto);
         Task<string> Update_End_User_Name(Selected_NameDTO dto);
         Task<string> Update_End_User_Login_Time_Stamp(Login_Time_StampDTO dto);
         Task<string> Update_End_User_Logout(Logout_Time_StampDTO dto);
         Task<string> Insert_End_User_Logout_HistoryTbl(Logout_Time_StampDTO dto);
+        Task<string> Insert_Report_Failed_Selected_HistoryTbl(Report_Failed_Selected_HistoryDTO dto);
         Task<string> Update_End_User_Selected_Alignment(Selected_App_AlignmentDTO dto);
         Task<string> Update_End_User_Selected_TextAlignment(Selected_App_Text_AlignmentDTO dto);
         Task<string> Update_End_User_Selected_Language(Selected_LanguageDTO dto);
@@ -78,9 +80,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Update_End_User_Maiden_Name(IdentityDTO dto);
         Task<string> Update_End_User_Ethnicity(IdentityDTO dto);
         Task<string> Update_End_User_Gender(IdentityDTO dto);
-        Task<string> Update_End_User_Password(Login_PasswordDTO dto);
+        Task<string> Update_End_User_Password(Password_ChangeDTO dto);
         Task<string> Update_Chat_Web_Socket_Permissions_Tbl(Websocket_Chat_PermissionTbl dto);
-        Task<string> Update_End_User_Birth_Date(Birth_DateDTO dto);
+        Task<string> Update_End_User_Birth_Date(IdentityDTO dto);
+        Task<bool> Validate_Client_With_Server_Authorization(Report_Failed_Authorization_HistoryDTO dto);
+        Task<string> Insert_Report_Failed_Client_ID_HistoryTbl(Report_Failed_Client_ID_HistoryDTO dto);
         void Create_Chat_WebSocket_Log_Records(Websocket_Chat_PermissionDTO dto);
         bool Compare_Password_Byte_Arrays(byte[] array1, byte[] array2);
         Task<bool> Email_Exists_In_Pending_Email_RegistrationTbl(string email_address);

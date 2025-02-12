@@ -5,15 +5,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Selection
 {
     public class Selected_ThemeDTO
     {
+        [Required]
+        public string ID { get; set; } = string.Empty;
         public ulong User_id { get; set; }
+        [Required]
+        public string Theme { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Application ID is Missing.")]
-        public string ID { get; set; }
-
-        [Required(ErrorMessage = "Application Theme is Missing.")]
-        public string Theme { get; set; }
-
-        [Required(ErrorMessage = "Application Token is Missing.")]
+        [Required]
         public string Token { get; set; } = string.Empty;
 
         [Required]
@@ -42,5 +40,52 @@ namespace mpc_dotnetc_user_server.Models.Users.Selection
 
         [Required]
         public string Login_type { get; set; } = string.Empty;
+
+        public ulong Client_id { get; set; }
+        public ulong JWT_id { get; set; }
+
+        [Required]
+        public string User_agent { get; set; } = string.Empty;
+        public string Client_user_agent { get; set; } = string.Empty;
+        public string Server_user_agent { get; set; } = string.Empty;
+        [Required]
+
+        public string Down_link { get; set; } = string.Empty;
+        [Required]
+
+        public string Connection_type { get; set; } = string.Empty;
+        [Required]
+
+        public string RTT { get; set; } = string.Empty;
+        [Required]
+
+        public string Data_saver { get; set; } = string.Empty;
+        [Required]
+
+        public string Device_ram_gb { get; set; } = string.Empty;
+        [Required]
+
+        public string Orientation { get; set; } = string.Empty;
+        [Required]
+
+        public string Screen_width { get; set; } = string.Empty;
+        [Required]
+
+        public string Screen_height { get; set; } = string.Empty;
+        [Required]
+
+        public string Screen_extend { get; set; } = string.Empty;
+        [Required]
+
+        public string Color_depth { get; set; } = string.Empty;
+        [Required]
+
+        public string Pixel_depth { get; set; } = string.Empty;
+        [Required]
+
+        public string Window_width { get; set; } = string.Empty;
+        [Required]
+
+        public string Window_height { get; set; } = string.Empty;
     }
 }

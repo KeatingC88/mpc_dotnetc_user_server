@@ -2,40 +2,29 @@
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
 {
-    public class Report_Email_RegistrationDTO
+    public class Report_Failed_Selected_HistoryTbl
     {
-        [Required(ErrorMessage = "Email Address is Missing.")]
-        public string Email_Address { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Reason is Missing.")]
-        public string Reason { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Language is Missing.")]
-        public string Language { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Region is Missing.")]
-        public string Region { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Location is Missing.")]
-        public string Location { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Client Time is Missing.")]
+        public ulong ID { get; set; }
+        public ulong? User_id { get; set; }
+        public bool Deleted { get; set; }
+        public ulong Updated_by { get; set; }
+        public ulong Created_on { get; set; }
+        public ulong Created_by { get; set; }
+        public ulong Updated_on { get; set; }
+        public ulong Deleted_on { get; set; }
+        public ulong Deleted_by { get; set; }
         public ulong Client_time { get; set; }
-        public string Client_Networking_IP_Address { get; set; } = string.Empty;
-        public int Client_Networking_Port { get; set; }
-        public string Server_Networking_IP_Address { get; set; }  = string.Empty;
-        public int Server_Networking_Port { get; set; }
-        public ulong User_id { get; set; }
-
-        [Required]
-        public string JWT_issuer_key { get; set; } = string.Empty;
-
-        [Required]
-        public string JWT_client_key { get; set; } = string.Empty;
-
-        [Required]
-        public string JWT_client_address { get; set; } = string.Empty;
-
+        public string Client_IP { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
+        public int Client_Port { get; set; }
+        public int Server_Port { get; set; }
+        public string Language_Region { get; set; } = string.Empty;
+        public string Email_Address { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string Reason { get; set; } = string.Empty;
+        public string Action { get; set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
+        public string Controller { get; set; } = string.Empty;
         [Required]
         public string User_agent { get; set; } = string.Empty;
         [Required]

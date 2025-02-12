@@ -1,6 +1,6 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
+﻿namespace mpc_dotnetc_user_server.Models.Users.Selected.Password_Change
 {
-    public class Login_PasswordTbl
+    public class Password_ChangeTbl
     {
         public ulong ID { get; set; }
         public ulong User_id { get; set; }

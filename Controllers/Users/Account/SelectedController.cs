@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
 using mpc_dotnetc_user_server.Models.Users.Selected.Name;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
+using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using System.Text;
-
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -37,11 +37,75 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                dto.User_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
+
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+
                 dto.Alignment = AES.Process_Decryption(dto.Alignment);
 
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(dto.User_id).Result)
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Alignment"
+                }).Result)
                     return Conflict();
+
+                dto.User_id = dto.JWT_id;
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO { 
                     Alignment = dto.Alignment,
@@ -60,13 +124,75 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
 
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
 
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+
+                dto.Text_alignment = AES.Process_Decryption(dto.Text_alignment);
+
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Text_Alignment"
+                }).Result)
                     return Conflict();
 
-                dto.User_id = user_id;
+                dto.User_id = dto.JWT_id;
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Selected_TextAlignment(dto)).Result;
             } catch (Exception e) {
@@ -82,15 +208,163 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
 
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+                dto.Avatar_url_path = AES.Process_Decryption(dto.Avatar_url_path);
+
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Avatar"
+                }).Result)
                     return Conflict();
 
-                dto.User_id = user_id;
+                dto.User_id = dto.JWT_id;
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Avatar(dto)).Result;
             } catch (Exception e) {
+                return StatusCode(500, $"{e.Message}");
+            }
+        }
+
+        [HttpPut("Avatar_Title")]
+        public async Task<ActionResult<string>> ChangeUserSelectedAvatar([FromBody] Selected_Avatar_TitleDTO dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest();
+
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
+
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+
+                dto.Avatar_title = AES.Process_Decryption(dto.Avatar_title);
+
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Avatar"
+                }).Result)
+                    return Conflict();
+
+                dto.User_id = dto.JWT_id;
+
+                return await Task.FromResult(_UsersRepository.Update_End_User_Avatar_Title(dto)).Result;
+            }
+            catch (Exception e)
+            {
                 return StatusCode(500, $"{e.Message}");
             }
         }
@@ -103,20 +377,162 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
 
-                if (string.IsNullOrEmpty(dto.Name) || string.IsNullOrWhiteSpace(dto.Name))
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+                dto.Name = AES.Process_Decryption(dto.Name);
+
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
-                    dto.Name = $"Recruit#{user_id}";
-                }
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Name"
+                }).Result)
+                    return Conflict();
 
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
-                    return NotFound();
-
-                dto.User_id = user_id;
+                dto.User_id = dto.JWT_id;
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Name(dto)).Result;
             } catch (Exception e) {
+                return StatusCode(500, $"{e.Message}");
+            }
+        }
+
+        [HttpPut("Grid")]
+        public async Task<ActionResult<string>> ChangeUserSelectedGridType([FromBody] Selected_App_Grid_TypeDTO dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest();
+
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
+
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+                dto.Grid = AES.Process_Decryption(dto.Grid);
+
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Grid Type"
+                }).Result)
+                    return Conflict();
+
+                dto.User_id = dto.JWT_id;
+
+                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Grid_Type(dto)).Result;
+            }
+            catch (Exception e)
+            {
                 return StatusCode(500, $"{e.Message}");
             }
         }
@@ -129,10 +545,73 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
 
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Language"
+                }).Result)
                     return Conflict();
+
+                dto.User_id = dto.JWT_id;
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Language(dto)).Result;
             } catch (Exception e) {
@@ -141,46 +620,190 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         }
 
         [HttpPut("NavLock")]
-        public async Task<ActionResult<string>> ChangeUserSelectedNavLock([FromBody] Selected_Navbar_LockDTO obj)
+        public async Task<ActionResult<string>> ChangeUserSelectedNavLock([FromBody] Selected_Navbar_LockDTO dto)
         {
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id =JWT.Read_Email_Account_User_ID_By_JWToken(obj.Token).Result;
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
 
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+
+                dto.Locked = AES.Process_Decryption(dto.Locked);
+                dto.ID = AES.Process_Decryption(dto.ID);
+
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "NavLock"
+                }).Result)
                     return Conflict();
 
-                obj.User_id = user_id;
-                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Nav_Lock(obj).Result);
+                dto.User_id = dto.JWT_id;
+
+                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Nav_Lock(dto).Result);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
         }
 
         [HttpPut("Password")]
-        public async Task<ActionResult<string>> ChangeUserPassword([FromBody] Login_PasswordDTO obj)
+        public async Task<ActionResult<string>> ChangeUserPassword([FromBody] Password_ChangeDTO dto)
         {
             try
             {
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-                ulong user_id =JWT.Read_Email_Account_User_ID_By_JWToken(obj.Token).Result;
+                    dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                    dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                    dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
 
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
-                    return NotFound();
+                    dto.Language = AES.Process_Decryption(dto.Language);
+                    dto.Region = AES.Process_Decryption(dto.Region);
+                    dto.Location = AES.Process_Decryption(dto.Location);
+                    dto.Client_time = AES.Process_Decryption(dto.Client_time);
+                    dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
-                byte[]? usersdb_SavedPasswordHash = _UsersRepository.Read_User_Password_Hash_By_ID(user_id).Result;
-                byte[]? given_PasswordHash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes($"{obj.Password}"), Encoding.UTF8.GetBytes($"{obj.Email_Address}MPCSalt")).Result;
+                    dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                    dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (usersdb_SavedPasswordHash != null)
-                    if (!_UsersRepository.Compare_Password_Byte_Arrays(usersdb_SavedPasswordHash, given_PasswordHash))
-                        return Unauthorized();
+                    dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                    dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Password(new Login_PasswordDTO { User_id = user_id, Password = obj.Password, New_password = obj.New_password, Email_Address = obj.Email_Address })).Result;
+                    dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                    dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                    dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                    dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                    dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                    dto.RTT = AES.Process_Decryption(dto.RTT);
+                    dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                    dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                    dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                    dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                    dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                    dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                    dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+
+                    dto.Password = AES.Process_Decryption(dto.Password);
+                    dto.New_password = AES.Process_Decryption(dto.New_password);
+
+                    if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                    {
+                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                        Client_Networking_Port = HttpContext.Connection.RemotePort,
+                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        JWT_client_address = dto.JWT_client_address,
+                        JWT_client_key = dto.JWT_client_key,
+                        JWT_issuer_key = dto.JWT_issuer_key,
+                        Token = dto.Token,
+                        Client_id = dto.Client_id,
+                        JWT_id = dto.JWT_id,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Location = dto.Location,
+                        Client_time = ulong.Parse(dto.Client_time),
+                        Server_User_Agent = dto.Server_user_agent,
+                        Client_User_Agent = dto.Client_user_agent,
+                        User_id = dto.Client_id,
+                        Window_height = dto.Window_height,
+                        Window_width = dto.Window_width,
+                        Screen_extend = dto.Screen_extend,
+                        Screen_height = dto.Screen_height,
+                        Screen_width = dto.Screen_width,
+                        RTT = dto.RTT,
+                        Orientation = dto.Orientation,
+                        Data_saver = dto.Data_saver,
+                        Color_depth = dto.Color_depth,
+                        Pixel_depth = dto.Pixel_depth,
+                        Connection_type = dto.Connection_type,
+                        Down_link = dto.Down_link,
+                        Device_ram_gb = dto.Device_ram_gb,
+                        Controller = "Selected",
+                        Action = "Password"
+                    }).Result)
+                        return Conflict();
+
+                    dto.User_id = dto.JWT_id;
+
+                    if (dto.Login_type.ToUpper() == "EMAIL") {
+                        string? email_address = _UsersRepository.Read_User_Email_By_ID(dto.JWT_id).Result;
+
+                        byte[]? usersdb_SavedPasswordHash = _UsersRepository.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
+                        byte[]? given_PasswordHash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes($"{dto.Password}"), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}")).Result;
+
+                        if (usersdb_SavedPasswordHash != null)
+                            if (!_UsersRepository.Compare_Password_Byte_Arrays(usersdb_SavedPasswordHash, given_PasswordHash))
+                                return Unauthorized();
+
+                        return await Task.FromResult(_UsersRepository.Update_End_User_Password(new Password_ChangeDTO
+                        {
+                            User_id = dto.JWT_id,
+                            Password = dto.Password,
+                            New_password = dto.New_password,
+                            Email_address = email_address ?? "error"
+                        })).Result;
+
+                    }
+                return "error";
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -191,25 +814,166 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             try
             {
-                if (string.IsNullOrEmpty(dto.Token) || string.IsNullOrWhiteSpace(dto.Token) ||
-                    string.IsNullOrEmpty(dto.Online_status.ToString()) || string.IsNullOrWhiteSpace(dto.Online_status.ToString()))
+                if (!ModelState.IsValid)
                     return BadRequest();
 
-                if (dto.Online_status < 1 && dto.Online_status > 5)
-                    return BadRequest();
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
 
-                ulong user_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
 
-                if (user_id == 0)
-                    return Unauthorized();
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
-                    return NotFound();
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
 
-                dto.User_id = user_id;
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+                dto.Online_status = AES.Process_Decryption(dto.Online_status);
+
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Status"
+                }).Result)
+                    return Conflict();
+
+                dto.User_id = dto.JWT_id;
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Status(dto)).Result;
             } catch (Exception e) {
+                return StatusCode(500, $"{e.Message}");
+            }
+        }
+
+        [HttpPut("Custom_Label")]
+        public async Task<ActionResult<string>> Change_User_Selected_Custom_Label([FromBody] Selected_StatusDTO dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest();
+
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
+
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+                dto.Custom_lbl = AES.Process_Decryption(dto.Custom_lbl);
+
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Status"
+                }).Result)
+                    return Conflict();
+
+                dto.User_id = dto.JWT_id;
+                dto.Online_status = 5.ToString();
+
+                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Status(dto)).Result;
+            }
+            catch (Exception e)
+            {
                 return StatusCode(500, $"{e.Message}");
             }
         }
@@ -222,24 +986,74 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!ModelState.IsValid)
                     return BadRequest();
 
-/*                bool authentication_result = JWT.Authenticate_Client_JWT_Credentials(new JWT.JWT_AuthenticationDTO { 
-                    JWT_client_address = AES.Process_Decryption(dto.JWT_client_address),
-                    JWT_client_key = AES.Process_Decryption(dto.JWT_client_key),
-                    JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key),
-                    Language = AES.Process_Decryption(dto.Language),
-                    Region = AES.Process_Decryption(dto.Region),
-                    Location = AES.Process_Decryption(dto.Location),
-                    Client_time = AES.Process_Decryption(dto.Client_time),
-                    Controller = "Selected",
-                    Action = "Theme",
-                    JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result,
-                    Client_id = ulong.Parse(AES.Process_Decryption(dto.ID)),
-                    Login_type = AES.Process_Decryption(dto.Login_type)
-                }).Result;*/
-               
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
 
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.Theme = AES.Process_Decryption(dto.Theme);
-                dto.User_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.ID = AES.Process_Decryption(dto.ID);
+
+                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO {
+                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
+                    Client_Networking_Port = HttpContext.Connection.RemotePort,
+                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = dto.Token,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = ulong.Parse(dto.Client_time),
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Selected",
+                    Action = "Theme"
+                }).Result)
+                    return Conflict();
+
+                dto.User_id = dto.JWT_id;
 
                 return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Theme(dto).Result);
             } catch (Exception e) {

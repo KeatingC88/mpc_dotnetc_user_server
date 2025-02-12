@@ -51,9 +51,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
         [Required]
         public string User_agent { get; set; } = string.Empty;
 
-        public string Client_user_Agent { get; set; } = string.Empty;
+        public string Client_user_agent { get; set; } = string.Empty;
 
-        public string Server_user_Agent { get; set; } = string.Empty;
+        public string Server_user_agent { get; set; } = string.Empty;
         [Required]
 
         public string Down_link { get; set; } = string.Empty;

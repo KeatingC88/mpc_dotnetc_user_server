@@ -6,12 +6,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
     {
         [Required]
         public string Language { get; set; } = string.Empty;
+
         [Required]
         public string Region { get; set; } = string.Empty;
+
         [Required]
         public string Location { get; set; } = string.Empty;
+
         [Required]
-        public string Client_time { get; set; } = string.Empty;
+        public ulong Client_time { get; set; }
         [Required]
         public string Login_type { get; set; } = string.Empty;
         [Required]
@@ -37,10 +40,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Report
         public string JWT_client_address { get; set; } = string.Empty;
         [Required]
 
-        public string Client_user_Agent { get; set; } = string.Empty;
+        public string Client_user_agent { get; set; } = string.Empty;
         [Required]
 
-        public string Server_user_Agent { get; set; } = string.Empty;
+        public string Server_user_agent { get; set; } = string.Empty;
         [Required]
 
         public string Down_link { get; set; } = string.Empty;

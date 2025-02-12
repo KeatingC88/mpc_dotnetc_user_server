@@ -23,6 +23,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Profile;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
+using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -40,13 +41,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Report_Email_RegistrationTbl> Report_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Report_Failed_Email_Login_HistoryTbl> Report_Failed_Email_Login_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_Logout_HistoryTbl> Report_Failed_Logout_HistoryTbl { get; set; } = null!;
+        public DbSet<Report_Failed_Client_ID_HistoryTbl> Report_Failed_Client_ID_HistoryTbl { get; set; } = null!;
+        public DbSet<Report_Failed_Selected_HistoryTbl> Report_Failed_Selected_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_Unregistered_Email_Login_HistoryTbl> Report_Failed_Unregistered_Email_Login_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_JWT_HistoryTbl> Report_Failed_JWT_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_User_Agent_HistoryTbl> Report_Failed_User_Agent_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_Pending_Email_Registration_HistoryTbl> Report_Failed_Pending_Email_Registration_HistoryTbl { get; set; } = null!;
         public DbSet<Contact_UsTbl> Contact_UsTbl { get; set; } = null!;
         public DbSet<Comment_BoxTbl> Comment_BoxTbl { get; set; } = null!;
-        public DbSet<Login_PasswordTbl> Login_PasswordTbl { get; set; } = null!;
+        public DbSet<Password_ChangeTbl> Login_PasswordTbl { get; set; } = null!;
         public DbSet<Login_Email_AddressTbl> Login_Email_AddressTbl { get; set; } = null!;
         public DbSet<Login_TelephoneTbl> Login_TelephoneTbl { get; set; } = null!;
         public DbSet<Login_Time_StampTbl> Login_Time_StampTbl { get; set; } = null!;
@@ -65,6 +68,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Selected_ThemeTbl> Selected_ThemeTbl { get; set; } = null!;
         public DbSet<Selected_NameTbl> Selected_NameTbl { get; set; } = null!;
         public DbSet<Selected_AvatarTbl> Selected_AvatarTbl { get; set; } = null!;
+        public DbSet<Selected_Avatar_TitleTbl> Selected_Avatar_TitleTbl { get; set; } = null!;
         public DbSet<Reported_Broken_LinkTbl> Reported_Broken_LinkTbl { get; set; } = null!;
         public DbSet<Reported_Discord_Bot_BugTbl> Reported_Discord_Bot_BugTbl { get; set; } = null!;
         public DbSet<Reported_ProfileTbl> Reported_ProfileTbl { get; set; } = null!;

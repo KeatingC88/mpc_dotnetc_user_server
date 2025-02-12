@@ -1,12 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Selected.Language
+namespace mpc_dotnetc_user_server.Models.Users.Selected.Password_Change
 {
-    public class Selected_LanguageDTO
+    public class Password_ChangeDTO
     {
+        public ulong User_id { get; set; }
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+        [Required]
+        public string New_password { get; set; } = string.Empty;
+        public string Email_address { get; set; } = string.Empty;
+
         [Required]
         public string ID { get; set; } = string.Empty;
-        public ulong User_id { get; set; }
 
         [Required]
         public string Token { get; set; } = string.Empty;
@@ -38,14 +45,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Selected.Language
         [Required]
         public string Login_type { get; set; } = string.Empty;
 
-        public ulong Client_id { get; set; }
-        public ulong JWT_id { get; set; }
+        public string Server_user_agent { get; set; } = string.Empty;
 
         [Required]
         public string User_agent { get; set; } = string.Empty;
-        public string Client_user_agent { get; set; } = string.Empty;
 
-        public string Server_user_agent { get; set; } = string.Empty;
         [Required]
 
         public string Down_link { get; set; } = string.Empty;
@@ -61,29 +65,35 @@ namespace mpc_dotnetc_user_server.Models.Users.Selected.Language
         [Required]
 
         public string Device_ram_gb { get; set; } = string.Empty;
-        [Required]
 
+        [Required]
         public string Orientation { get; set; } = string.Empty;
-        [Required]
 
+        [Required]
         public string Screen_width { get; set; } = string.Empty;
-        [Required]
 
+        [Required]
         public string Screen_height { get; set; } = string.Empty;
-        [Required]
 
+        [Required]
         public string Screen_extend { get; set; } = string.Empty;
-        [Required]
 
+        [Required]
         public string Color_depth { get; set; } = string.Empty;
-        [Required]
 
+        [Required]
         public string Pixel_depth { get; set; } = string.Empty;
-        [Required]
 
+        [Required]
         public string Window_width { get; set; } = string.Empty;
-        [Required]
 
+        [Required]
         public string Window_height { get; set; } = string.Empty;
+
+        public ulong Client_id { get; set; }
+
+        public ulong JWT_id { get; set; }
+
+        public string Client_user_agent { get; set; } = string.Empty;
     }
 }

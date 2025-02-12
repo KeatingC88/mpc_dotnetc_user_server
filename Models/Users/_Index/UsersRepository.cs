@@ -27,6 +27,8 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
+using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
+using Microsoft.IdentityModel.Tokens;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -37,7 +39,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         private readonly UsersDBC _UsersDBC;
         private readonly Random random = new Random();
         private readonly Constants _Constants;
-        
+
 
         public UsersRepository() { }
 
@@ -94,7 +96,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 .SetProperty(col => col.RTT, dto.RTT)
                 .SetProperty(col => col.Orientation, dto.Orientation)
                 .SetProperty(col => col.Data_saver, dto.Data_saver)
-                .SetProperty(col => col.Color_depth,dto.Color_depth)
+                .SetProperty(col => col.Color_depth, dto.Color_depth)
                 .SetProperty(col => col.Pixel_depth, dto.Pixel_depth)
                 .SetProperty(col => col.Connection_type, dto.Connection_type)
                 .SetProperty(col => col.Down_link, dto.Down_link)
@@ -158,7 +160,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             obj.email_address = AES.Process_Encryption(dto.Email_Address);
 
-            await _UsersDBC.Login_PasswordTbl.AddAsync(new Login_PasswordTbl
+            await _UsersDBC.Login_PasswordTbl.AddAsync(new Password_ChangeTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_PasswordTbl.Count() + 1),
                 User_id = ID_Record.ID,
@@ -190,18 +192,18 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Alignment = dto.Alignment.ToString(),
             });
             obj.alignment = AES.Process_Encryption($"{dto.Alignment}");
-            
+
             await Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
             {
                 User_id = ID_Record.ID,
-                Locked = dto.Nav_lock,
+                Locked = dto.Nav_lock.ToString(),
             });
             obj.nav_lock = AES.Process_Encryption($"{dto.Nav_lock}");
 
             await Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
             {
                 User_id = ID_Record.ID,
-                Text_alignment = dto.Text_alignment,
+                Text_alignment = dto.Text_alignment.ToString(),
             });
             obj.text_alignment = AES.Process_Encryption($"{dto.Text_alignment}"); ;
 
@@ -236,13 +238,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await Update_End_User_Selected_Grid_Type(new Selected_App_Grid_TypeDTO
             {
                 User_id = ID_Record.ID,
-                Grid = dto.Grid_type
+                Grid = dto.Grid_type.ToString()
             });
             obj.grid_type = AES.Process_Encryption(dto.Grid_type.ToString());
 
-            await Update_End_User_Selected_Status(new Selected_StatusDTO { 
+            await Update_End_User_Selected_Status(new Selected_StatusDTO {
                 User_id = ID_Record.ID,
-                Online_status = 2,
+                Online_status = 2.ToString(),
             });
             obj.online_status = AES.Process_Encryption("2");
 
@@ -356,10 +358,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.region = AES.Process_Encryption(dto.Region);
             obj.created_on = AES.Process_Encryption(TimeStamp.ToString());
             return JsonSerializer.Serialize(obj);
-        }        
+        }
         public async Task<bool> Email_Exists_In_Login_Email_AddressTbl(string email_address)
         {
-            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Any(x => x.Email_Address == email_address));
+            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Any(x => x.Email_Address == email_address && x.Deleted == 0));
         }
         public async Task<bool> Create_Contact_Us_Record(Contact_UsDTO dto)
         {
@@ -408,7 +410,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Create_WebSocket_Log_Record(Websocket_Chat_PermissionDTO dto)
         {
-            try { 
+            try {
                 await _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
@@ -502,13 +504,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Delete_Account_By_User_id(Delete_UserDTO dto)
         {
-            await _UsersDBC.User_IDsTbl.Where(x => x.ID == dto.Target_User).ExecuteUpdateAsync(s => s
+            await _UsersDBC.User_IDsTbl.Where(x => x.ID == ulong.Parse(dto.Target_User)).ExecuteUpdateAsync(s => s
                 .SetProperty(User_IDsTbl => User_IDsTbl.Deleted, 1)
-                .SetProperty(User_IDsTbl => User_IDsTbl.Deleted_by, dto.ID)
+                .SetProperty(User_IDsTbl => User_IDsTbl.Deleted_by, ulong.Parse(dto.ID))
                 .SetProperty(User_IDsTbl => User_IDsTbl.Deleted_on, TimeStamp)
                 .SetProperty(User_IDsTbl => User_IDsTbl.Updated_on, TimeStamp)
                 .SetProperty(User_IDsTbl => User_IDsTbl.Created_on, TimeStamp)
-                .SetProperty(User_IDsTbl => User_IDsTbl.Updated_by, dto.ID)
+                .SetProperty(User_IDsTbl => User_IDsTbl.Updated_by, ulong.Parse(dto.ID))
             );
             await _UsersDBC.SaveChangesAsync();
             obj.deleted_by = dto.ID;
@@ -755,7 +757,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Status = 5;
             return await Task.FromResult(Status);
         }
-        public async Task<string> Create_Reported_WebSocket_Abuse_Record(Reported_WebSocket_AbuseDTO dto) 
+        public async Task<string> Create_Reported_WebSocket_Abuse_Record(Reported_WebSocket_AbuseDTO dto)
         {
             try
             {
@@ -782,7 +784,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                await _UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_A_id == dto.User_A_id&& x.User_B_id == dto.User_B_id).ExecuteUpdateAsync(s => s
+                await _UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_A_id == dto.User_A_id && x.User_B_id == dto.User_B_id).ExecuteUpdateAsync(s => s
                     .SetProperty(dto => dto.Requested, dto.Requested)
                     .SetProperty(dto => dto.Blocked, dto.Blocked)
                     .SetProperty(dto => dto.Approved, dto.Approved)
@@ -839,7 +841,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Update_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto)
         {
-            try { 
+            try {
                 await _UsersDBC.Pending_Email_RegistrationTbl.Where(x => x.Email_Address == dto.Email_Address).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Email_Address, dto.Email_Address)
                     .SetProperty(col => col.Code, dto.Code)
@@ -854,13 +856,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 obj.region = AES.Process_Encryption(dto.Region);
                 obj.updated_on = AES.Process_Encryption(TimeStamp.ToString());
 
-                return JsonSerializer.Serialize(obj);            
+                return JsonSerializer.Serialize(obj);
             } catch {
                 obj.error = "Server Error: Email Address Registration Failed";
                 return JsonSerializer.Serialize(obj);
             }
         }
-        public async Task<string> Create_Reported_Email_Registration_Record(Report_Email_RegistrationDTO dto) 
+        public async Task<string> Create_Reported_Email_Registration_Record(Report_Email_RegistrationDTO dto)
         {
             try
             {
@@ -888,13 +890,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Update_End_User_Avatar(Selected_AvatarDTO dto)
         {
-            try { 
-                await _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                    .SetProperty(col => col.Avatar_title, dto.Avatar_title)
-                    .SetProperty(col => col.Avatar_url_path, dto.Avatar_url_path)
-                );
+            try {
+                if (!_UsersDBC.Selected_AvatarTbl.Any(x => x.User_id == dto.User_id))
+                {//Insert
+                    await _UsersDBC.Selected_AvatarTbl.AddAsync(new Selected_AvatarTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_AvatarTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Updated_on = TimeStamp,
+                        Created_on = TimeStamp,
+                        Avatar_url_path = dto.Avatar_url_path,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                { //Update
+                    await _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Avatar_url_path, dto.Avatar_url_path));
+                }
                 await _UsersDBC.SaveChangesAsync();
-                obj.avatar_title = dto.Avatar_title;
                 obj.avatar_url_path = dto.Avatar_url_path;
                 return JsonSerializer.Serialize(obj);
             } catch {
@@ -903,9 +917,41 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             }
 
         }
+        public async Task<string> Update_End_User_Avatar_Title(Selected_Avatar_TitleDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_AvatarTbl.Any(x => x.User_id == dto.User_id))
+                {//Insert
+                    await _UsersDBC.Selected_AvatarTbl.AddAsync(new Selected_AvatarTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_AvatarTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Updated_on = TimeStamp,
+                        Created_on = TimeStamp,
+                        Avatar_title = dto.Avatar_title,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                { //Update
+                    await _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Avatar_title, dto.Avatar_title));
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.avatar_title = dto.Avatar_title;
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Avatar Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+
+        }
         public async Task<string> Update_End_User_Name(Selected_NameDTO dto)
         {
-            try { 
+            try {
                 await _UsersDBC.Selected_NameTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Name, dto.Name)
                     .SetProperty(col => col.Updated_by, dto.User_id)
@@ -995,7 +1041,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         return JsonSerializer.Serialize(obj);
                     default:
                         return JsonSerializer.Serialize(obj);
-                }                
+                }
             } catch {
                 obj.error = "Server Error: Update Alignment Failed.";
                 return JsonSerializer.Serialize(obj);
@@ -1003,8 +1049,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Update_End_User_Selected_TextAlignment(Selected_App_Text_AlignmentDTO dto)
         {
-            try { 
-                switch ((byte)dto.Text_alignment)
+            try {
+                switch (byte.Parse(dto.Text_alignment))
                 {
                     case 0:
                         if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
@@ -1083,7 +1129,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         return JsonSerializer.Serialize(obj);
                     default:
                         return JsonSerializer.Serialize(obj);
-                }            
+                }
             } catch {
                 obj.error = "Server Error: Update Text Alignment Failed.";
                 return JsonSerializer.Serialize(obj);
@@ -1126,7 +1172,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Grid_TypeTbl.Count() + 1),
                         User_id = dto.User_id,
-                        Grid = dto.Grid,
+                        Grid = byte.Parse(dto.Grid),
                         Updated_on = TimeStamp,
                         Created_on = TimeStamp,
                         Updated_by = dto.User_id
@@ -1135,7 +1181,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 else
                 {//Update
                     await _UsersDBC.Selected_App_Grid_TypeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                        .SetProperty(col => col.Grid, dto.Grid)
+                        .SetProperty(col => col.Grid, byte.Parse(dto.Grid))
                         .SetProperty(col => col.Updated_on, TimeStamp)
                         .SetProperty(col => col.Updated_by, dto.User_id)
                     );
@@ -1195,7 +1241,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Created_on = TimeStamp,
                         Updated_by = dto.User_id,
                         Created_by = dto.User_id,
-                        Locked = dto.Locked
+                        Locked = bool.Parse(dto.Locked)
                     });
                 }
                 else
@@ -1203,7 +1249,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     await _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Updated_by, dto.User_id)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Locked, dto.Locked)
+                        .SetProperty(col => col.Locked, bool.Parse(dto.Locked))
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1214,9 +1260,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             }
         }
         public async Task<string> Update_End_User_Selected_Status(Selected_StatusDTO dto)
-        {             
+        {
             try {
-                switch (dto.Online_status)
+                switch (byte.Parse(dto.Online_status))
                 {
                     case 0:
                         try
@@ -1286,7 +1332,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             await _UsersDBC.SaveChangesAsync();
                             obj.online_status = "Hidden";
                             return JsonSerializer.Serialize(obj);
-                        } catch  {
+                        } catch {
                             obj.error = "Server Error: Update User Display Status Failed.";
                             return JsonSerializer.Serialize(obj);
                         }
@@ -1531,7 +1577,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             }
         }
         public async Task<string> Update_End_User_Selected_Theme(Selected_ThemeDTO dto)
-        { 
+        {
             try {
                 int theme = int.Parse(dto.Theme);
                 switch (theme)
@@ -1622,14 +1668,16 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return JsonSerializer.Serialize(obj);
             }
         }
-        public async Task<string> Update_End_User_Password(Login_PasswordDTO dto)
+        public async Task<string> Update_End_User_Password(Password_ChangeDTO dto)
         {
-            try { 
-                await _UsersDBC.Login_PasswordTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                    .SetProperty(col => col.Password, Create_Salted_Hash_String(Encoding.UTF8.GetBytes($"{dto.Password}"), Encoding.UTF8.GetBytes($"{dto.Password}MPCSalt")).Result)
-                    .SetProperty(col => col.Updated_by, dto.User_id)
-                    .SetProperty(col => col.Updated_on, TimeStamp)
-                );
+            try {
+                if (!dto.Email_address.IsNullOrEmpty()) {
+                    await _UsersDBC.Login_PasswordTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Password, Create_Salted_Hash_String(Encoding.UTF8.GetBytes($"{dto.New_password}"), Encoding.UTF8.GetBytes($"{dto.Email_address}{_Constants.JWT_SECURITY_KEY}")).Result)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                    );
+                }
                 await _UsersDBC.SaveChangesAsync();
                 obj.updated_on = TimeStamp;
                 return JsonSerializer.Serialize(obj);
@@ -1690,7 +1738,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     await _UsersDBC.SaveChangesAsync();
                 }
                 obj.login_on = TimeStamp;
-                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;            
+                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             } catch {
                 obj.error = "Server Error: Update Login Failed.";
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
@@ -1825,7 +1873,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = ulong.Parse(dto.Client_time),
+                    Client_time = dto.Client_time,
                     User_id = dto.User_id,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Reason = dto.Reason,
@@ -1854,7 +1902,51 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
-        
+        public async Task<string> Insert_Report_Failed_Selected_HistoryTbl(Report_Failed_Selected_HistoryDTO dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_Selected_HistoryTbl.AddAsync(new Report_Failed_Selected_HistoryTbl
+                {
+                    ID = Convert.ToUInt64(_UsersDBC.Report_Failed_Selected_HistoryTbl.Count() + 1),
+                    Updated_on = TimeStamp,
+                    Created_on = TimeStamp,
+                    Location = dto.Location,
+                    Client_IP = dto.Client_Networking_IP_Address,
+                    Client_Port = dto.Client_Networking_Port,
+                    Server_IP = dto.Server_Networking_IP_Address,
+                    Server_Port = dto.Server_Networking_Port,
+                    Client_time = dto.Client_time,
+                    Action = dto.Action,
+                    Controller = dto.Controller,
+                    Language_Region = $@"{dto.Language}-{dto.Region}",
+                    Reason = dto.Reason,
+                    User_id = dto.User_id,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Token = dto.Token
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return "Report Successful.";
+            }
+            catch
+            {
+                obj.error = "Server Error: Report Selected History Failed.";
+                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+            }
+        }
         public async Task<string> Insert_Report_Failed_Logout_HistoryTbl(Report_Failed_Logout_HistoryDTO dto)
         {
             try
@@ -1924,6 +2016,49 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Controller = dto.Controller,
                     User_id = dto.User_id,
                     Login_type = dto.Login_type,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Token = dto.Token
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return "Report Successful.";
+            } catch {
+                obj.error = "Server Error: Report Pending Email Registration History Failed.";
+                return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
+            }
+        }
+        public async Task<string> Insert_Report_Failed_Client_ID_HistoryTbl(Report_Failed_Client_ID_HistoryDTO dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_Client_ID_HistoryTbl.AddAsync(new Report_Failed_Client_ID_HistoryTbl
+                {
+                    ID = Convert.ToUInt64(_UsersDBC.Report_Failed_Client_ID_HistoryTbl.Count() + 1),
+                    Updated_on = TimeStamp,
+                    Created_on = TimeStamp,
+                    Location = dto.Location,
+                    Client_IP = dto.Client_Networking_IP_Address,
+                    Client_Port = dto.Client_Networking_Port,
+                    Server_IP = dto.Server_Networking_IP_Address,
+                    Server_Port = dto.Server_Networking_Port,
+                    Client_time = dto.Client_time,
+                    Language_Region = $@"{dto.Language}-{dto.Region}",
+                    Reason = dto.Reason,
+                    Action = dto.Action,
+                    Controller = dto.Controller,
+                    User_id = dto.User_id,
                     User_agent = dto.User_agent,
                     Down_link = dto.Down_link,
                     Connection_type = dto.Connection_type,
@@ -2035,7 +2170,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
             }
         }
-        
         public async Task<string> Insert_End_User_Logout_HistoryTbl(Logout_Time_StampDTO dto)
         {
             await _UsersDBC.Logout_Time_Stamp_HistoryTbl.AddAsync(new Logout_Time_Stamp_HistoryTbl
@@ -2068,15 +2202,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Device_ram_gb = dto.Device_ram_gb
             });
             await _UsersDBC.SaveChangesAsync();
-            
+
             obj.id = dto.User_id;
             obj.logout_on = TimeStamp;
             return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
         }
-
         public async Task<string> Update_End_User_Logout(Logout_Time_StampDTO dto)
         {
-            if (_UsersDBC.Logout_Time_StampTbl.Any(x=>x.User_id == dto.User_id))
+            if (_UsersDBC.Logout_Time_StampTbl.Any(x => x.User_id == dto.User_id))
             {
                 await _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Logout_on, TimeStamp)
@@ -2106,7 +2239,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Connection_type, dto.Connection_type)
                     .SetProperty(col => col.Down_link, dto.Down_link)
                     .SetProperty(col => col.Device_ram_gb, dto.Device_ram_gb)
-                    .SetProperty(col=>col.Token, dto.Token)
+                    .SetProperty(col => col.Token, dto.Token)
                 );
                 await _UsersDBC.SaveChangesAsync();
             }
@@ -2147,7 +2280,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.logout_on = TimeStamp;
             return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
         }
-
         public Task<string> Read_Users()
         {
             obj.logoutsTS = _UsersDBC.Logout_Time_StampTbl.Select(x => x).ToList();
@@ -2159,13 +2291,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             return Task.FromResult(JsonSerializer.Serialize(obj));
         }
         public Task<bool> ID_Exists_In_Users_IDTbl(ulong user_id) {
-            return Task.FromResult(_UsersDBC.User_IDsTbl.Any(x => x.ID == user_id));
+            return Task.FromResult(_UsersDBC.User_IDsTbl.Any(x => x.ID == user_id && x.Deleted == 0));
         }
         public async Task<bool> Email_Exists_In_Pending_Email_RegistrationTbl(string email_address)
         {
             return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Email_Address == email_address));
         }
-        public async Task<bool> Confirmation_Code_Exists_In_Pending_Email_Address_RegistrationTbl (string Code)
+        public async Task<bool> Confirmation_Code_Exists_In_Pending_Email_Address_RegistrationTbl(string Code)
         {
             return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Code == Code));
         }
@@ -2362,30 +2494,27 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Gender(IdentityDTO dto)
         {
             if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
-            {//Insert
+            {
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
                     User_id = dto.User_id,
-                    Gender = dto.Gender,
+                    Gender = byte.Parse(dto.Gender),
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Updated_by = dto.User_id
                 });
             }
             else
-            { //Update
-
+            {
                 await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                    .SetProperty(col => col.Gender, dto.Gender)
+                    .SetProperty(col => col.Gender, byte.Parse(dto.Gender))
                     .SetProperty(col => col.Updated_on, TimeStamp)
                     .SetProperty(col => col.Updated_by, dto.User_id)
                 );
             }
             await _UsersDBC.SaveChangesAsync();
-            obj.id = dto.User_id;
-            obj.gender = dto.Gender;
-            return JsonSerializer.Serialize(obj);
+            return dto.Gender;
         }
         public async Task<string> Update_End_User_Ethnicity(IdentityDTO dto)
         {
@@ -2416,7 +2545,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             return JsonSerializer.Serialize(obj);
         }
-        public async Task<string> Update_End_User_Birth_Date(Birth_DateDTO dto)
+        public async Task<string> Update_End_User_Birth_Date(IdentityDTO dto)
         {
             if (!_UsersDBC.Birth_DateTbl.Any(x => x.User_id == dto.User_id))
             { //Insert
@@ -2424,9 +2553,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 {
                     ID = Convert.ToUInt64(_UsersDBC.Birth_DateTbl.Count() + 1),
                     User_id = dto.User_id,
-                    Month = dto.Month,
-                    Day = dto.Day,
-                    Year = dto.Year,
+                    Month = byte.Parse(dto.Month),
+                    Day = byte.Parse(dto.Day),
+                    Year = ulong.Parse(dto.Year),
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Updated_by = dto.User_id
@@ -2435,9 +2564,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             else
             { //Update
                 await _UsersDBC.Birth_DateTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                    .SetProperty(col => col.Month, dto.Month)
-                    .SetProperty(col => col.Day, dto.Day)
-                    .SetProperty(col => col.Year, dto.Year)
+                    .SetProperty(col => col.Month, byte.Parse(dto.Month))
+                    .SetProperty(col => col.Day, byte.Parse(dto.Day))
+                    .SetProperty(col => col.Year, ulong.Parse(dto.Year))
                     .SetProperty(col => col.Updated_on, TimeStamp)
                     .SetProperty(col => col.Updated_by, dto.User_id)
                 );
@@ -2517,6 +2646,200 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return JsonSerializer.Serialize(obj);
             }
         }
+        public async Task<bool> Validate_Client_With_Server_Authorization(Report_Failed_Authorization_HistoryDTO dto)
+        {
 
+            if (dto.Server_User_Agent == "error" || dto.Client_User_Agent != dto.Server_User_Agent)
+            {
+                await Insert_Report_Failed_User_Agent_HistoryTbl(new Report_Failed_User_Agent_HistoryDTO
+                {
+                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
+                    Client_Networking_Port = dto.Client_Networking_Port,
+                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
+                    Server_Networking_Port = dto.Server_Networking_Port,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = dto.Client_time,
+                    Reason = "User-Agent Client-Server Mismatch",
+                    Controller = dto.Controller,
+                    Action = dto.Action,
+                    Server_User_Agent = dto.Server_User_Agent,
+                    Client_User_Agent = dto.Client_User_Agent,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb
+                });
+                return false;
+            }
+
+            if (dto.JWT_issuer_key != _Constants.JWT_ISSUER_KEY ||
+                dto.JWT_client_key != _Constants.JWT_CLIENT_KEY ||
+                dto.JWT_client_address != _Constants.JWT_CLAIM_WEBPAGE)
+            {
+                await Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
+                {
+                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
+                    Client_Networking_Port = dto.Client_Networking_Port,
+                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
+                    Server_Networking_Port = dto.Server_Networking_Port,
+                    User_agent = dto.Client_User_Agent,
+                    Client_id = dto.User_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = dto.Client_time.ToString(),
+                    Reason = "JWT Client-Server Mismatch",
+                    Controller = dto.Controller,
+                    Action = dto.Action,
+                    User_id = dto.JWT_id,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_client_address = dto.JWT_client_address,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Token = dto.Token
+                });
+                return false;
+            }
+
+            if (dto.Client_id != dto.JWT_id)
+            {
+                await Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
+                {
+                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
+                    Client_Networking_Port = dto.Client_Networking_Port,
+                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
+                    Server_Networking_Port = dto.Server_Networking_Port,
+                    User_agent = dto.Client_User_Agent,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = dto.Client_time.ToString(),
+                    Reason = "JWT Client-ID Mismatch",
+                    Controller = dto.Controller,
+                    Action = dto.Action,
+                    User_id = dto.JWT_id,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_client_address = dto.JWT_client_address,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Token = dto.Token
+                });
+                return false;
+            }
+
+            if (dto.JWT_id != 0 && !ID_Exists_In_Users_IDTbl(dto.JWT_id).Result)
+            {
+                await Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
+                {
+                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
+                    Client_Networking_Port = dto.Client_Networking_Port,
+                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
+                    Server_Networking_Port = dto.Server_Networking_Port,
+                    User_agent = dto.Client_User_Agent,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = dto.Client_time.ToString(),
+                    Reason = "JWT ID is Deleted or DNE",
+                    Controller = dto.Controller,
+                    Action = dto.Action,
+                    User_id = dto.JWT_id,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_client_address = dto.JWT_client_address,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Token = dto.Token
+                });
+                return false;
+            }
+
+            if (dto.Client_id != 0 && !ID_Exists_In_Users_IDTbl(dto.Client_id).Result)
+            {
+                await Insert_Report_Failed_Client_ID_HistoryTbl(new Report_Failed_Client_ID_HistoryDTO
+                {
+                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
+                    Client_Networking_Port = dto.Client_Networking_Port,
+                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
+                    Server_Networking_Port = dto.Server_Networking_Port,
+                    User_agent = dto.Client_User_Agent,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_time = dto.Client_time,
+                    Reason = "Client ID is Deleted or DNE",
+                    Controller = dto.Controller,
+                    Action = dto.Action,
+                    User_id = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Token = dto.Token,
+                });
+                return false;
+            }
+            return true;
+        }
     }
 }
