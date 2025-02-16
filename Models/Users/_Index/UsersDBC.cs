@@ -43,6 +43,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Report_Failed_Logout_HistoryTbl> Report_Failed_Logout_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_Client_ID_HistoryTbl> Report_Failed_Client_ID_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_Selected_HistoryTbl> Report_Failed_Selected_HistoryTbl { get; set; } = null!;
+        public DbSet<Selected_App_Custom_DesignTbl> Selected_App_Custom_DesignTbl { get; set; } = null!;
         public DbSet<Report_Failed_Unregistered_Email_Login_HistoryTbl> Report_Failed_Unregistered_Email_Login_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_JWT_HistoryTbl> Report_Failed_JWT_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Failed_User_Agent_HistoryTbl> Report_Failed_User_Agent_HistoryTbl { get; set; } = null!;

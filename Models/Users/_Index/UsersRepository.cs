@@ -892,7 +892,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try {
                 if (!_UsersDBC.Selected_AvatarTbl.Any(x => x.User_id == dto.User_id))
-                {//Insert
+                {
                     await _UsersDBC.Selected_AvatarTbl.AddAsync(new Selected_AvatarTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_AvatarTbl.Count() + 1),
@@ -904,7 +904,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     });
                 }
                 else
-                { //Update
+                { 
                     await _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Avatar_url_path, dto.Avatar_url_path));
                 }
@@ -922,7 +922,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             try
             {
                 if (!_UsersDBC.Selected_AvatarTbl.Any(x => x.User_id == dto.User_id))
-                {//Insert
+                {
                     await _UsersDBC.Selected_AvatarTbl.AddAsync(new Selected_AvatarTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_AvatarTbl.Count() + 1),
@@ -934,7 +934,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     });
                 }
                 else
-                { //Update
+                { 
                     await _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Avatar_title, dto.Avatar_title));
                 }
@@ -972,7 +972,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 {
                     case 0:
                         if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
-                        {//Insert
+                        {
                             await _UsersDBC.Selected_App_AlignmentTbl.AddAsync(new Selected_App_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_AlignmentTbl.Count() + 1),
@@ -982,7 +982,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                 Left = 1,
                                 Updated_by = dto.User_id
                             });
-                        } else { //Update
+                        } else { 
                             await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 1)
                                 .SetProperty(col => col.Center, 0)
@@ -995,7 +995,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         return JsonSerializer.Serialize(obj);
                     case 2:
                         if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
-                        {//Insert
+                        {
                             await _UsersDBC.Selected_App_AlignmentTbl.AddAsync(new Selected_App_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_AlignmentTbl.Count() + 1),
@@ -1005,7 +1005,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                 Created_on = TimeStamp,
                                 Updated_by = dto.User_id
                             });
-                        } else { //Update
+                        } else { 
                             await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 0)
                                 .SetProperty(col => col.Center, 0)
@@ -1018,7 +1018,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         return JsonSerializer.Serialize(obj);
                     case 1:
                         if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
-                        {//Insert
+                        {
                             await _UsersDBC.Selected_App_AlignmentTbl.AddAsync(new Selected_App_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_AlignmentTbl.Count() + 1),
@@ -1028,7 +1028,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                 Created_on = TimeStamp,
                                 Updated_by = dto.User_id
                             });
-                        } else { //Update
+                        } else { 
                             await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 0)
                                 .SetProperty(col => col.Center, 1)
@@ -1054,7 +1054,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 {
                     case 0:
                         if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
-                        {//Insert
+                        {
                             await _UsersDBC.Selected_App_Text_AlignmentTbl.AddAsync(new Selected_App_Text_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_Text_AlignmentTbl.Count() + 1),
@@ -1066,7 +1066,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             });
                         }
                         else
-                        { //Update
+                        { 
                             await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 1)
                                 .SetProperty(col => col.Center, 0)
@@ -1079,7 +1079,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         return JsonSerializer.Serialize(obj);
                     case 2:
                         if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
-                        {//Insert
+                        {
                             await _UsersDBC.Selected_App_Text_AlignmentTbl.AddAsync(new Selected_App_Text_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_Text_AlignmentTbl.Count() + 1),
@@ -1091,7 +1091,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             });
                         }
                         else
-                        { //Update
+                        { 
                             await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 0)
                                 .SetProperty(col => col.Center, 0)
@@ -1104,7 +1104,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         return JsonSerializer.Serialize(obj);
                     case 1:
                         if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
-                        {//Insert
+                        {
                             await _UsersDBC.Selected_App_Text_AlignmentTbl.AddAsync(new Selected_App_Text_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_Text_AlignmentTbl.Count() + 1),
@@ -1116,7 +1116,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             });
                         }
                         else
-                        { //Update
+                        { 
                             await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 0)
                                 .SetProperty(col => col.Center, 1)
@@ -1138,7 +1138,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Account_Type(Account_TypeDTO dto)
         {
             try {
-                if (!_UsersDBC.Account_TypeTbl.Any(x => x.User_id == dto.User_id)) {//Insert
+                if (!_UsersDBC.Account_TypeTbl.Any(x => x.User_id == dto.User_id)) {
                     await _UsersDBC.Account_TypeTbl.AddAsync(new Account_TypeTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Account_TypeTbl.Count() + 1),
@@ -1148,7 +1148,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Created_on = TimeStamp,
                         Updated_by = dto.User_id
                     });
-                } else {//Update
+                } else {
                     await _UsersDBC.Account_TypeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Type, dto.Type)
                         .SetProperty(col => col.Updated_on, TimeStamp)
@@ -1167,7 +1167,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             try
             {
                 if (!_UsersDBC.Selected_App_Grid_TypeTbl.Any(x => x.User_id == dto.User_id))
-                {//Insert
+                {
                     await _UsersDBC.Selected_App_Grid_TypeTbl.AddAsync(new Selected_App_Grid_TypeTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Grid_TypeTbl.Count() + 1),
@@ -1179,7 +1179,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     });
                 }
                 else
-                {//Update
+                {
                     await _UsersDBC.Selected_App_Grid_TypeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Grid, byte.Parse(dto.Grid))
                         .SetProperty(col => col.Updated_on, TimeStamp)
@@ -1584,7 +1584,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 {
                     case 0:
                         if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_id == dto.User_id))
-                        {//Insert
+                        {
                             await _UsersDBC.Selected_ThemeTbl.AddAsync(new Selected_ThemeTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_ThemeTbl.Count() + 1),
@@ -1595,7 +1595,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                 Created_on = TimeStamp,
                                 Updated_by = dto.User_id
                             });
-                        } else { //Update
+                        } else { 
                             await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Light, 1)
                                 .SetProperty(col => col.Night, 0)
@@ -1609,7 +1609,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         return JsonSerializer.Serialize(obj);
                     case 1:
                         if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_id == dto.User_id))
-                        {//Insert
+                        {
                             await _UsersDBC.Selected_ThemeTbl.AddAsync(new Selected_ThemeTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_ThemeTbl.Count() + 1),
@@ -1622,7 +1622,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             });
                         }
                         else
-                        { //Update
+                        { 
                             await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Light, 0)
                                 .SetProperty(col => col.Night, 1)
@@ -1636,7 +1636,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         return JsonSerializer.Serialize(obj);
                     case 2:
                         if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_id == dto.User_id))
-                        {//Insert
+                        {
                             await _UsersDBC.Selected_ThemeTbl.AddAsync(new Selected_ThemeTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_ThemeTbl.Count() + 1),
@@ -1647,7 +1647,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                 Updated_on = TimeStamp,
                                 Updated_by = dto.User_id
                             });
-                        } else { //Update
+                        } else { 
                             await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.User_id)
@@ -1665,6 +1665,567 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 }
             } catch {
                 obj.error = "Server Error: Update Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Card_Border_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl  
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Card_Border_Color = dto.Card_Border_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                { 
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Card_Border_Color, dto.Card_Border_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Card_Header_Font(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Card_Header_Font = dto.Card_Header_Font,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Card_Header_Font, dto.Card_Header_Font)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Card_Header_Background_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Card_Header_Background_Color = dto.Card_Header_Background_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Card_Header_Background_Color, dto.Card_Header_Background_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Card_Header_Font_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Card_Header_Font_Color = dto.Card_Header_Font_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Card_Header_Font_Color, dto.Card_Header_Font_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Card_Footer_Font(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Card_Footer_Font = dto.Card_Footer_Font,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Card_Footer_Font, dto.Card_Footer_Font)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Card_Footer_Background_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Card_Footer_Background_Color = dto.Card_Footer_Background_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Card_Footer_Background_Color, dto.Card_Footer_Background_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Card_Footer_Font_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Card_Footer_Font_Color = dto.Card_Footer_Font_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Card_Footer_Font_Color, dto.Card_Footer_Font_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Card_Body_Font(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Card_Body_Font = dto.Card_Body_Font,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Card_Body_Font, dto.Card_Body_Font)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Card_Body_Background_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Card_Body_Background_Color = dto.Card_Body_Background_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Card_Body_Background_Color, dto.Card_Body_Background_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Card_Body_Font_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Card_Body_Font_Color = dto.Card_Body_Font_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Card_Body_Font_Color, dto.Card_Body_Font_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Navigation_Menu_Font(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Navigation_Menu_Font = dto.Navigation_Menu_Font,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Navigation_Menu_Font, dto.Navigation_Menu_Font)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Navigation_Menu_Background_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Navigation_Menu_Background_Color = dto.Navigation_Menu_Background_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Navigation_Menu_Background_Color, dto.Navigation_Menu_Background_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Navigation_Menu_Font_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Navigation_Menu_Font_Color = dto.Navigation_Menu_Font_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Navigation_Menu_Font_Color, dto.Navigation_Menu_Font_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+
+        public async Task<string> Update_End_User_Button_Font(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Button_Font = dto.Button_Font,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Button_Font, dto.Button_Font)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Button_Background_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Button_Background_Color = dto.Button_Background_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Button_Background_Color, dto.Button_Background_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Update_End_User_Button_Font_Color(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
+                    {
+                        ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
+                        User_id = dto.User_id,
+                        Button_Font_Color = dto.Button_Font_Color,
+                        Updated_on = TimeStamp,
+                        Created_by = dto.User_id,
+                        Created_on = TimeStamp,
+                        Updated_by = dto.User_id
+                    });
+                }
+                else
+                {
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Button_Font_Color, dto.Button_Font_Color)
+                        .SetProperty(col => col.Updated_on, TimeStamp)
+                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    );
+                }
+                await _UsersDBC.SaveChangesAsync();
+                obj.theme = "Custom";
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
                 return JsonSerializer.Serialize(obj);
             }
         }
@@ -2386,7 +2947,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_First_Name(IdentityDTO dto)
         {
             if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
-            {//Insert
+            {
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
@@ -2398,7 +2959,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 });
             }
             else
-            {//Update
+            {
                 await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.First_Name, dto.First_name)
                     .SetProperty(col => col.Updated_on, TimeStamp)
@@ -2413,7 +2974,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Last_Name(IdentityDTO dto)
         {
             if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
-            {//Insert
+            {
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
@@ -2425,7 +2986,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 });
             }
             else
-            {//Update
+            {
                 await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Last_Name, dto.Last_name)
                     .SetProperty(col => col.Updated_on, TimeStamp)
@@ -2440,7 +3001,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Middle_Name(IdentityDTO dto)
         {
             if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
-            { //Insert
+            { 
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
@@ -2452,7 +3013,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 });
             }
             else
-            { //Update
+            { 
                 await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                      .SetProperty(col => col.Middle_Name, dto.Middle_name)
                      .SetProperty(col => col.Updated_on, TimeStamp)
@@ -2467,7 +3028,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Maiden_Name(IdentityDTO dto)
         {
             if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
-            { //Insert
+            { 
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
@@ -2479,7 +3040,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 });
             }
             else
-            { //Update
+            { 
                 await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Maiden_Name, dto.Maiden_name)
                     .SetProperty(col => col.Updated_on, TimeStamp)
@@ -2519,7 +3080,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Ethnicity(IdentityDTO dto)
         {
             if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
-            { //Insert
+            { 
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
@@ -2531,7 +3092,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 });
             }
             else
-            { //Update
+            { 
                 await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Ethnicity, dto.Ethnicity)
                     .SetProperty(col => col.Updated_on, TimeStamp)
@@ -2548,7 +3109,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Birth_Date(IdentityDTO dto)
         {
             if (!_UsersDBC.Birth_DateTbl.Any(x => x.User_id == dto.User_id))
-            { //Insert
+            { 
                 await _UsersDBC.Birth_DateTbl.AddAsync(new Birth_DateTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.Birth_DateTbl.Count() + 1),
@@ -2562,7 +3123,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 });
             }
             else
-            { //Update
+            { 
                 await _UsersDBC.Birth_DateTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Month, byte.Parse(dto.Month))
                     .SetProperty(col => col.Day, byte.Parse(dto.Day))
@@ -2583,7 +3144,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             try
             {
                 if (!_UsersDBC.Account_GroupsTbl.Any(x => x.User_id == dto.User_id))
-                {//Insert
+                {
                     await _UsersDBC.Account_GroupsTbl.AddAsync(new Account_GroupsTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Account_GroupsTbl.Count() + 1),
@@ -2595,7 +3156,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     });
                 }
                 else
-                {//Update
+                {
                     await _UsersDBC.Account_GroupsTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Groups, dto.Groups)
                         .SetProperty(col => col.Updated_on, TimeStamp)
@@ -2617,7 +3178,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             try
             {
                 if (!_UsersDBC.Account_RolesTbl.Any(x => x.User_id == dto.User_id))
-                {//Insert
+                {
                     await _UsersDBC.Account_RolesTbl.AddAsync(new Account_RolesTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Account_RolesTbl.Count() + 1),
@@ -2629,7 +3190,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     });
                 }
                 else
-                {//Update
+                {
                     await _UsersDBC.Account_RolesTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Roles, dto.Roles)
                         .SetProperty(col => col.Updated_on, TimeStamp)
