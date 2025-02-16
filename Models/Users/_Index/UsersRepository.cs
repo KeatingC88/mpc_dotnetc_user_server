@@ -562,6 +562,23 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             string? ethnicity = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Ethnicity).SingleOrDefault();
             string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.User_id == end_user_id).Select(x => x.Groups).SingleOrDefault();
             string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.User_id == end_user_id).Select(x => x.Roles).SingleOrDefault();
+            string? card_border_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Border_Color).SingleOrDefault();
+            string? card_header_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Header_Font).SingleOrDefault();
+            string? card_header_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Header_Font_Color).SingleOrDefault();
+            string? card_header_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Header_Background_Color).SingleOrDefault();
+            string? card_body_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Body_Font).SingleOrDefault();
+            string? card_body_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Body_Background_Color).SingleOrDefault();
+            string? card_body_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Body_Font_Color).SingleOrDefault();
+            string? card_footer_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Footer_Font_Color).SingleOrDefault();
+            string? card_footer_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Footer_Font).SingleOrDefault();
+            string? card_footer_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Footer_Background_Color).SingleOrDefault();
+            string? navigation_menu_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Navigation_Menu_Background_Color).SingleOrDefault();
+            string? navigation_menu_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Navigation_Menu_Font_Color).SingleOrDefault();
+            string? navigation_menu_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Navigation_Menu_Font).SingleOrDefault();
+            string? button_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Button_Background_Color).SingleOrDefault();
+            string? button_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Button_Font).SingleOrDefault();
+            string? button_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Button_Font_Color).SingleOrDefault();
+
 
             if (status_offline == 1)
                 status_type = 0;
@@ -625,6 +642,23 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.grid_type = AES.Process_Encryption($@"{grid_type}");
             obj.nav_lock = AES.Process_Encryption($@"{nav_lock}");
             obj.login_type = AES.Process_Encryption("email");
+            obj.card_border_color = AES.Process_Encryption($@"{card_border_color}");
+            obj.card_header_font = AES.Process_Encryption($@"{card_header_font}");
+            obj.card_header_font_color = AES.Process_Encryption($@"{card_header_font_color}");
+            obj.card_header_background_color = AES.Process_Encryption($@"{card_header_background_color}");
+            obj.card_body_font = AES.Process_Encryption($@"{card_body_font}");
+            obj.card_body_background_color = AES.Process_Encryption($@"{card_body_background_color}");
+            obj.card_body_font_color = AES.Process_Encryption($@"{card_body_font_color}");
+            obj.card_footer_font_color = AES.Process_Encryption($@"{card_footer_font_color}");
+            obj.card_footer_font = AES.Process_Encryption($@"{card_footer_font}");
+            obj.card_footer_background_color = AES.Process_Encryption($@"{card_footer_background_color}");
+            obj.navigation_menu_background_color = AES.Process_Encryption($@"{navigation_menu_background_color}");
+            obj.navigation_menu_font_color = AES.Process_Encryption($@"{navigation_menu_font_color}");
+            obj.navigation_menu_font = AES.Process_Encryption($@"{navigation_menu_font}");
+            obj.button_background_color = AES.Process_Encryption($@"{button_background_color}");
+            obj.button_font = AES.Process_Encryption($@"{button_font}");
+            obj.button_font_color = AES.Process_Encryption($@"{button_font_color}");
+
 
             obj.token = JWT.Create_Email_Account_Token(new JWT_DTO
             {
@@ -662,6 +696,23 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == user_id).Select(x => x.Avatar_title).SingleOrDefault();
             string? name = _UsersDBC.Selected_NameTbl.Where(x => x.User_id == user_id).Select(x => x.Name).SingleOrDefault();
 
+            string? card_border_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Border_Color).SingleOrDefault();
+            string? card_header_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Header_Font).SingleOrDefault();
+            string? card_header_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Header_Font_Color).SingleOrDefault();
+            string? card_header_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Header_Background_Color).SingleOrDefault();
+            string? card_body_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Body_Font).SingleOrDefault();
+            string? card_body_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Body_Background_Color).SingleOrDefault();
+            string? card_body_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Body_Font_Color).SingleOrDefault();
+            string? card_footer_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Footer_Font_Color).SingleOrDefault();
+            string? card_footer_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Footer_Font).SingleOrDefault();
+            string? card_footer_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Footer_Background_Color).SingleOrDefault();
+            string? navigation_menu_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Navigation_Menu_Background_Color).SingleOrDefault();
+            string? navigation_menu_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Navigation_Menu_Font_Color).SingleOrDefault();
+            string? navigation_menu_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Navigation_Menu_Font).SingleOrDefault();
+            string? button_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Button_Background_Color).SingleOrDefault();
+            string? button_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Button_Font).SingleOrDefault();
+            string? button_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Button_Font_Color).SingleOrDefault();
+
             if (status_offline == 1)
                 status_code = 0;
             if (status_hidden == 1)
@@ -686,6 +737,22 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.created_on = created_on;
             obj.avatar_url_path = avatar_url_path;
             obj.avatar_title = avatar_title;
+            obj.card_border_color = AES.Process_Encryption($@"{card_border_color}");
+            obj.card_header_font = AES.Process_Encryption($@"{card_header_font}");
+            obj.card_header_font_color = AES.Process_Encryption($@"{card_header_font_color}");
+            obj.card_header_background_color = AES.Process_Encryption($@"{card_header_background_color}");
+            obj.card_body_font = AES.Process_Encryption($@"{card_body_font}");
+            obj.card_body_background_color = AES.Process_Encryption($@"{card_body_background_color}");
+            obj.card_body_font_color = AES.Process_Encryption($@"{card_body_font_color}");
+            obj.card_footer_font_color = AES.Process_Encryption($@"{card_footer_font_color}");
+            obj.card_footer_font = AES.Process_Encryption($@"{card_footer_font}");
+            obj.card_footer_background_color = AES.Process_Encryption($@"{card_footer_background_color}");
+            obj.navigation_menu_background_color = AES.Process_Encryption($@"{navigation_menu_background_color}");
+            obj.navigation_menu_font_color = AES.Process_Encryption($@"{navigation_menu_font_color}");
+            obj.navigation_menu_font = AES.Process_Encryption($@"{navigation_menu_font}");
+            obj.button_background_color = AES.Process_Encryption($@"{button_background_color}");
+            obj.button_font = AES.Process_Encryption($@"{button_font}");
+            obj.button_font_color = AES.Process_Encryption($@"{button_font_color}");
 
             return await Task.FromResult(JsonSerializer.Serialize(obj));
         }
