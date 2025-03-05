@@ -5,7 +5,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Identity
     public class IdentityDTO
     {
         [Required]
-        public ulong User_id { get; set; }
+        public ulong End_User_ID { get; set; }
         public string Gender { get; set; } = string.Empty;
         public string First_name { get; set; } = string.Empty;
         public string Middle_name { get; set; } = string.Empty;
@@ -32,7 +32,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Identity
         public string Region { get; set; } = string.Empty;
 
         [Required]
-        public string Client_time { get; set; } = string.Empty;
+        public string Client_time { get; set; } = string.Empty;          public ulong Client_Time_Parsed { get; set; } 
 
         [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;

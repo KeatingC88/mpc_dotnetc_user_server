@@ -3,7 +3,7 @@
     public class Login_Email_AddressTbl
     {
         public ulong ID { get; set; }
-        public ulong User_id { get; set; }
+        public ulong User_ID { get; set; }
         public string Email_Address { get; set; } = string.Empty;
         public ulong Created_on { get; set; }
         public ulong Created_by { get; set; }

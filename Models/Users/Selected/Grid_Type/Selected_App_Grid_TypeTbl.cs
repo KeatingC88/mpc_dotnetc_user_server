@@ -10,7 +10,7 @@
         public ulong Deleted_on { get; set; }
         public ulong Deleted_by { get; set; }
         public ulong ID { get; set; }
-        public ulong User_id { get; set; }
+        public ulong User_ID { get; set; }
         public byte Grid { get; set; }
     }
 }

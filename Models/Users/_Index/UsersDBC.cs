@@ -4,17 +4,10 @@ using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Integration;
 using mpc_dotnetc_user_server.Models.Users.Selection;
-using mpc_dotnetc_user_server.Models.Users.BirthDate;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Telephone;
-using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
@@ -24,6 +17,11 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Profile;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
+using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
+using mpc_dotnetc_user_server.Models.Report;
+using mpc_dotnetc_user_server.Models.Users.Account_Type;
+using mpc_dotnetc_user_server.Models.Users.Account_Roles;
+using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -52,7 +50,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Comment_BoxTbl> Comment_BoxTbl { get; set; } = null!;
         public DbSet<Password_ChangeTbl> Login_PasswordTbl { get; set; } = null!;
         public DbSet<Login_Email_AddressTbl> Login_Email_AddressTbl { get; set; } = null!;
-        public DbSet<Login_TelephoneTbl> Login_TelephoneTbl { get; set; } = null!;
         public DbSet<Login_Time_StampTbl> Login_Time_StampTbl { get; set; } = null!;
         public DbSet<Login_Time_Stamp_HistoryTbl> Login_Time_Stamp_HistoryTbl { get; set; } = null!;
         public DbSet<Logout_Time_StampTbl> Logout_Time_StampTbl { get; set; } = null!;
@@ -74,8 +71,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Reported_Discord_Bot_BugTbl> Reported_Discord_Bot_BugTbl { get; set; } = null!;
         public DbSet<Reported_ProfileTbl> Reported_ProfileTbl { get; set; } = null!;
         public DbSet<Reported_Website_BugTbl> Reported_Website_BugTbl { get; set; } = null!;
-        public DbSet<Reported_WebSocket_AbuseTbl> Reported_WebSocket_AbuseTbl { get; set; } = null!;
-        public DbSet<Websocket_Chat_PermissionTbl> Websocket_Chat_PermissionTbl { get; set; } = null!;
+        public DbSet<Reported_WebSocketTbl> Reported_WebSocketTbl { get; set; } = null!;
+        public DbSet<Reported_WebSocket_HistoryTbl> Reported_WebSocket_HistoryTbl { get; set; } = null!;
+        public DbSet<WebSocket_Chat_PermissionTbl> WebSocket_Chat_PermissionTbl { get; set; } = null!;
         public UsersDBC(DbContextOptions<UsersDBC> options, IConfiguration configuration) : base(options)
         {
             _configuration = configuration;

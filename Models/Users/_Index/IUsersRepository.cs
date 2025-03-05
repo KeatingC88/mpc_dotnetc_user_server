@@ -1,14 +1,9 @@
-﻿using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
+﻿using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
-using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
-using mpc_dotnetc_user_server.Models.Users.BirthDate;
-using mpc_dotnetc_user_server.Models.Users._Index;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
+using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
@@ -19,17 +14,21 @@ using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.Integration;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
+using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
+using mpc_dotnetc_user_server.Models.Report;
+using mpc_dotnetc_user_server.Models.Users.Account_Roles;
+using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
     public interface IUsersRepository
     {
-        Task<string> Create_Reported_WebSocket_Abuse_Record(Reported_WebSocket_AbuseDTO dto);
+        Task<string> Create_Reported_WebSocket_Records(Reported_WebSocketDTO dto);
         Task<bool> Create_Comment_Box_Record(Comment_BoxDTO dto);
         Task<bool> Create_Broken_Link_Record(Reported_Broken_LinkDTO dto);
         Task<bool> Create_Discord_Bot_Bug_Record(Reported_Discord_Bot_BugDTO dto);
         Task<string> Create_Integration_Twitch_Record(Integration_TwitchDTO dto);
-        Task<string> Create_WebSocket_Log_Record(Websocket_Chat_PermissionDTO dto);
+        Task<string> Create_WebSocket_Log_Record(WebSocket_Chat_PermissionDTO dto);
         Task<bool> Create_Website_Bug_Record(Reported_Website_BugDTO dto);
         Task<bool> Create_End_User_Status_Record(Selected_StatusDTO dto);
         Task<string> Update_End_User_Account_Roles(Account_RolesDTO dto);
@@ -46,8 +45,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Read_Email_User_Data_By_ID(ulong end_user_id);
         Task<string> Read_Users();
         Task<string> Read_User_Profile_By_ID(ulong end_user_id);
-        Task<string> Read_WebSocket_Permission_Record(Websocket_Chat_PermissionDTO dto);
-        Task<string> Read_End_User_Web_Socket_Data(ulong end_user_id);
+        Task<string> Read_WebSocket_Permission_Record_For_Both_End_Users(WebSocket_Chat_PermissionDTO dto);
+        Task<string> Read_All_End_User_WebSocket_Sent_Chat_Requests(ulong end_user_id);
+        Task<string> Read_All_End_User_WebSocket_Sent_Chat_Blocks(ulong end_user_id);
+        Task<string> Read_All_End_User_WebSocket_Sent_Chat_Approvals(ulong end_user_id);
+        Task<string> Read_All_End_User_WebSocket_Received_Chat_Requests(ulong end_user_id);
+        Task<string> Read_All_End_User_WebSocket_Received_Chat_Blocks(ulong end_user_id);
+        Task<string> Read_All_End_User_WebSocket_Received_Chat_Approvals(ulong end_user_id);
         Task<byte> Read_End_User_Selected_Status(Selected_StatusDTO dto);
         Task<byte[]?> Read_User_Password_Hash_By_ID(ulong id);
         Task<ulong> Read_User_ID_By_Email_Address(string email_address);
@@ -81,7 +85,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Update_End_User_Ethnicity(IdentityDTO dto);
         Task<string> Update_End_User_Gender(IdentityDTO dto);
         Task<string> Update_End_User_Password(Password_ChangeDTO dto);
-        Task<string> Update_Chat_Web_Socket_Permissions_Tbl(Websocket_Chat_PermissionTbl dto);
+        Task<string> Update_Chat_Web_Socket_Permissions_Tbl(WebSocket_Chat_PermissionTbl dto);
+        Task<string> Delete_Chat_Web_Socket_Permissions_Tbl(WebSocket_Chat_PermissionTbl dto);
         Task<string> Update_End_User_Birth_Date(IdentityDTO dto);
         Task<string> Update_End_User_Card_Border_Color(Selected_App_Custom_DesignDTO dto);
         Task<string> Update_End_User_Card_Header_Font(Selected_App_Custom_DesignDTO dto);
@@ -99,10 +104,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Update_End_User_Card_Footer_Background_Color(Selected_App_Custom_DesignDTO dto);
         Task<string> Update_End_User_Navigation_Menu_Background_Color(Selected_App_Custom_DesignDTO dto);
         Task<string> Update_End_User_Button_Background_Color(Selected_App_Custom_DesignDTO dto);
+        Task<string> Delete_End_User_Selected_App_Custom_Design(Selected_App_Custom_DesignDTO dto);
         Task<bool> Validate_Client_With_Server_Authorization(Report_Failed_Authorization_HistoryDTO dto);
         Task<string> Insert_Report_Failed_Client_ID_HistoryTbl(Report_Failed_Client_ID_HistoryDTO dto);
-        void Create_Chat_WebSocket_Log_Records(Websocket_Chat_PermissionDTO dto);
-        bool Compare_Password_Byte_Arrays(byte[] array1, byte[] array2);
+        Task Create_WebSocket_Permission_Record(WebSocket_Chat_PermissionDTO dto);
+        Task<bool> Compare_Password_Byte_Arrays(byte[] array1, byte[] array2);
         Task<bool> Email_Exists_In_Pending_Email_RegistrationTbl(string email_address);
         Task<bool> Email_Exists_In_Login_Email_AddressTbl(string email_address);
         Task<bool> ID_Exists_In_Users_IDTbl(ulong id);

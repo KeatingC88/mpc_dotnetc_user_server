@@ -17,7 +17,7 @@ namespace mpc_dotnetc_user_server.Controllers
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Actor, $"{AES.Process_Encryption(dto.Account_type.ToString())}"),
-                new Claim(ClaimTypes.NameIdentifier, $"{AES.Process_Encryption(dto.User_id.ToString())}"),
+                new Claim(ClaimTypes.NameIdentifier, $"{AES.Process_Encryption(dto.End_User_ID.ToString())}"),
                 new Claim(ClaimTypes.Role, $"{AES.Process_Encryption($"{dto.User_roles}")}"),
                 new Claim(ClaimTypes.GroupSid, $"{AES.Process_Encryption(dto.User_groups)}"),
                 new Claim(ClaimTypes.Webpage, $"{AES.Process_Encryption(Constants.JWT_CLAIM_WEBPAGE)}"),

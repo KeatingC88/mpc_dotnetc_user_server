@@ -6,7 +6,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.JWT
     {
         public string ID { get; set; } = string.Empty;
         public string Account_type { get; set; } = string.Empty;
-        public ulong User_id { get; set; }
+        public ulong End_User_ID { get; set; }
         public string Account_roles { get; set; } = string.Empty;
         public string Account_groups { get; set; } = string.Empty;
         public string Login_type { get; set; } = string.Empty;
@@ -22,7 +22,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.JWT
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public string Client_time { get; set; } = string.Empty;
+        public string Client_time { get; set; } = string.Empty;          public ulong Client_Time_Parsed { get; set; } 
 
         [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;

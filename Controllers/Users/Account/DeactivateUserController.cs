@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using mpc_dotnetc_user_server.Models.Users.Index;
-using mpc_dotnetc_user_server.Models.Users._Index;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
+using mpc_dotnetc_user_server.Models.Report;
+using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
 
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -41,7 +41,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_time = AES.Process_Decryption(dto.Client_time);
+                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
 
                 dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
@@ -79,10 +79,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_time = ulong.Parse(dto.Client_time),
+                    Client_Time_Parsed = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
-                    User_id = dto.Client_id,
+                    End_User_ID = dto.Client_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
                     Screen_extend = dto.Screen_extend,
@@ -105,7 +105,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 byte[]? user_password_hash_from_database_storage = _UsersRepository.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
                 byte[]? user_password_given_from_end_user_on_gui_client = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}")).Result;
                 if (user_password_hash_from_database_storage != null)
-                    if (!_UsersRepository.Compare_Password_Byte_Arrays(user_password_hash_from_database_storage, user_password_given_from_end_user_on_gui_client))
+                    if (!_UsersRepository.Compare_Password_Byte_Arrays(user_password_hash_from_database_storage, user_password_given_from_end_user_on_gui_client).Result)
                         return Unauthorized();
 
                 return await Task.FromResult(_UsersRepository.Delete_Account_By_User_id(new Delete_UserDTO { 

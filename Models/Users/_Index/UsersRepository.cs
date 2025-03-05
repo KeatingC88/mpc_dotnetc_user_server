@@ -6,17 +6,13 @@ using Microsoft.EntityFrameworkCore;
 using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Integration;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
-using mpc_dotnetc_user_server.Models.Users._Index;
-using mpc_dotnetc_user_server.Models.Users.BirthDate;
+
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Controllers;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
-using mpc_dotnetc_user_server.Models.Users.Authentication.WebSocket_Chat;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Type;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
@@ -24,11 +20,15 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Language;
 using mpc_dotnetc_user_server.Models.Users.Selected.Name;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Roles;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
 using Microsoft.IdentityModel.Tokens;
+using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
+using mpc_dotnetc_user_server.Models.Report;
+using mpc_dotnetc_user_server.Models.Users.Account_Type;
+using mpc_dotnetc_user_server.Models.Users.Account_Roles;
+using mpc_dotnetc_user_server.Models.Users.Account_Groups;
+using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -82,7 +82,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 .SetProperty(col => col.Updated_on, TimeStamp)
                 .SetProperty(col => col.Updated_by, ID_Record.ID)
                 .SetProperty(col => col.Deleted_by, ID_Record.ID)
-                .SetProperty(col => col.Client_time, ulong.Parse(dto.Client_time))
+                .SetProperty(col => col.Client_time, dto.Client_Time_Parsed)
                 .SetProperty(col => col.Server_Port, dto.Server_Networking_Port)
                 .SetProperty(col => col.Server_IP, dto.Server_Networking_IP_Address)
                 .SetProperty(col => col.Client_IP, dto.Client_Networking_IP_Address)
@@ -117,7 +117,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Client_Port = dto.Client_Networking_Port,
                 Server_IP = dto.Server_Networking_IP_Address,
                 Server_Port = dto.Server_Networking_Port,
-                Client_time = ulong.Parse(dto.Client_time),
+                Client_time = dto.Client_Time_Parsed,
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
@@ -138,7 +138,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.Selected_NameTbl.AddAsync(new Selected_NameTbl {
                 ID = Convert.ToUInt64(_UsersDBC.Login_Email_AddressTbl.Count() + 1),
                 Name = $@"{dto.Name}#{user_public_id}",
-                User_id = ID_Record.ID,
+                User_ID = ID_Record.ID,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Created_by = ID_Record.ID,
@@ -150,7 +150,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.Login_Email_AddressTbl.AddAsync(new Login_Email_AddressTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_Email_AddressTbl.Count() + 1),
-                User_id = ID_Record.ID,
+                User_ID = ID_Record.ID,
                 Email_Address = dto.Email_Address,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
@@ -163,7 +163,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.Login_PasswordTbl.AddAsync(new Password_ChangeTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_PasswordTbl.Count() + 1),
-                User_id = ID_Record.ID,
+                User_ID = ID_Record.ID,
                 Password = Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
@@ -174,7 +174,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             await _UsersDBC.Selected_LanguageTbl.AddAsync(new Selected_LanguageTbl
             {
-                User_id = ID_Record.ID,
+                User_ID = ID_Record.ID,
                 Language_code = dto.Language,
                 Region_code = dto.Region,
                 Updated_on = TimeStamp,
@@ -188,69 +188,69 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             await Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Alignment = dto.Alignment.ToString(),
             });
             obj.alignment = AES.Process_Encryption($"{dto.Alignment}");
 
             await Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Locked = dto.Nav_lock.ToString(),
             });
             obj.nav_lock = AES.Process_Encryption($"{dto.Nav_lock}");
 
             await Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Text_alignment = dto.Text_alignment.ToString(),
             });
             obj.text_alignment = AES.Process_Encryption($"{dto.Text_alignment}"); ;
 
             await Update_End_User_Selected_Theme(new Selected_ThemeDTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Theme = dto.Theme.ToString()
             });
             obj.theme = AES.Process_Encryption($"{dto.Theme}");
 
             await Update_End_User_Account_Roles(new Account_RolesDTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Roles = "User"
             });
             obj.roles = AES.Process_Encryption(JsonSerializer.Serialize("User"));
 
             await Update_End_User_Account_Groups(new Account_GroupsDTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Groups = "0"
             });
             obj.groups = AES.Process_Encryption(JsonSerializer.Serialize("0"));
 
             await Update_End_User_Account_Type(new Account_TypeDTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Type = 1
             });
             obj.account_type = AES.Process_Encryption("1");
 
             await Update_End_User_Selected_Grid_Type(new Selected_App_Grid_TypeDTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Grid = dto.Grid_type.ToString()
             });
             obj.grid_type = AES.Process_Encryption(dto.Grid_type.ToString());
 
             await Update_End_User_Selected_Status(new Selected_StatusDTO {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Online_status = 2.ToString(),
             });
             obj.online_status = AES.Process_Encryption("2");
 
             obj.token = JWT.Create_Email_Account_Token(new JWT_DTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 User_groups = "0",
                 User_roles = "User",
                 Account_type = 1,
@@ -259,9 +259,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             await Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Login_on = TimeStamp,
-                Client_time = ulong.Parse(dto.Client_time),
+                Client_Time_Parsed = dto.Client_Time_Parsed,
                 Location = dto.Location,
                 Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
                 Client_Networking_Port = dto.Client_Networking_Port,
@@ -286,9 +286,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             await Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
             {
-                User_id = ID_Record.ID,
+                End_User_ID = ID_Record.ID,
                 Login_on = TimeStamp,
-                Client_time = ulong.Parse(dto.Client_time),
+                Client_Time_Parsed = dto.Client_Time_Parsed,
                 Location = dto.Location,
                 Client_Networking_Port = dto.Client_Networking_Port,
                 Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
@@ -333,7 +333,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Language_Region = $"{dto.Language}-{dto.Region}",
                 Email_Address = dto.Email_Address,
                 Location = dto.Location,
-                Client_time = ulong.Parse(dto.Client_time),
+                Client_time = dto.Client_Time_Parsed,
                 Code = dto.Code,
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
@@ -368,7 +368,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.Contact_UsTbl.AddAsync(new Contact_UsTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Contact_UsTbl.Count() + 1),
-                USER_ID = dto.ID,
+                USER_ID = dto.End_User_ID,
                 Subject_Line = dto.Subject_line,
                 Summary = dto.Summary,
                 Updated_on = TimeStamp,
@@ -378,17 +378,17 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> Create_End_User_Status_Record(Selected_StatusDTO obj)
+        public async Task<bool> Create_End_User_Status_Record(Selected_StatusDTO dto)
         {
             await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
-                User_id = obj.User_id,
+                User_ID = dto.End_User_ID,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
-                Created_by = obj.User_id,
+                Created_by = dto.End_User_ID,
                 Online = 1,
-                Updated_by = obj.User_id
+                Updated_by = dto.End_User_ID
             });
             await _UsersDBC.SaveChangesAsync();
             return true;
@@ -398,7 +398,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.Reported_Website_BugTbl.AddAsync(new Reported_Website_BugTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Reported_Website_BugTbl.Count() + 1),
-                USER_ID = dto.ID,
+                USER_ID = dto.End_User_ID,
                 URL = dto.URL,
                 Detail = dto.Detail,
                 Updated_on = TimeStamp,
@@ -408,14 +408,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             return true;
         }
-        public async Task<string> Create_WebSocket_Log_Record(Websocket_Chat_PermissionDTO dto)
+        public async Task<string> Create_WebSocket_Log_Record(WebSocket_Chat_PermissionDTO dto)
         {
             try {
-                await _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
+                await _UsersDBC.WebSocket_Chat_PermissionTbl.AddAsync(new WebSocket_Chat_PermissionTbl
                 {
-                    ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
-                    User_A_id = dto.User_id,
-                    User_B_id = dto.User_B_id,
+                    ID = Convert.ToUInt64(_UsersDBC.WebSocket_Chat_PermissionTbl.Count() + 1),
+                    User_ID = dto.End_User_ID,
+                    Participant_ID = dto.Participant_ID,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Updated_by = 0,
@@ -425,22 +425,22 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 });
                 await _UsersDBC.SaveChangesAsync();
                 obj.updated_on = TimeStamp;
-                obj.updated_by = dto.User_id;
-                obj.updated_for = dto.User_B_id;
+                obj.updated_by = dto.End_User_ID;
+                obj.updated_for = dto.User;
                 return JsonSerializer.Serialize(obj);
             } catch {
                 obj.error = "Server Error: WebSocket Log Record";
                 return JsonSerializer.Serialize(obj);
             }
         }
-        public async Task<bool> Create_Discord_Bot_Bug_Record(Reported_Discord_Bot_BugDTO obj)
+        public async Task<bool> Create_Discord_Bot_Bug_Record(Reported_Discord_Bot_BugDTO dto)
         {
             await _UsersDBC.Reported_Discord_Bot_BugTbl.AddAsync(new Reported_Discord_Bot_BugTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Reported_Discord_Bot_BugTbl.Count() + 1),
-                USER_ID = obj.ID,
-                Location = obj.Location,
-                Detail = obj.Detail,
+                USER_ID = dto.End_User_ID,
+                Location = dto.Location,
+                Detail = dto.Detail,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Updated_by = 0
@@ -453,7 +453,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.Comment_BoxTbl.AddAsync(new Comment_BoxTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Comment_BoxTbl.Count() + 1),
-                USER_ID = dto.ID,
+                USER_ID = dto.End_User_ID,
                 Comment = dto.Comment,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
@@ -462,13 +462,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> Create_Broken_Link_Record(Reported_Broken_LinkDTO obj)
+        public async Task<bool> Create_Broken_Link_Record(Reported_Broken_LinkDTO dto)
         {
             await _UsersDBC.Reported_Broken_LinkTbl.AddAsync(new Reported_Broken_LinkTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Reported_Broken_LinkTbl.Count() + 1),
-                USER_ID = obj.ID,
-                URL = obj.URL,
+                USER_ID = dto.End_User_ID,
+                URL = dto.URL,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Updated_by = 0
@@ -481,16 +481,16 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             Reported_ProfileTbl record = new Reported_ProfileTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Reported_ProfileTbl.Count() + 1),
-                USER_ID = dto.ID,
+                USER_ID = dto.End_User_ID,
                 Reported_ID = dto.Reported_ID,
-                Page_Title = _UsersDBC.ProfilePageTbl.Where(x => x.User_id == dto.Reported_ID).Select(x => x.Page_Title).SingleOrDefault(),
-                Page_Description = _UsersDBC.ProfilePageTbl.Where(x => x.User_id == dto.Reported_ID).Select(x => x.Page_Description).SingleOrDefault(),
-                About_Me = _UsersDBC.ProfilePageTbl.Where(x => x.User_id == dto.Reported_ID).Select(x => x.About_Me).SingleOrDefault(),
-                Banner_URL = _UsersDBC.ProfilePageTbl.Where(x => x.User_id == dto.Reported_ID).Select(x => x.Banner_URL).SingleOrDefault(),
+                Page_Title = _UsersDBC.ProfilePageTbl.Where(x => x.User_ID == dto.Reported_ID).Select(x => x.Page_Title).SingleOrDefault(),
+                Page_Description = _UsersDBC.ProfilePageTbl.Where(x => x.User_ID == dto.Reported_ID).Select(x => x.Page_Description).SingleOrDefault(),
+                About_Me = _UsersDBC.ProfilePageTbl.Where(x => x.User_ID == dto.Reported_ID).Select(x => x.About_Me).SingleOrDefault(),
+                Banner_URL = _UsersDBC.ProfilePageTbl.Where(x => x.User_ID == dto.Reported_ID).Select(x => x.Banner_URL).SingleOrDefault(),
                 Reported_Reason = dto.Reported_Reason,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
-                Updated_by = dto.ID
+                Updated_by = ulong.Parse(dto.ID)
             };
             await _UsersDBC.Reported_ProfileTbl.AddAsync(record);
             await _UsersDBC.SaveChangesAsync();
@@ -519,65 +519,66 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public Task<string> Read_Email_User_Data_By_ID(ulong end_user_id)
         {
-            bool nav_lock = _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.User_id == end_user_id).Select(x => x.Locked).SingleOrDefault();
-            byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Type).SingleOrDefault();
-            byte grid_type = _UsersDBC.Selected_App_Grid_TypeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Grid).SingleOrDefault();
-            byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Online).SingleOrDefault();
-            byte status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Offline).SingleOrDefault();
-            byte status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Hidden).SingleOrDefault();
-            byte status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Away).SingleOrDefault();
-            byte status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.DND).SingleOrDefault();
-            byte status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Custom).SingleOrDefault();
+            bool nav_lock = _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Locked).SingleOrDefault();
+            byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Type).SingleOrDefault();
+            byte grid_type = _UsersDBC.Selected_App_Grid_TypeTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Grid).SingleOrDefault();
+            byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Online).SingleOrDefault();
+            byte status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Offline).SingleOrDefault();
+            byte status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Hidden).SingleOrDefault();
+            byte status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Away).SingleOrDefault();
+            byte status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == end_user_id).Select(x => x.DND).SingleOrDefault();
+            byte status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Custom).SingleOrDefault();
             byte status_type = 0;
-            byte light = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Light).SingleOrDefault();
-            byte night = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Night).SingleOrDefault();
-            byte custom_theme = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == end_user_id).Select(x => x.Custom).SingleOrDefault();
+            byte light = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Light).SingleOrDefault();
+            byte night = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Night).SingleOrDefault();
+            byte custom_theme = _UsersDBC.Selected_ThemeTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Custom).SingleOrDefault();
             byte theme_type = 0;
-            byte left_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Left).SingleOrDefault();
-            byte center_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Center).SingleOrDefault();
-            byte right_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Right).SingleOrDefault();
+            byte left_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Left).SingleOrDefault();
+            byte center_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Center).SingleOrDefault();
+            byte right_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Right).SingleOrDefault();
             byte alignment_type = 0;
-            byte left_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Left).SingleOrDefault();
-            byte center_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Center).SingleOrDefault();
-            byte right_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == end_user_id).Select(x => x.Right).SingleOrDefault();
+            byte left_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Left).SingleOrDefault();
+            byte center_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Center).SingleOrDefault();
+            byte right_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Right).SingleOrDefault();
             byte text_alignment_type = 0;
-            ulong login_timestamp = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == end_user_id).Select(x => x.Login_on).SingleOrDefault();
-            ulong logout_timestamp = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == end_user_id).Select(x => x.Logout_on).SingleOrDefault();
+            ulong login_timestamp = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Login_on).SingleOrDefault();
+            ulong logout_timestamp = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Logout_on).SingleOrDefault();
             ulong created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Created_on).SingleOrDefault();
-            byte? gender = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Gender).SingleOrDefault();
-            byte? birth_day = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Day).SingleOrDefault();
-            byte? birth_month = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Month).SingleOrDefault();
-            ulong? birth_year = _UsersDBC.Birth_DateTbl.Where(x => x.User_id == end_user_id).Select(x => x.Year).SingleOrDefault();
-            string? customLbl = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == end_user_id).Select(x => x.Custom_lbl).SingleOrDefault();
-            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_id == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
-            string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == end_user_id).Select(x => x.Region_code).SingleOrDefault();
-            string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == end_user_id).Select(x => x.Language_code).SingleOrDefault();
-            string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == end_user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
-            string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == end_user_id).Select(x => x.Avatar_title).SingleOrDefault();
-            string? name = _UsersDBC.Selected_NameTbl.Where(x => x.User_id == end_user_id).Select(x => x.Name).SingleOrDefault();
-            string? first_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.First_Name).SingleOrDefault();
-            string? last_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Last_Name).SingleOrDefault();
-            string? middle_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Middle_Name).SingleOrDefault();
-            string? maiden_name = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Maiden_Name).SingleOrDefault();
-            string? ethnicity = _UsersDBC.IdentityTbl.Where(x => x.User_id == end_user_id).Select(x => x.Ethnicity).SingleOrDefault();
-            string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.User_id == end_user_id).Select(x => x.Groups).SingleOrDefault();
-            string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.User_id == end_user_id).Select(x => x.Roles).SingleOrDefault();
-            string? card_border_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Border_Color).SingleOrDefault();
-            string? card_header_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Header_Font).SingleOrDefault();
-            string? card_header_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Header_Font_Color).SingleOrDefault();
-            string? card_header_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Header_Background_Color).SingleOrDefault();
-            string? card_body_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Body_Font).SingleOrDefault();
-            string? card_body_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Body_Background_Color).SingleOrDefault();
-            string? card_body_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Body_Font_Color).SingleOrDefault();
-            string? card_footer_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Footer_Font_Color).SingleOrDefault();
-            string? card_footer_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Footer_Font).SingleOrDefault();
-            string? card_footer_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Card_Footer_Background_Color).SingleOrDefault();
-            string? navigation_menu_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Navigation_Menu_Background_Color).SingleOrDefault();
-            string? navigation_menu_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Navigation_Menu_Font_Color).SingleOrDefault();
-            string? navigation_menu_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Navigation_Menu_Font).SingleOrDefault();
-            string? button_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Button_Background_Color).SingleOrDefault();
-            string? button_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Button_Font).SingleOrDefault();
-            string? button_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == end_user_id).Select(x => x.Button_Font_Color).SingleOrDefault();
+            byte? gender = _UsersDBC.IdentityTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Gender).SingleOrDefault();
+            byte? birth_day = _UsersDBC.Birth_DateTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Day).SingleOrDefault();
+            byte? birth_month = _UsersDBC.Birth_DateTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Month).SingleOrDefault();
+            ulong? birth_year = _UsersDBC.Birth_DateTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Year).SingleOrDefault();
+            string? customLbl = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Custom_lbl).SingleOrDefault();
+            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Region_code).SingleOrDefault();
+            string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Language_code).SingleOrDefault();
+            string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
+            string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Avatar_title).SingleOrDefault();
+            string? name = _UsersDBC.Selected_NameTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Name).SingleOrDefault();
+            string? end_user_public_id = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Public_id).SingleOrDefault();
+            string? first_name = _UsersDBC.IdentityTbl.Where(x => x.User_ID == end_user_id).Select(x => x.First_Name).SingleOrDefault();
+            string? last_name = _UsersDBC.IdentityTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Last_Name).SingleOrDefault();
+            string? middle_name = _UsersDBC.IdentityTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Middle_Name).SingleOrDefault();
+            string? maiden_name = _UsersDBC.IdentityTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Maiden_Name).SingleOrDefault();
+            string? ethnicity = _UsersDBC.IdentityTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Ethnicity).SingleOrDefault();
+            string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Groups).SingleOrDefault();
+            string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Roles).SingleOrDefault();
+            string? card_border_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Border_Color).SingleOrDefault();
+            string? card_header_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Header_Font).SingleOrDefault();
+            string? card_header_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Header_Font_Color).SingleOrDefault();
+            string? card_header_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Header_Background_Color).SingleOrDefault();
+            string? card_body_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Body_Font).SingleOrDefault();
+            string? card_body_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Body_Background_Color).SingleOrDefault();
+            string? card_body_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Body_Font_Color).SingleOrDefault();
+            string? card_footer_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Footer_Font_Color).SingleOrDefault();
+            string? card_footer_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Footer_Font).SingleOrDefault();
+            string? card_footer_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Footer_Background_Color).SingleOrDefault();
+            string? navigation_menu_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Navigation_Menu_Background_Color).SingleOrDefault();
+            string? navigation_menu_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Navigation_Menu_Font_Color).SingleOrDefault();
+            string? navigation_menu_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Navigation_Menu_Font).SingleOrDefault();
+            string? button_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Button_Background_Color).SingleOrDefault();
+            string? button_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Button_Font).SingleOrDefault();
+            string? button_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Button_Font_Color).SingleOrDefault();
 
 
             if (status_offline == 1)
@@ -614,7 +615,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.id = AES.Process_Encryption($@"{end_user_id}");
             obj.account_type = AES.Process_Encryption($@"{account_type}");
             obj.email_address = AES.Process_Encryption($@"{email_address}");
-            obj.name = AES.Process_Encryption($@"{name}");
+            obj.name = AES.Process_Encryption($@"{name}#{end_user_public_id}");
             obj.login_on = AES.Process_Encryption($@"{login_timestamp}");
             obj.logout_on = AES.Process_Encryption($@"{logout_timestamp}");
             obj.current_language = AES.Process_Encryption($@"{language_code}-{region_code}");
@@ -662,7 +663,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             obj.token = JWT.Create_Email_Account_Token(new JWT_DTO
             {
-                User_id = end_user_id,
+                End_User_ID = end_user_id,
                 User_groups = groups,
                 User_roles = roles,
                 Account_type = account_type,
@@ -673,45 +674,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Read_User_Profile_By_ID(ulong user_id)
         {
-            //Get Information About the End User for the client sidx.
-            byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Online).SingleOrDefault();
-            byte status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Offline).SingleOrDefault();
-            byte status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Hidden).SingleOrDefault();
-            byte status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Away).SingleOrDefault();
-            byte status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.DND).SingleOrDefault();
-            byte status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Custom).SingleOrDefault();
-            string? custom_label = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == user_id).Select(x => x.Custom_lbl).SingleOrDefault();
-
-            //Send Information to Client Side going below...
+            byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == user_id).Select(x => x.Online).SingleOrDefault();
+            byte status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == user_id).Select(x => x.Offline).SingleOrDefault();
+            byte status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == user_id).Select(x => x.Hidden).SingleOrDefault();
+            byte status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == user_id).Select(x => x.Away).SingleOrDefault();
+            byte status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == user_id).Select(x => x.DND).SingleOrDefault();
+            byte status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == user_id).Select(x => x.Custom).SingleOrDefault();
+            string? custom_label = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == user_id).Select(x => x.Custom_lbl).SingleOrDefault();
             byte status_code = 0;
 
-            ulong LoginTS = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == user_id).Select(x => x.Login_on).SingleOrDefault();
-            ulong LogoutTS = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == user_id).Select(x => x.Logout_on).SingleOrDefault();
+            ulong LoginTS = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_ID == user_id).Select(x => x.Login_on).SingleOrDefault();
+            ulong LogoutTS = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_ID == user_id).Select(x => x.Logout_on).SingleOrDefault();
             ulong created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == user_id).Select(x => x.Created_on).SingleOrDefault();
 
-            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_id == user_id).Select(x => x.Email_Address).SingleOrDefault();
-            string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == user_id).Select(x => x.Region_code).SingleOrDefault();
-            string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == user_id).Select(x => x.Language_code).SingleOrDefault();
-            string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
-            string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == user_id).Select(x => x.Avatar_title).SingleOrDefault();
-            string? name = _UsersDBC.Selected_NameTbl.Where(x => x.User_id == user_id).Select(x => x.Name).SingleOrDefault();
-
-            string? card_border_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Border_Color).SingleOrDefault();
-            string? card_header_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Header_Font).SingleOrDefault();
-            string? card_header_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Header_Font_Color).SingleOrDefault();
-            string? card_header_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Header_Background_Color).SingleOrDefault();
-            string? card_body_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Body_Font).SingleOrDefault();
-            string? card_body_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Body_Background_Color).SingleOrDefault();
-            string? card_body_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Body_Font_Color).SingleOrDefault();
-            string? card_footer_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Footer_Font_Color).SingleOrDefault();
-            string? card_footer_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Footer_Font).SingleOrDefault();
-            string? card_footer_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Card_Footer_Background_Color).SingleOrDefault();
-            string? navigation_menu_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Navigation_Menu_Background_Color).SingleOrDefault();
-            string? navigation_menu_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Navigation_Menu_Font_Color).SingleOrDefault();
-            string? navigation_menu_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Navigation_Menu_Font).SingleOrDefault();
-            string? button_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Button_Background_Color).SingleOrDefault();
-            string? button_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Button_Font).SingleOrDefault();
-            string? button_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == user_id).Select(x => x.Button_Font_Color).SingleOrDefault();
+            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_ID == user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_ID == user_id).Select(x => x.Region_code).SingleOrDefault();
+            string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_ID == user_id).Select(x => x.Language_code).SingleOrDefault();
+            string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_ID == user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
+            string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_ID == user_id).Select(x => x.Avatar_title).SingleOrDefault();
+            string? name = _UsersDBC.Selected_NameTbl.Where(x => x.User_ID == user_id).Select(x => x.Name).SingleOrDefault();
 
             if (status_offline == 1)
                 status_code = 0;
@@ -737,78 +718,137 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.created_on = created_on;
             obj.avatar_url_path = avatar_url_path;
             obj.avatar_title = avatar_title;
-            obj.card_border_color = AES.Process_Encryption($@"{card_border_color}");
-            obj.card_header_font = AES.Process_Encryption($@"{card_header_font}");
-            obj.card_header_font_color = AES.Process_Encryption($@"{card_header_font_color}");
-            obj.card_header_background_color = AES.Process_Encryption($@"{card_header_background_color}");
-            obj.card_body_font = AES.Process_Encryption($@"{card_body_font}");
-            obj.card_body_background_color = AES.Process_Encryption($@"{card_body_background_color}");
-            obj.card_body_font_color = AES.Process_Encryption($@"{card_body_font_color}");
-            obj.card_footer_font_color = AES.Process_Encryption($@"{card_footer_font_color}");
-            obj.card_footer_font = AES.Process_Encryption($@"{card_footer_font}");
-            obj.card_footer_background_color = AES.Process_Encryption($@"{card_footer_background_color}");
-            obj.navigation_menu_background_color = AES.Process_Encryption($@"{navigation_menu_background_color}");
-            obj.navigation_menu_font_color = AES.Process_Encryption($@"{navigation_menu_font_color}");
-            obj.navigation_menu_font = AES.Process_Encryption($@"{navigation_menu_font}");
-            obj.button_background_color = AES.Process_Encryption($@"{button_background_color}");
-            obj.button_font = AES.Process_Encryption($@"{button_font}");
-            obj.button_font_color = AES.Process_Encryption($@"{button_font_color}");
 
             return await Task.FromResult(JsonSerializer.Serialize(obj));
         }
-        public Task<string> Read_WebSocket_Permission_Record(Websocket_Chat_PermissionDTO dto)
+        public async Task<string> Read_WebSocket_Permission_Record_For_Both_End_Users(WebSocket_Chat_PermissionDTO dto)
         {
-            byte requested = _UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_A_id == dto.User_A_id && x.User_B_id == dto.User_B_id).Select(x => x.Requested).SingleOrDefault();
-            byte approved = _UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_A_id == dto.User_A_id && x.User_B_id == dto.User_B_id).Select(x => x.Approved).SingleOrDefault();
-            byte blocked = _UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_A_id == dto.User_A_id && x.User_B_id == dto.User_B_id).Select(x => x.Blocked).SingleOrDefault();
+            byte requested = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Requested).SingleOrDefault();
+            byte approved = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Approved).SingleOrDefault();
+            byte blocked = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Blocked).SingleOrDefault();
 
-            if (requested == 1)
+            byte requested_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Requested).SingleOrDefault();
+            byte approved_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Approved).SingleOrDefault();
+            byte blocked_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Blocked).SingleOrDefault();
+
+
+            if (requested == 1 || requested_swap_ids == 1)
             {
                 obj.requested = 1;
                 obj.blocked = 0;
                 obj.approved = 0;
             }
 
-            if (approved == 1)
+            if (approved == 1 || approved_swap_ids == 1)
             {
                 obj.requested = 0;
                 obj.blocked = 0;
                 obj.approved = 1;
             }
 
-            if (blocked == 1)
+            if (blocked == 1 || blocked_swap_ids == 1)
             {
                 obj.requested = 0;
                 obj.blocked = 1;
                 obj.approved = 0;
             }
 
-            if (requested == 0 && approved == 0 && blocked == 0)
-            {//When no records are found meaning a request is made from person A to person B.
-                Create_Chat_WebSocket_Log_Records(dto);
+            if (requested == 0 && approved == 0 && blocked == 0 && requested_swap_ids == 0 && approved_swap_ids == 0 && blocked_swap_ids == 0)
+            {
+                await Create_WebSocket_Permission_Record(dto);
                 obj.requested = 1;
                 obj.blocked = 0;
                 obj.approved = 0;
             }
 
-            obj.id = dto.User_A_id;
-            obj.send_to = dto.User_B_id;
-            obj.message = dto.Message;
+            obj.id = dto.End_User_ID;
+            obj.user = dto.Participant_ID;
 
-            return Task.FromResult(JsonSerializer.Serialize(obj));
+            return await Task.FromResult(JsonSerializer.Serialize(obj));
         }
-        public async Task<string> Read_End_User_Web_Socket_Data(ulong user_id)
+        public async Task<string> Read_All_End_User_WebSocket_Sent_Chat_Requests(ulong user_id)
         {
-            return await Task.FromResult(JsonSerializer.Serialize(_UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_A_id == user_id).ToList().Concat(_UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_B_id == user_id).ToList())));
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.User_ID == user_id)) {
+                return "";
+            } else {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == user_id && x.Requested == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_All_End_User_WebSocket_Sent_Chat_Blocks(ulong user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == user_id && x.Blocked == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_All_End_User_WebSocket_Sent_Chat_Approvals(ulong user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == user_id && x.Approved == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_All_End_User_WebSocket_Received_Chat_Requests(ulong user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_All_End_User_WebSocket_Received_Chat_Blocks(ulong user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Blocked == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_All_End_User_WebSocket_Received_Chat_Approvals(ulong user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Approved == 1)
+                    .ToList()));
+            }
         }
         public async Task<byte> Read_End_User_Selected_Status(Selected_StatusDTO dto)
         {
-            byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).Select(x => x.Online).SingleOrDefault();
-            byte status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).Select(x => x.Offline).SingleOrDefault();
-            byte status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).Select(x => x.Hidden).SingleOrDefault();
-            byte status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).Select(x => x.Away).SingleOrDefault();
-            byte status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).Select(x => x.DND).SingleOrDefault();
-            byte status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).Select(x => x.Custom).SingleOrDefault();
+            byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).Select(x => x.Online).SingleOrDefault();
+            byte status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).Select(x => x.Offline).SingleOrDefault();
+            byte status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).Select(x => x.Hidden).SingleOrDefault();
+            byte status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).Select(x => x.Away).SingleOrDefault();
+            byte status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).Select(x => x.DND).SingleOrDefault();
+            byte status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).Select(x => x.Custom).SingleOrDefault();
             byte Status = 0;
             if (status_offline == 1)
                 Status = 0;
@@ -824,46 +864,569 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Status = 5;
             return await Task.FromResult(Status);
         }
-        public async Task<string> Create_Reported_WebSocket_Abuse_Record(Reported_WebSocket_AbuseDTO dto)
+        public async Task<string> Create_Reported_WebSocket_Records(Reported_WebSocketDTO dto)
         {
             try
             {
-                await _UsersDBC.Reported_WebSocket_AbuseTbl.AddAsync(new Reported_WebSocket_AbuseTbl
+                switch (dto.Report_type.ToUpper())
                 {
-                    User_id = dto.User_id,
-                    Updated_on = TimeStamp,
-                    Updated_by = dto.User_id,
-                    Abuser = dto.Abuser,
-                    Type = dto.Abuse_type,
-                    Reason = dto.Reason,
-                    Created_on = TimeStamp,
-                    Created_by = dto.User_id,
-                });
-                await _UsersDBC.SaveChangesAsync();
-                obj.record_created_on = TimeStamp;
+                    case "THREAT":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Threat = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Threat = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong threat_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Threat).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Threat, (threat_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.threat_record_created_on = TimeStamp;
+                        break;
+                    case "SPAM":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Spam = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Spam = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong spam_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Spam).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Spam, (spam_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.spam_record_created_on = TimeStamp;
+                        break;
+                    case "BLOCK":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Block = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Block = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong block_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Block).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Block, (block_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.block_record_created_on = TimeStamp;
+                        break;
+                    case "ABUSE":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Abuse = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Abuse = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong abuse_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Abuse).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Abuse, (abuse_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.abuse_record_created_on = TimeStamp;
+                        break;
+                    case "MISINFORM":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Misinform = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Misinform = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong misinform_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Misinform).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Misinform, (misinform_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.misinform_record_created_on = TimeStamp;
+                        break;
+                    case "HARASS":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Harass = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Harass = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong harass_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Harass).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Harass, (harass_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.harass_record_created_on = TimeStamp;
+                        break;
+                    case "FAKE":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Fake = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Fake = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong fake_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Fake).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Fake, (fake_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.fake_account_record_created_on = TimeStamp;
+                        break;
+                    case "HATE":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Hate = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Hate = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong hate_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Nudity).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Hate, (hate_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.hate_record_created_on = TimeStamp;
+                        break;
+                    case "NUDITY":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Nudity = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Nudity = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong nudity_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Nudity).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Nudity, (nudity_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.nudity_record_created_on = TimeStamp;
+                        break;
+                    case "VIOLENCE":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Violence = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Violence = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong violence_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Violence).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Violence, (violence_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.violence_record_created_on = TimeStamp;
+                        break;
+                    case "ILLEGAL":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Illegal = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Illegal = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong illegal_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Illegal).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Illegal, (illegal_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.illegal_record_created_on = TimeStamp;
+                        break;
+                    case "SELF_HARM":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Self_harm = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Self_harm = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong self_harm_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Self_harm).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Self_harm, (self_harm_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.self_harm_record_created_on = TimeStamp;
+                        break;
+                    case "DISRUPTION":
+                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        {
+                            User_ID = dto.Participant_ID,
+                            Participant_ID = dto.End_User_ID,
+                            Updated_on = TimeStamp,
+                            Updated_by = dto.End_User_ID,
+                            Disruption = 1,
+                            Created_on = TimeStamp,
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        {
+                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            {
+                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                User_ID = dto.Participant_ID,
+                                Disruption = 1,
+                                Updated_on = TimeStamp,
+                                Created_on = TimeStamp,
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID
+                            });
+                        }
+                        else
+                        {
+                            ulong disruption_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Disruption).SingleOrDefault();
+                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                                .SetProperty(col => col.Disruption, (disruption_count + 1))
+                                .SetProperty(col => col.Updated_on, TimeStamp)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                            );
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+                        obj.disruption_record_created_on = TimeStamp;
+                        break;
+                }
                 return JsonSerializer.Serialize(obj);
             } catch {
-                obj.error = "Server Error: Record Creation Failed.";
+                obj.error = "Server Error: Report Record Creation Failed.";
                 return JsonSerializer.Serialize(obj);
             }
         }
-        public async Task<string> Update_Chat_Web_Socket_Permissions_Tbl(Websocket_Chat_PermissionTbl dto)
+        public async Task<string> Update_Chat_Web_Socket_Permissions_Tbl(WebSocket_Chat_PermissionTbl dto)
         {
             try
             {
-                await _UsersDBC.Websocket_Chat_PermissionTbl.Where(x => x.User_A_id == dto.User_A_id && x.User_B_id == dto.User_B_id).ExecuteUpdateAsync(s => s
-                    .SetProperty(dto => dto.Requested, dto.Requested)
-                    .SetProperty(dto => dto.Blocked, dto.Blocked)
-                    .SetProperty(dto => dto.Approved, dto.Approved)
-                    .SetProperty(dto => dto.Updated_on, TimeStamp)
-                    .SetProperty(dto => dto.Updated_by, dto.User_A_id)
-                );
-                await _UsersDBC.SaveChangesAsync();
-                obj.updated_on = TimeStamp;
-                obj.user = dto.User_A_id;
+                if (_UsersDBC.WebSocket_Chat_PermissionTbl.Any((x) => x.User_ID == dto.User_ID && x.Participant_ID == dto.Participant_ID)) {
+                    await _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            .SetProperty(dto => dto.Requested, dto.Requested)
+                            .SetProperty(dto => dto.Blocked, dto.Blocked)
+                            .SetProperty(dto => dto.Approved, dto.Approved)
+                            .SetProperty(dto => dto.Updated_on, TimeStamp)
+                            .SetProperty(dto => dto.Deleted, false)
+                            .SetProperty(dto => dto.Updated_by, dto.Participant_ID)
+                        );
+                    await _UsersDBC.SaveChangesAsync();
+                    obj.updated_on = TimeStamp;
+                }
+                if (_UsersDBC.WebSocket_Chat_PermissionTbl.Any((x) => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.User_ID))
+                {
+                    await _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.User_ID).ExecuteUpdateAsync(s => s
+                            .SetProperty(dto => dto.Requested, dto.Requested)
+                            .SetProperty(dto => dto.Blocked, dto.Blocked)
+                            .SetProperty(dto => dto.Approved, dto.Approved)
+                            .SetProperty(dto => dto.Updated_on, TimeStamp)
+                            .SetProperty(dto => dto.Deleted, false)
+                            .SetProperty(dto => dto.Updated_by, dto.User_ID)
+                        );
+                    await _UsersDBC.SaveChangesAsync();
+                    obj.updated_on = TimeStamp;
+                }
                 return JsonSerializer.Serialize(obj);
             } catch {
                 obj.error = "Server Error: Update Chat Permissions Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
+        public async Task<string> Delete_Chat_Web_Socket_Permissions_Tbl(WebSocket_Chat_PermissionTbl dto)
+        {
+            try
+            {
+                await _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                    .SetProperty(dto => dto.Requested, dto.Requested)
+                    .SetProperty(dto => dto.Blocked, dto.Blocked)
+                    .SetProperty(dto => dto.Approved, dto.Approved)
+                    .SetProperty(dto => dto.Deleted_on, TimeStamp)
+                    .SetProperty(dto => dto.Deleted_by, dto.Participant_ID)
+                    .SetProperty(dto => dto.Deleted, true)
+                    .SetProperty(dto => dto.Updated_on, TimeStamp)
+                    .SetProperty(dto => dto.Updated_by, dto.Participant_ID)
+                );
+                await _UsersDBC.SaveChangesAsync();
+                obj.deleted_on = TimeStamp;
+                return JsonSerializer.Serialize(obj);
+            }
+            catch
+            {
+                obj.error = "Server Error: Delete Chat Permissions Failed.";
                 return JsonSerializer.Serialize(obj);
             }
         }
@@ -882,7 +1445,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language_Region = $"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
                     Location = dto.Location,
-                    Client_time = dto.Client_time,
+                    Client_time = dto.Client_Time_Parsed,
                     Code = dto.Code,
                     User_agent = dto.User_agent,
                     Down_link = dto.Down_link,
@@ -935,7 +1498,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 await _UsersDBC.Report_Email_RegistrationTbl.AddAsync(new Report_Email_RegistrationTbl
                 {
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Client_IP = dto.Client_Networking_IP_Address,
@@ -945,7 +1508,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language_Region = $"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
                     Location = dto.Location,
-                    Client_time = dto.Client_time
+                    Client_time = dto.Client_Time_Parsed
                 });
                 await _UsersDBC.SaveChangesAsync();
                 obj.recorded_on = TimeStamp;
@@ -958,21 +1521,21 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Avatar(Selected_AvatarDTO dto)
         {
             try {
-                if (!_UsersDBC.Selected_AvatarTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_AvatarTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_AvatarTbl.AddAsync(new Selected_AvatarTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_AvatarTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Updated_on = TimeStamp,
                         Created_on = TimeStamp,
                         Avatar_url_path = dto.Avatar_url_path,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 { 
-                    await _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_AvatarTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Avatar_url_path, dto.Avatar_url_path));
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -982,27 +1545,26 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 obj.error = "Server Error: Update Avatar Failed.";
                 return JsonSerializer.Serialize(obj);
             }
-
         }
         public async Task<string> Update_End_User_Avatar_Title(Selected_Avatar_TitleDTO dto)
         {
             try
             {
-                if (!_UsersDBC.Selected_AvatarTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_AvatarTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_AvatarTbl.AddAsync(new Selected_AvatarTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_AvatarTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Updated_on = TimeStamp,
                         Created_on = TimeStamp,
                         Avatar_title = dto.Avatar_title,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 { 
-                    await _UsersDBC.Selected_AvatarTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_AvatarTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Avatar_title, dto.Avatar_title));
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1019,9 +1581,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Name(Selected_NameDTO dto)
         {
             try {
-                await _UsersDBC.Selected_NameTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                await _UsersDBC.Selected_NameTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Name, dto.Name)
-                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     .SetProperty(col => col.Updated_on, TimeStamp)
                 );
                 await _UsersDBC.SaveChangesAsync();
@@ -1038,70 +1600,70 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 switch (byte.Parse(dto.Alignment))
                 {
                     case 0:
-                        if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_ID == dto.End_User_ID))
                         {
                             await _UsersDBC.Selected_App_AlignmentTbl.AddAsync(new Selected_App_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_AlignmentTbl.Count() + 1),
-                                User_id = dto.User_id,
+                                User_ID = dto.End_User_ID,
                                 Updated_on = TimeStamp,
                                 Created_on = TimeStamp,
                                 Left = 1,
-                                Updated_by = dto.User_id
+                                Updated_by = dto.End_User_ID
                             });
                         } else { 
-                            await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                            await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 1)
                                 .SetProperty(col => col.Center, 0)
                                 .SetProperty(col => col.Right, 0)
                                 .SetProperty(col => col.Updated_on, TimeStamp)
-                                .SetProperty(col => col.Updated_by, dto.User_id)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
                         return JsonSerializer.Serialize(obj);
                     case 2:
-                        if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_ID == dto.End_User_ID))
                         {
                             await _UsersDBC.Selected_App_AlignmentTbl.AddAsync(new Selected_App_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_AlignmentTbl.Count() + 1),
-                                User_id = dto.User_id,
+                                User_ID = dto.End_User_ID,
                                 Right = 1,
                                 Updated_on = TimeStamp,
                                 Created_on = TimeStamp,
-                                Updated_by = dto.User_id
+                                Updated_by = dto.End_User_ID
                             });
                         } else { 
-                            await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                            await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 0)
                                 .SetProperty(col => col.Center, 0)
                                 .SetProperty(col => col.Right, 1)
                                 .SetProperty(col => col.Updated_on, TimeStamp)
-                                .SetProperty(col => col.Updated_by, dto.User_id)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
                         return JsonSerializer.Serialize(obj);
                     case 1:
-                        if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        if (!_UsersDBC.Selected_App_AlignmentTbl.Any(x => x.User_ID == dto.End_User_ID))
                         {
                             await _UsersDBC.Selected_App_AlignmentTbl.AddAsync(new Selected_App_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_AlignmentTbl.Count() + 1),
-                                User_id = dto.User_id,
+                                User_ID = dto.End_User_ID,
                                 Center = 1,
                                 Updated_on = TimeStamp,
                                 Created_on = TimeStamp,
-                                Updated_by = dto.User_id
+                                Updated_by = dto.End_User_ID
                             });
                         } else { 
-                            await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                            await _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 0)
                                 .SetProperty(col => col.Center, 1)
                                 .SetProperty(col => col.Right, 0)
                                 .SetProperty(col => col.Updated_on, TimeStamp)
-                                .SetProperty(col => col.Updated_by, dto.User_id)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
@@ -1120,76 +1682,76 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 switch (byte.Parse(dto.Text_alignment))
                 {
                     case 0:
-                        if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_ID == dto.End_User_ID))
                         {
                             await _UsersDBC.Selected_App_Text_AlignmentTbl.AddAsync(new Selected_App_Text_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_Text_AlignmentTbl.Count() + 1),
-                                User_id = dto.User_id,
+                                User_ID = dto.End_User_ID,
                                 Left = 1,
                                 Updated_on = TimeStamp,
                                 Created_on = TimeStamp,
-                                Updated_by = dto.User_id
+                                Updated_by = dto.End_User_ID
                             });
                         }
                         else
                         { 
-                            await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                            await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 1)
                                 .SetProperty(col => col.Center, 0)
                                 .SetProperty(col => col.Right, 0)
                                 .SetProperty(col => col.Updated_on, TimeStamp)
-                                .SetProperty(col => col.Updated_by, dto.User_id)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
                         return JsonSerializer.Serialize(obj);
                     case 2:
-                        if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_ID == dto.End_User_ID))
                         {
                             await _UsersDBC.Selected_App_Text_AlignmentTbl.AddAsync(new Selected_App_Text_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_Text_AlignmentTbl.Count() + 1),
-                                User_id = dto.User_id,
+                                User_ID = dto.End_User_ID,
                                 Right = 1,
                                 Updated_on = TimeStamp,
                                 Created_on = TimeStamp,
-                                Updated_by = dto.User_id
+                                Updated_by = dto.End_User_ID
                             });
                         }
                         else
                         { 
-                            await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                            await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 0)
                                 .SetProperty(col => col.Center, 0)
                                 .SetProperty(col => col.Right, 1)
                                 .SetProperty(col => col.Updated_on, TimeStamp)
-                                .SetProperty(col => col.Updated_by, dto.User_id)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
                         return JsonSerializer.Serialize(obj);
                     case 1:
-                        if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_id == dto.User_id))
+                        if (!_UsersDBC.Selected_App_Text_AlignmentTbl.Any(x => x.User_ID == dto.End_User_ID))
                         {
                             await _UsersDBC.Selected_App_Text_AlignmentTbl.AddAsync(new Selected_App_Text_AlignmentTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_App_Text_AlignmentTbl.Count() + 1),
-                                User_id = dto.User_id,
+                                User_ID = dto.End_User_ID,
                                 Center = 1,
                                 Updated_on = TimeStamp,
                                 Created_on = TimeStamp,
-                                Updated_by = dto.User_id
+                                Updated_by = dto.End_User_ID
                             });
                         }
                         else
                         { 
-                            await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                            await _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Left, 0)
                                 .SetProperty(col => col.Center, 1)
                                 .SetProperty(col => col.Right, 0)
                                 .SetProperty(col => col.Updated_on, TimeStamp)
-                                .SetProperty(col => col.Updated_by, dto.User_id)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
@@ -1205,21 +1767,21 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Account_Type(Account_TypeDTO dto)
         {
             try {
-                if (!_UsersDBC.Account_TypeTbl.Any(x => x.User_id == dto.User_id)) {
+                if (!_UsersDBC.Account_TypeTbl.Any(x => x.User_ID == dto.End_User_ID)) {
                     await _UsersDBC.Account_TypeTbl.AddAsync(new Account_TypeTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Account_TypeTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Type = dto.Type,
                         Updated_on = TimeStamp,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 } else {
-                    await _UsersDBC.Account_TypeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Account_TypeTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Type, dto.Type)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1233,24 +1795,24 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Grid_TypeTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Grid_TypeTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Grid_TypeTbl.AddAsync(new Selected_App_Grid_TypeTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Grid_TypeTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Grid = byte.Parse(dto.Grid),
                         Updated_on = TimeStamp,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Grid_TypeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Grid_TypeTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Grid, byte.Parse(dto.Grid))
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1265,24 +1827,24 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Selected_Language(Selected_LanguageDTO dto)
         {
             try {
-                if (!_UsersDBC.Selected_LanguageTbl.Any((x => x.User_id == dto.User_id)))
+                if (!_UsersDBC.Selected_LanguageTbl.Any((x => x.User_ID == dto.End_User_ID)))
                 {
                     await _UsersDBC.Selected_LanguageTbl.AddAsync(new Selected_LanguageTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_LanguageTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Updated_on = TimeStamp,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id,
-                        Created_by = dto.User_id
+                        Updated_by = dto.End_User_ID,
+                        Created_by = dto.End_User_ID
                     });
                 }
                 else {
-                    await _UsersDBC.Selected_LanguageTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_LanguageTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Language_code, dto.Language)
                         .SetProperty(col => col.Region_code, dto.Region)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1298,23 +1860,23 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_Navbar_LockTbl.Any((x => x.User_id == dto.User_id)))
+                if (!_UsersDBC.Selected_Navbar_LockTbl.Any((x => x.User_ID == dto.End_User_ID)))
                 {
                     await _UsersDBC.Selected_Navbar_LockTbl.AddAsync(new Selected_Navbar_LockTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_Navbar_LockTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Updated_on = TimeStamp,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id,
-                        Created_by = dto.User_id,
+                        Updated_by = dto.End_User_ID,
+                        Created_by = dto.End_User_ID,
                         Locked = bool.Parse(dto.Locked)
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                    await _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                         .SetProperty(col => col.Updated_on, TimeStamp)
                         .SetProperty(col => col.Locked, bool.Parse(dto.Locked))
                     );
@@ -1334,20 +1896,20 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     case 0:
                         try
                         {
-                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_ID == dto.End_User_ID)))
                             {
                                 await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
                                 {
                                     ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
-                                    User_id = dto.User_id,
+                                    User_ID = dto.End_User_ID,
                                     Updated_on = TimeStamp,
                                     Created_on = TimeStamp,
-                                    Updated_by = dto.User_id,
-                                    Created_by = dto.User_id,
+                                    Updated_by = dto.End_User_ID,
+                                    Created_by = dto.End_User_ID,
                                     Offline = 1
                                 });
                             } else {
-                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                     .SetProperty(col => col.Offline, 1)
                                     .SetProperty(col => col.Hidden, 0)
                                     .SetProperty(col => col.Online, 0)
@@ -1355,7 +1917,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                     .SetProperty(col => col.DND, 0)
                                     .SetProperty(col => col.Custom, 0)
                                     .SetProperty(col => col.Custom_lbl, "")
-                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                                     .SetProperty(col => col.Updated_on, TimeStamp)
                                 );
                             }
@@ -1369,22 +1931,22 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     case 1:
                         try
                         {
-                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_ID == dto.End_User_ID)))
                             {
                                 await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
                                 {
                                     ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
-                                    User_id = dto.User_id,
+                                    User_ID = dto.End_User_ID,
                                     Updated_on = TimeStamp,
                                     Created_on = TimeStamp,
-                                    Updated_by = dto.User_id,
-                                    Created_by = dto.User_id,
+                                    Updated_by = dto.End_User_ID,
+                                    Created_by = dto.End_User_ID,
                                     Hidden = 1
                                 });
                             }
                             else
                             {
-                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                     .SetProperty(col => col.Offline, 0)
                                     .SetProperty(col => col.Hidden, 1)
                                     .SetProperty(col => col.Online, 0)
@@ -1392,7 +1954,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                     .SetProperty(col => col.DND, 0)
                                     .SetProperty(col => col.Custom, 0)
                                     .SetProperty(col => col.Custom_lbl, "")
-                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                                     .SetProperty(col => col.Updated_on, TimeStamp)
                                 );
                             }
@@ -1406,22 +1968,22 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     case 2:
                         try
                         {
-                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_ID == dto.End_User_ID)))
                             {
                                 await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
                                 {
                                     ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
-                                    User_id = dto.User_id,
+                                    User_ID = dto.End_User_ID,
                                     Updated_on = TimeStamp,
                                     Created_on = TimeStamp,
-                                    Updated_by = dto.User_id,
-                                    Created_by = dto.User_id,
+                                    Updated_by = dto.End_User_ID,
+                                    Created_by = dto.End_User_ID,
                                     Online = 1
                                 });
                             }
                             else
                             {
-                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                     .SetProperty(col => col.Offline, 0)
                                     .SetProperty(col => col.Hidden, 0)
                                     .SetProperty(col => col.Online, 1)
@@ -1429,7 +1991,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                     .SetProperty(col => col.DND, 0)
                                     .SetProperty(col => col.Custom, 0)
                                     .SetProperty(col => col.Custom_lbl, "")
-                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                                     .SetProperty(col => col.Updated_on, TimeStamp)
                                 );
                             }
@@ -1445,22 +2007,22 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     case 3:
                         try
                         {
-                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_ID == dto.End_User_ID)))
                             {
                                 await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
                                 {
                                     ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
-                                    User_id = dto.User_id,
+                                    User_ID = dto.End_User_ID,
                                     Updated_on = TimeStamp,
                                     Created_on = TimeStamp,
-                                    Updated_by = dto.User_id,
-                                    Created_by = dto.User_id,
+                                    Updated_by = dto.End_User_ID,
+                                    Created_by = dto.End_User_ID,
                                     Away = 1
                                 });
                             }
                             else
                             {
-                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                     .SetProperty(col => col.Offline, 0)
                                     .SetProperty(col => col.Hidden, 0)
                                     .SetProperty(col => col.Online, 0)
@@ -1468,7 +2030,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                     .SetProperty(col => col.DND, 0)
                                     .SetProperty(col => col.Custom, 0)
                                     .SetProperty(col => col.Custom_lbl, "")
-                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                                     .SetProperty(col => col.Updated_on, TimeStamp)
                                 );
                             }
@@ -1484,22 +2046,22 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     case 4:
                         try
                         {
-                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_ID == dto.End_User_ID)))
                             {
                                 await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
                                 {
                                     ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
-                                    User_id = dto.User_id,
+                                    User_ID = dto.End_User_ID,
                                     Updated_on = TimeStamp,
                                     Created_on = TimeStamp,
-                                    Updated_by = dto.User_id,
-                                    Created_by = dto.User_id,
+                                    Updated_by = dto.End_User_ID,
+                                    Created_by = dto.End_User_ID,
                                     DND = 1
                                 });
                             }
                             else
                             {
-                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                     .SetProperty(col => col.Offline, 0)
                                     .SetProperty(col => col.Hidden, 0)
                                     .SetProperty(col => col.Online, 0)
@@ -1507,7 +2069,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                     .SetProperty(col => col.DND, 1)
                                     .SetProperty(col => col.Custom, 0)
                                     .SetProperty(col => col.Custom_lbl, "")
-                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                                     .SetProperty(col => col.Updated_on, TimeStamp)
                                 );
                             }
@@ -1523,22 +2085,22 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     case 5:
                         try
                         {
-                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_id == dto.User_id)))
+                            if (!_UsersDBC.Selected_StatusTbl.Any((x => x.User_ID == dto.End_User_ID)))
                             {
                                 await _UsersDBC.Selected_StatusTbl.AddAsync(new Selected_StatusTbl
                                 {
                                     ID = Convert.ToUInt64(_UsersDBC.Selected_StatusTbl.Count() + 1),
-                                    User_id = dto.User_id,
+                                    User_ID = dto.End_User_ID,
                                     Updated_on = TimeStamp,
                                     Created_on = TimeStamp,
-                                    Updated_by = dto.User_id,
-                                    Created_by = dto.User_id,
+                                    Updated_by = dto.End_User_ID,
+                                    Created_by = dto.End_User_ID,
                                     Custom = 1
                                 });
                             }
                             else
                             {
-                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                                await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                     .SetProperty(col => col.Offline, 0)
                                     .SetProperty(col => col.Hidden, 1)
                                     .SetProperty(col => col.Online, 0)
@@ -1546,7 +2108,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                                     .SetProperty(col => col.DND, 0)
                                     .SetProperty(col => col.Custom, 0)
                                     .SetProperty(col => col.Custom_lbl, dto.Custom_lbl)
-                                    .SetProperty(col => col.Updated_by, dto.User_id)
+                                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                                     .SetProperty(col => col.Updated_on, TimeStamp)
                                 );
                             }
@@ -1560,7 +2122,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             return JsonSerializer.Serialize(obj);
                         }
                     case 10:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                             .SetProperty(col => col.Offline, 1)
                             .SetProperty(col => col.Hidden, 1)
                             .SetProperty(col => col.Online, 0)
@@ -1568,14 +2130,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             .SetProperty(col => col.DND, 0)
                             .SetProperty(col => col.Custom, 0)
                             .SetProperty(col => col.Custom_lbl, "")
-                            .SetProperty(col => col.Updated_by, dto.User_id)
+                            .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             .SetProperty(col => col.Updated_on, TimeStamp)
                         );
                         await _UsersDBC.SaveChangesAsync();
                         obj.online_status = "Hidden";
                         return JsonSerializer.Serialize(obj);
                     case 20:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                             .SetProperty(col => col.Offline, 1)
                             .SetProperty(col => col.Hidden, 0)
                             .SetProperty(col => col.Online, 1)
@@ -1583,14 +2145,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             .SetProperty(col => col.DND, 0)
                             .SetProperty(col => col.Custom, 0)
                             .SetProperty(col => col.Custom_lbl, "")
-                            .SetProperty(col => col.Updated_by, dto.User_id)
+                            .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             .SetProperty(col => col.Updated_on, TimeStamp)
                         );
                         await _UsersDBC.SaveChangesAsync();
                         obj.online_status = "Online";
                         return JsonSerializer.Serialize(obj);
                     case 30:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                             .SetProperty(col => col.Offline, 1)
                             .SetProperty(col => col.Hidden, 0)
                             .SetProperty(col => col.Online, 0)
@@ -1598,14 +2160,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             .SetProperty(col => col.DND, 0)
                             .SetProperty(col => col.Custom, 0)
                             .SetProperty(col => col.Custom_lbl, "")
-                            .SetProperty(col => col.Updated_by, dto.User_id)
+                            .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             .SetProperty(col => col.Updated_on, TimeStamp)
                         );
                         await _UsersDBC.SaveChangesAsync();
                         obj.online_status = "Away";
                         return JsonSerializer.Serialize(obj);
                     case 40:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                             .SetProperty(col => col.Offline, 1)
                             .SetProperty(col => col.Hidden, 0)
                             .SetProperty(col => col.Online, 0)
@@ -1613,14 +2175,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             .SetProperty(col => col.DND, 1)
                             .SetProperty(col => col.Custom, 0)
                             .SetProperty(col => col.Custom_lbl, "")
-                            .SetProperty(col => col.Updated_by, dto.User_id)
+                            .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             .SetProperty(col => col.Updated_on, TimeStamp)
                         );
                         await _UsersDBC.SaveChangesAsync();
                         obj.online_status = "Do Not Disturb";
                         return JsonSerializer.Serialize(obj);
                     case 50:
-                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                        await _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                             .SetProperty(col => col.Offline, 1)
                             .SetProperty(col => col.Hidden, 0)
                             .SetProperty(col => col.Online, 0)
@@ -1628,7 +2190,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             .SetProperty(col => col.DND, 0)
                             .SetProperty(col => col.Custom, 1)
                             .SetProperty(col => col.Custom_lbl, dto.Custom_lbl)
-                            .SetProperty(col => col.Updated_by, dto.User_id)
+                            .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             .SetProperty(col => col.Updated_on, TimeStamp)
                         );
                         await _UsersDBC.SaveChangesAsync();
@@ -1650,74 +2212,74 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 switch (theme)
                 {
                     case 0:
-                        if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_id == dto.User_id))
+                        if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_ID == dto.End_User_ID))
                         {
                             await _UsersDBC.Selected_ThemeTbl.AddAsync(new Selected_ThemeTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_ThemeTbl.Count() + 1),
-                                User_id = dto.User_id,
+                                User_ID = dto.End_User_ID,
                                 Light = 1,
                                 Updated_on = TimeStamp,
-                                Created_by = dto.User_id,
+                                Created_by = dto.End_User_ID,
                                 Created_on = TimeStamp,
-                                Updated_by = dto.User_id
+                                Updated_by = dto.End_User_ID
                             });
                         } else { 
-                            await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                            await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Light, 1)
                                 .SetProperty(col => col.Night, 0)
                                 .SetProperty(col => col.Custom, 0)
                                 .SetProperty(col => col.Updated_on, TimeStamp)
-                                .SetProperty(col => col.Updated_by, dto.User_id)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
                         obj.theme = "Light";
                         return JsonSerializer.Serialize(obj);
                     case 1:
-                        if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_id == dto.User_id))
+                        if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_ID == dto.End_User_ID))
                         {
                             await _UsersDBC.Selected_ThemeTbl.AddAsync(new Selected_ThemeTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_ThemeTbl.Count() + 1),
-                                User_id = dto.User_id,
+                                User_ID = dto.End_User_ID,
                                 Night = 1,
                                 Updated_on = TimeStamp,
-                                Created_by = dto.User_id,
+                                Created_by = dto.End_User_ID,
                                 Created_on = TimeStamp,
-                                Updated_by = dto.User_id
+                                Updated_by = dto.End_User_ID
                             });
                         }
                         else
                         { 
-                            await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                            await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Light, 0)
                                 .SetProperty(col => col.Night, 1)
                                 .SetProperty(col => col.Custom, 0)
                                 .SetProperty(col => col.Updated_on, TimeStamp)
-                                .SetProperty(col => col.Updated_by, dto.User_id)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
                             );
                         }
                         await _UsersDBC.SaveChangesAsync();
                         obj.theme = "Night";
                         return JsonSerializer.Serialize(obj);
                     case 2:
-                        if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_id == dto.User_id))
+                        if (!_UsersDBC.Selected_ThemeTbl.Any(x => x.User_ID == dto.End_User_ID))
                         {
                             await _UsersDBC.Selected_ThemeTbl.AddAsync(new Selected_ThemeTbl
                             {
                                 ID = Convert.ToUInt64(_UsersDBC.Selected_ThemeTbl.Count() + 1),
-                                User_id = dto.User_id,
+                                User_ID = dto.End_User_ID,
                                 Night = 1,
-                                Created_by = dto.User_id,
+                                Created_by = dto.End_User_ID,
                                 Created_on = TimeStamp,
                                 Updated_on = TimeStamp,
-                                Updated_by = dto.User_id
+                                Updated_by = dto.End_User_ID
                             });
                         } else { 
-                            await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                            await _UsersDBC.Selected_ThemeTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Updated_on, TimeStamp)
-                                .SetProperty(col => col.Updated_by, dto.User_id)
+                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
                                 .SetProperty(col => col.Light, 0)
                                 .SetProperty(col => col.Night, 0)
                                 .SetProperty(col => col.Custom, 1)
@@ -1739,25 +2301,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl  
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Card_Border_Color = dto.Card_Border_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 { 
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Card_Border_Color, dto.Card_Border_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1774,25 +2336,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Card_Header_Font = dto.Card_Header_Font,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Card_Header_Font, dto.Card_Header_Font)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1809,25 +2371,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Card_Header_Background_Color = dto.Card_Header_Background_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Card_Header_Background_Color, dto.Card_Header_Background_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1844,25 +2406,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Card_Header_Font_Color = dto.Card_Header_Font_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Card_Header_Font_Color, dto.Card_Header_Font_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1879,25 +2441,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Card_Footer_Font = dto.Card_Footer_Font,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Card_Footer_Font, dto.Card_Footer_Font)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1914,25 +2476,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Card_Footer_Background_Color = dto.Card_Footer_Background_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Card_Footer_Background_Color, dto.Card_Footer_Background_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1945,29 +2507,62 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return JsonSerializer.Serialize(obj);
             }
         }
+        public async Task<string> Delete_End_User_Selected_App_Custom_Design(Selected_App_Custom_DesignDTO dto)
+        {
+            try
+            {
+                await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
+                    .SetProperty(col => col.Card_Header_Font_Color, "")
+                    .SetProperty(col => col.Card_Header_Font, "")
+                    .SetProperty(col => col.Card_Header_Background_Color, "")
+                    .SetProperty(col => col.Card_Body_Background_Color, "")
+                    .SetProperty(col => col.Card_Body_Font, "")
+                    .SetProperty(col => col.Card_Body_Font_Color, "")
+                    .SetProperty(col => col.Card_Footer_Background_Color, "")
+                    .SetProperty(col => col.Card_Footer_Font, "")
+                    .SetProperty(col => col.Card_Footer_Font_Color, "")
+                    .SetProperty(col => col.Navigation_Menu_Background_Color, "")
+                    .SetProperty(col => col.Navigation_Menu_Font_Color, "")
+                    .SetProperty(col => col.Navigation_Menu_Font, "")
+                    .SetProperty(col => col.Button_Background_Color, "")
+                    .SetProperty(col => col.Button_Font, "")
+                    .SetProperty(col => col.Button_Font_Color, "")
+                    .SetProperty(col => col.Card_Border_Color, "")
+                    .SetProperty(col => col.Updated_on, TimeStamp)
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                );
+                await _UsersDBC.SaveChangesAsync();
+                return "";
+            }
+            catch
+            {
+                obj.error = "Server Error: Update Custom Theme Failed.";
+                return JsonSerializer.Serialize(obj);
+            }
+        }
         public async Task<string> Update_End_User_Card_Footer_Font_Color(Selected_App_Custom_DesignDTO dto)
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Card_Footer_Font_Color = dto.Card_Footer_Font_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Card_Footer_Font_Color, dto.Card_Footer_Font_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -1984,25 +2579,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Card_Body_Font = dto.Card_Body_Font,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Card_Body_Font, dto.Card_Body_Font)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -2019,25 +2614,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Card_Body_Background_Color = dto.Card_Body_Background_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Card_Body_Background_Color, dto.Card_Body_Background_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -2054,25 +2649,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Card_Body_Font_Color = dto.Card_Body_Font_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Card_Body_Font_Color, dto.Card_Body_Font_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -2089,25 +2684,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Navigation_Menu_Font = dto.Navigation_Menu_Font,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Navigation_Menu_Font, dto.Navigation_Menu_Font)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -2124,25 +2719,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Navigation_Menu_Background_Color = dto.Navigation_Menu_Background_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Navigation_Menu_Background_Color, dto.Navigation_Menu_Background_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -2159,25 +2754,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Navigation_Menu_Font_Color = dto.Navigation_Menu_Font_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Navigation_Menu_Font_Color, dto.Navigation_Menu_Font_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -2195,25 +2790,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Button_Font = dto.Button_Font,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Button_Font, dto.Button_Font)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -2230,25 +2825,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Button_Background_Color = dto.Button_Background_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Button_Background_Color, dto.Button_Background_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -2265,25 +2860,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Selected_App_Custom_DesignTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Selected_App_Custom_DesignTbl.AddAsync(new Selected_App_Custom_DesignTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Selected_App_Custom_DesignTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Button_Font_Color = dto.Button_Font_Color,
                         Updated_on = TimeStamp,
-                        Created_by = dto.User_id,
+                        Created_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Button_Font_Color, dto.Button_Font_Color)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -2300,9 +2895,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try {
                 if (!dto.Email_address.IsNullOrEmpty()) {
-                    await _UsersDBC.Login_PasswordTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Login_PasswordTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Password, Create_Salted_Hash_String(Encoding.UTF8.GetBytes($"{dto.New_password}"), Encoding.UTF8.GetBytes($"{dto.Email_address}{_Constants.JWT_SECURITY_KEY}")).Result)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                         .SetProperty(col => col.Updated_on, TimeStamp)
                     );
                 }
@@ -2317,19 +2912,19 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string> Update_End_User_Login_Time_Stamp(Login_Time_StampDTO dto)
         {
             try {
-                if (!_UsersDBC.Login_Time_StampTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Login_Time_StampTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Login_Time_StampTbl.AddAsync(new Login_Time_StampTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Login_Time_StampTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Updated_on = TimeStamp,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id,
-                        Created_by = dto.User_id,
+                        Updated_by = dto.End_User_ID,
+                        Created_by = dto.End_User_ID,
                         Login_on = TimeStamp,
                         Location = dto.Location,
-                        Client_time = dto.Client_time,
+                        Client_time = dto.Client_Time_Parsed,
                         Client_IP = dto.Client_Networking_IP_Address,
                         Client_Port = dto.Client_Networking_Port,
                         Server_IP = dto.Server_Networking_IP_Address,
@@ -2352,11 +2947,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
                     });
                 } else {
-                    await _UsersDBC.Login_Time_StampTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
-                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    await _UsersDBC.Login_Time_StampTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     .SetProperty(col => col.Login_on, TimeStamp)
                     .SetProperty(col => col.Location, dto.Location)
-                    .SetProperty(col => col.Client_time, dto.Client_time)
+                    .SetProperty(col => col.Client_time, dto.Client_Time_Parsed)
                     .SetProperty(col => col.Client_IP, dto.Client_Networking_IP_Address)
                     .SetProperty(col => col.Client_Port, dto.Client_Networking_Port)
                     .SetProperty(col => col.Server_IP, dto.Server_Networking_IP_Address)
@@ -2378,18 +2973,18 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 await _UsersDBC.Login_Time_Stamp_HistoryTbl.AddAsync(new Login_Time_Stamp_HistoryTbl {
                     ID = Convert.ToUInt64(_UsersDBC.Login_Time_Stamp_HistoryTbl.Count() + 1),
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
-                    Updated_by = dto.User_id,
-                    Created_by = dto.User_id,
+                    Updated_by = dto.End_User_ID,
+                    Created_by = dto.End_User_ID,
                     Login_on = TimeStamp,
                     Location = dto.Location,
                     Client_IP = dto.Client_Networking_IP_Address,
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = dto.Client_time,
+                    Client_time = dto.Client_Time_Parsed,
                     User_agent = dto.User_agent,
                     Down_link = dto.Down_link,
                     Connection_type = dto.Connection_type,
@@ -2419,7 +3014,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 await _UsersDBC.Report_Email_RegistrationTbl.AddAsync(new Report_Email_RegistrationTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.Report_Email_RegistrationTbl.Count() + 1),
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Updated_by = 0,
@@ -2430,7 +3025,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = dto.Client_time,
+                    Client_time = dto.Client_Time_Parsed,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Reason = dto.Reason
                 });
@@ -2460,7 +3055,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = dto.Client_time,
+                    Client_time = dto.Client_Time_Parsed,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
                     Reason = dto.Reason,
@@ -2502,7 +3097,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
                     Client_time = dto.Client_time,
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Reason = dto.Reason,
                     Action = dto.Action,
@@ -2549,7 +3144,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Controller = dto.Controller,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Reason = dto.Reason,
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     User_agent = dto.User_agent,
                     Down_link = dto.Down_link,
                     Connection_type = dto.Connection_type,
@@ -2594,7 +3189,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Controller = dto.Controller,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Reason = dto.Reason,
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     User_agent = dto.User_agent,
                     Down_link = dto.Down_link,
                     Connection_type = dto.Connection_type,
@@ -2642,7 +3237,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Reason = dto.Reason,
                     Action = dto.Action,
                     Controller = dto.Controller,
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Login_type = dto.Login_type,
                     User_agent = dto.User_agent,
                     Down_link = dto.Down_link,
@@ -2686,7 +3281,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Reason = dto.Reason,
                     Action = dto.Action,
                     Controller = dto.Controller,
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     User_agent = dto.User_agent,
                     Down_link = dto.Down_link,
                     Connection_type = dto.Connection_type,
@@ -2726,7 +3321,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = dto.Client_time,
+                    Client_time = dto.Client_Time_Parsed,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
                     Reason = dto.Reason,
@@ -2761,7 +3356,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 await _UsersDBC.Report_Failed_Email_Login_HistoryTbl.AddAsync(new Report_Failed_Email_Login_HistoryTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.Report_Failed_Email_Login_HistoryTbl.Count() + 1),
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Updated_by = 0,
@@ -2771,7 +3366,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = dto.Client_time,
+                    Client_time = dto.Client_Time_Parsed,
                     Reason = dto.Reason,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
@@ -2802,10 +3397,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             await _UsersDBC.Logout_Time_Stamp_HistoryTbl.AddAsync(new Logout_Time_Stamp_HistoryTbl
             {
-                User_id = dto.User_id,
+                User_ID = dto.End_User_ID,
                 Logout_on = TimeStamp,
                 Token = dto.Token,
-                Updated_by = dto.User_id,
+                Updated_by = dto.End_User_ID,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Location = dto.Location,
@@ -2813,7 +3408,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Client_Port = dto.Client_Networking_Port,
                 Server_IP = dto.Server_Networking_IP_Address,
                 Server_Port = dto.Server_Networking_Port,
-                Client_time = dto.Client_time,
+                Client_time = dto.Client_Time_Parsed,
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
@@ -2831,22 +3426,22 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             await _UsersDBC.SaveChangesAsync();
 
-            obj.id = dto.User_id;
+            obj.id = dto.End_User_ID;
             obj.logout_on = TimeStamp;
             return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
         }
         public async Task<string> Update_End_User_Logout(Logout_Time_StampDTO dto)
         {
-            if (_UsersDBC.Logout_Time_StampTbl.Any(x => x.User_id == dto.User_id))
+            if (_UsersDBC.Logout_Time_StampTbl.Any(x => x.User_ID == dto.End_User_ID))
             {
-                await _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                await _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Logout_on, TimeStamp)
                     .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     .SetProperty(col => col.Logout_on, TimeStamp)
                     .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, dto.User_id)
-                    .SetProperty(col => col.Client_time, dto.Client_time)
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                    .SetProperty(col => col.Client_time, dto.Client_Time_Parsed)
                     .SetProperty(col => col.Server_Port, dto.Server_Networking_Port)
                     .SetProperty(col => col.Server_IP, dto.Server_Networking_IP_Address)
                     .SetProperty(col => col.Client_IP, dto.Client_Networking_IP_Address)
@@ -2875,10 +3470,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 await _UsersDBC.Logout_Time_StampTbl.AddAsync(new Logout_Time_StampTbl
                 {
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Logout_on = TimeStamp,
                     Token = dto.Token,
-                    Updated_by = dto.User_id,
+                    Updated_by = dto.End_User_ID,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Location = dto.Location,
@@ -2886,7 +3481,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_Port = dto.Client_Networking_Port,
                     Server_IP = dto.Server_Networking_IP_Address,
                     Server_Port = dto.Server_Networking_Port,
-                    Client_time = dto.Client_time,
+                    Client_time = dto.Client_Time_Parsed,
                     User_agent = dto.User_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
@@ -2904,7 +3499,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 });
                 await _UsersDBC.SaveChangesAsync();
             }
-            obj.User_id = dto.User_id;
+            obj.End_User_ID = dto.End_User_ID;
             obj.logout_on = TimeStamp;
             return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
         }
@@ -2931,11 +3526,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<ulong> Read_User_ID_By_Email_Address(string email_address)
         {
-            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Where(x => x.Email_Address == email_address).Select(x => x.User_id).SingleOrDefault());
+            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Where(x => x.Email_Address == email_address).Select(x => x.User_ID).SingleOrDefault());
         }
         public async Task<string?> Read_User_Email_By_ID(ulong id)
         {
-            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Where(x => x.User_id == id).Select(x => x.Email_Address).SingleOrDefault());
+            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Where(x => x.User_ID == id).Select(x => x.Email_Address).SingleOrDefault());
         }
         public async Task<byte[]> Create_Salted_Hash_String(byte[] text, byte[] salt)
         {
@@ -2955,12 +3550,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             return await Task.FromResult(algorithm.ComputeHash(textWithSaltBytes));
         }
-        public bool Compare_Password_Byte_Arrays(byte[] array1, byte[] array2)
+        public async Task<bool> Compare_Password_Byte_Arrays(byte[] array1, byte[] array2)
         {
             if (array1.Length != array2.Length)
             {
                 return false;
             }
+
+            await Task.Delay(1);
 
             for (int i = 0; i < array1.Length; i++)
             {
@@ -2972,173 +3569,159 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             return true;
         }
-        public async Task<byte[]?> Read_User_Password_Hash_By_ID(ulong user_id)
-        {
-            return await Task.FromResult(_UsersDBC.Login_PasswordTbl.Where(user => user.User_id == user_id).Select(user => user.Password).SingleOrDefault());
-        }
         public async Task<string> Create_Integration_Twitch_Record(Integration_TwitchDTO dto)
         {
             obj.id = null;
             return await JsonSerializer.Serialize(obj);
         }
-        public void Create_Chat_WebSocket_Log_Records(Websocket_Chat_PermissionDTO dto)
+        public async Task Create_WebSocket_Permission_Record(WebSocket_Chat_PermissionDTO dto)
         {
-            _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
+            await _UsersDBC.WebSocket_Chat_PermissionTbl.AddAsync(new WebSocket_Chat_PermissionTbl
             {
-                ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
-                User_A_id = dto.User_id,
-                User_B_id = dto.User_B_id,
+                ID = Convert.ToUInt64(_UsersDBC.WebSocket_Chat_PermissionTbl.Count() + 1),
+                User_ID = dto.End_User_ID,
+                Participant_ID = dto.Participant_ID,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
-                Updated_by = dto.User_id,
+                Updated_by = dto.End_User_ID,
                 Requested = 1,
                 Blocked = 0,
                 Approved = 0
             });
-            _UsersDBC.SaveChangesAsync();
-
-            _UsersDBC.Websocket_Chat_PermissionTbl.AddAsync(new Websocket_Chat_PermissionTbl
-            {
-                ID = Convert.ToUInt64(_UsersDBC.Websocket_Chat_PermissionTbl.Count() + 1),
-                User_A_id = dto.User_B_id,//Swapped so we are to create the record for the other user.
-                User_B_id = dto.User_id,//Both Users have a permission record now for eachother.
-                Updated_on = TimeStamp,
-                Created_on = TimeStamp,
-                Updated_by = dto.User_id,
-                Requested = 1,
-                Blocked = 0,
-                Approved = 0
-            });
-            _UsersDBC.SaveChangesAsync();
+            await _UsersDBC.SaveChangesAsync();
+        }
+        public async Task<byte[]?> Read_User_Password_Hash_By_ID(ulong user_id)
+        {
+            return await Task.FromResult(_UsersDBC.Login_PasswordTbl.Where(user => user.User_ID == user_id).Select(user => user.Password).SingleOrDefault());
         }
         public async Task<string> Update_End_User_First_Name(IdentityDTO dto)
         {
-            if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
+            if (!_UsersDBC.IdentityTbl.Any(x => x.User_ID == dto.End_User_ID))
             {
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     First_Name = dto.First_name,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
-                    Updated_by = dto.User_id
+                    Updated_by = dto.End_User_ID
                 });
             }
             else
             {
-                await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                await _UsersDBC.IdentityTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.First_Name, dto.First_name)
                     .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                 );
             }
             await _UsersDBC.SaveChangesAsync();
-            obj.id = dto.User_id;
+            obj.id = dto.End_User_ID;
             obj.first_name = dto.First_name;
             return JsonSerializer.Serialize(obj);
         }
         public async Task<string> Update_End_User_Last_Name(IdentityDTO dto)
         {
-            if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
+            if (!_UsersDBC.IdentityTbl.Any(x => x.User_ID == dto.End_User_ID))
             {
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Last_Name = dto.Last_name,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
-                    Updated_by = dto.User_id
+                    Updated_by = dto.End_User_ID
                 });
             }
             else
             {
-                await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                await _UsersDBC.IdentityTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Last_Name, dto.Last_name)
                     .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                 );
             }
             await _UsersDBC.SaveChangesAsync();
-            obj.id = dto.User_id;
+            obj.id = dto.End_User_ID;
             obj.last_name = dto.Last_name;
             return JsonSerializer.Serialize(obj);
         }
         public async Task<string> Update_End_User_Middle_Name(IdentityDTO dto)
         {
-            if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
+            if (!_UsersDBC.IdentityTbl.Any(x => x.User_ID == dto.End_User_ID))
             { 
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Middle_Name = dto.Middle_name,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
-                    Updated_by = dto.User_id
+                    Updated_by = dto.End_User_ID
                 });
             }
             else
             { 
-                await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                await _UsersDBC.IdentityTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                      .SetProperty(col => col.Middle_Name, dto.Middle_name)
                      .SetProperty(col => col.Updated_on, TimeStamp)
-                     .SetProperty(col => col.Updated_by, dto.User_id)
+                     .SetProperty(col => col.Updated_by, dto.End_User_ID)
                  );
             }
             await _UsersDBC.SaveChangesAsync();
-            obj.id = dto.User_id;
+            obj.id = dto.End_User_ID;
             obj.middle_name = dto.Middle_name;
             return JsonSerializer.Serialize(obj);
         }
         public async Task<string> Update_End_User_Maiden_Name(IdentityDTO dto)
         {
-            if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
+            if (!_UsersDBC.IdentityTbl.Any(x => x.User_ID == dto.End_User_ID))
             { 
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Maiden_Name = dto.Maiden_name,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
-                    Updated_by = dto.User_id
+                    Updated_by = dto.End_User_ID
                 });
             }
             else
             { 
-                await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                await _UsersDBC.IdentityTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Maiden_Name, dto.Maiden_name)
                     .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                 );
             }
             await _UsersDBC.SaveChangesAsync();
-            obj.id = dto.User_id;
+            obj.id = dto.End_User_ID;
             obj.maiden_name = dto.Maiden_name;
             return JsonSerializer.Serialize(obj);
         }
         public async Task<string> Update_End_User_Gender(IdentityDTO dto)
         {
-            if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
+            if (!_UsersDBC.IdentityTbl.Any(x => x.User_ID == dto.End_User_ID))
             {
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Gender = byte.Parse(dto.Gender),
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
-                    Updated_by = dto.User_id
+                    Updated_by = dto.End_User_ID
                 });
             }
             else
             {
-                await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                await _UsersDBC.IdentityTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Gender, byte.Parse(dto.Gender))
                     .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                 );
             }
             await _UsersDBC.SaveChangesAsync();
@@ -3146,61 +3729,61 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Update_End_User_Ethnicity(IdentityDTO dto)
         {
-            if (!_UsersDBC.IdentityTbl.Any(x => x.User_id == dto.User_id))
+            if (!_UsersDBC.IdentityTbl.Any(x => x.User_ID == dto.End_User_ID))
             { 
                 await _UsersDBC.IdentityTbl.AddAsync(new IdentityTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.IdentityTbl.Count() + 1),
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Ethnicity = dto.Ethnicity,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
-                    Updated_by = dto.User_id
+                    Updated_by = dto.End_User_ID
                 });
             }
             else
             { 
-                await _UsersDBC.IdentityTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                await _UsersDBC.IdentityTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Ethnicity, dto.Ethnicity)
                     .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                 );
             }
             await _UsersDBC.SaveChangesAsync();
 
-            obj.id = dto.User_id;
+            obj.id = dto.End_User_ID;
             obj.ethnicity = dto.Ethnicity;
 
             return JsonSerializer.Serialize(obj);
         }
         public async Task<string> Update_End_User_Birth_Date(IdentityDTO dto)
         {
-            if (!_UsersDBC.Birth_DateTbl.Any(x => x.User_id == dto.User_id))
+            if (!_UsersDBC.Birth_DateTbl.Any(x => x.User_ID == dto.End_User_ID))
             { 
                 await _UsersDBC.Birth_DateTbl.AddAsync(new Birth_DateTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.Birth_DateTbl.Count() + 1),
-                    User_id = dto.User_id,
+                    User_ID = dto.End_User_ID,
                     Month = byte.Parse(dto.Month),
                     Day = byte.Parse(dto.Day),
                     Year = ulong.Parse(dto.Year),
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
-                    Updated_by = dto.User_id
+                    Updated_by = dto.End_User_ID
                 });
             }
             else
             { 
-                await _UsersDBC.Birth_DateTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                await _UsersDBC.Birth_DateTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Month, byte.Parse(dto.Month))
                     .SetProperty(col => col.Day, byte.Parse(dto.Day))
                     .SetProperty(col => col.Year, ulong.Parse(dto.Year))
                     .SetProperty(col => col.Updated_on, TimeStamp)
-                    .SetProperty(col => col.Updated_by, dto.User_id)
+                    .SetProperty(col => col.Updated_by, dto.End_User_ID)
                 );
             }
             await _UsersDBC.SaveChangesAsync();
-            obj.id = dto.User_id;
+            obj.id = dto.End_User_ID;
             obj.birth_month = dto.Month;
             obj.birth_day = dto.Day;
             obj.birth_year = dto.Year;
@@ -3210,28 +3793,28 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Account_GroupsTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Account_GroupsTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Account_GroupsTbl.AddAsync(new Account_GroupsTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Account_GroupsTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Groups = dto.Groups,
                         Updated_on = TimeStamp,
+                        Updated_by = dto.End_User_ID,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Account_GroupsTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Account_GroupsTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Groups, dto.Groups)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
-                obj.groups = dto.Groups;
+                obj.end_user_groups = dto.Groups;
                 return JsonSerializer.Serialize(obj);
             }
             catch
@@ -3244,24 +3827,24 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (!_UsersDBC.Account_RolesTbl.Any(x => x.User_id == dto.User_id))
+                if (!_UsersDBC.Account_RolesTbl.Any(x => x.User_ID == dto.End_User_ID))
                 {
                     await _UsersDBC.Account_RolesTbl.AddAsync(new Account_RolesTbl
                     {
                         ID = Convert.ToUInt64(_UsersDBC.Account_RolesTbl.Count() + 1),
-                        User_id = dto.User_id,
+                        User_ID = dto.End_User_ID,
                         Roles = dto.Roles,
                         Updated_on = TimeStamp,
                         Created_on = TimeStamp,
-                        Updated_by = dto.User_id
+                        Updated_by = dto.End_User_ID
                     });
                 }
                 else
                 {
-                    await _UsersDBC.Account_RolesTbl.Where(x => x.User_id == dto.User_id).ExecuteUpdateAsync(s => s
+                    await _UsersDBC.Account_RolesTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                         .SetProperty(col => col.Roles, dto.Roles)
                         .SetProperty(col => col.Updated_on, TimeStamp)
-                        .SetProperty(col => col.Updated_by, dto.User_id)
+                        .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     );
                 }
                 await _UsersDBC.SaveChangesAsync();
@@ -3288,7 +3871,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_time = dto.Client_time,
+                    Client_time = dto.Client_Time_Parsed,
                     Reason = "User-Agent Client-Server Mismatch",
                     Controller = dto.Controller,
                     Action = dto.Action,
@@ -3322,16 +3905,16 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
                     Server_Networking_Port = dto.Server_Networking_Port,
                     User_agent = dto.Client_User_Agent,
-                    Client_id = dto.User_id,
+                    Client_id = dto.End_User_ID,
                     JWT_id = dto.JWT_id,
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_time = dto.Client_time.ToString(),
+                    Client_Time_Parsed = dto.Client_Time_Parsed,
                     Reason = "JWT Client-Server Mismatch",
                     Controller = dto.Controller,
                     Action = dto.Action,
-                    User_id = dto.JWT_id,
+                    End_User_ID = dto.JWT_id,
                     JWT_issuer_key = dto.JWT_issuer_key,
                     JWT_client_key = dto.JWT_client_key,
                     JWT_client_address = dto.JWT_client_address,
@@ -3367,11 +3950,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_time = dto.Client_time.ToString(),
+                    Client_Time_Parsed = dto.Client_Time_Parsed,
                     Reason = "JWT Client-ID Mismatch",
                     Controller = dto.Controller,
                     Action = dto.Action,
-                    User_id = dto.JWT_id,
+                    End_User_ID = dto.JWT_id,
                     JWT_issuer_key = dto.JWT_issuer_key,
                     JWT_client_key = dto.JWT_client_key,
                     JWT_client_address = dto.JWT_client_address,
@@ -3407,11 +3990,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_time = dto.Client_time.ToString(),
+                    Client_Time_Parsed = dto.Client_Time_Parsed,
                     Reason = "JWT ID is Deleted or DNE",
                     Controller = dto.Controller,
                     Action = dto.Action,
-                    User_id = dto.JWT_id,
+                    End_User_ID = dto.JWT_id,
                     JWT_issuer_key = dto.JWT_issuer_key,
                     JWT_client_key = dto.JWT_client_key,
                     JWT_client_address = dto.JWT_client_address,
@@ -3445,11 +4028,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_time = dto.Client_time,
+                    Client_time = dto.Client_Time_Parsed,
                     Reason = "Client ID is Deleted or DNE",
                     Controller = dto.Controller,
                     Action = dto.Action,
-                    User_id = dto.Client_id,
+                    End_User_ID = dto.Client_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
                     Screen_extend = dto.Screen_extend,

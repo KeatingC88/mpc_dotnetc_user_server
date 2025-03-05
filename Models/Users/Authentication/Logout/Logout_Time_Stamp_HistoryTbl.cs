@@ -5,7 +5,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Logout
     public class Logout_Time_Stamp_HistoryTbl
     {
         public ulong ID { get; set; }
-        public ulong User_id { get; set; }
+        public ulong User_ID { get; set; }
         public ulong Logout_on { get; set; }
         public bool Deleted { get; set; }
         public ulong Updated_by { get; set; }

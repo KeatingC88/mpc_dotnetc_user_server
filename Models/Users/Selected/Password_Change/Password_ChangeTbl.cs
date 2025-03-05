@@ -3,7 +3,7 @@
     public class Password_ChangeTbl
     {
         public ulong ID { get; set; }
-        public ulong User_id { get; set; }
+        public ulong User_ID { get; set; }
         public byte[]? Password { get; set; }
         public ulong Created_by { get; set; }
         public ulong Created_on { get; set; }

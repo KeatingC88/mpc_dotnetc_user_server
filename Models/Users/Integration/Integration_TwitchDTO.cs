@@ -3,7 +3,7 @@
     public class Integration_TwitchDTO
     {
         public ulong ID { get; set; }
-        public ulong User_id { get; set; }
+        public ulong End_User_ID { get; set; }
         public string Email_Address { get; set; } = string.Empty;
         public ulong Created_on { get; set; }
         public byte Deleted { get; set; }

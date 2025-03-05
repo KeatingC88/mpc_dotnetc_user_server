@@ -6,7 +6,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Selected.Language
     {
         [Required]
         public string ID { get; set; } = string.Empty;
-        public ulong User_id { get; set; }
+        public ulong End_User_ID { get; set; }
 
         [Required]
         public string Token { get; set; } = string.Empty;
@@ -21,7 +21,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Selected.Language
         public string Region { get; set; } = string.Empty;
 
         [Required]
-        public string Client_time { get; set; } = string.Empty;
+        public string Client_time { get; set; } = string.Empty;          public ulong Client_Time_Parsed { get; set; } 
 
         [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;

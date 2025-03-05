@@ -4,13 +4,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Logout
 {
     public class Logout_Time_StampDTO
     {
-        public ulong User_id { get; set; }
+        public ulong End_User_ID { get; set; }
 
         [Required(ErrorMessage = "Application Logout Time is Missing.")]
         public ulong Logout_on { get; set; }
 
         [Required(ErrorMessage = "Application Client Time is Missing.")]
-        public ulong Client_time { get; set; }
+        public string Client_time { get; set; } = string.Empty;
+        public ulong Client_Time_Parsed { get; set; }
 
         [Required(ErrorMessage = "Application Logout Location is Missing.")]
         public string Location { get; set; } = string.Empty;

@@ -5,7 +5,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
     public class Login_Time_Stamp_HistoryTbl
     {
         public ulong ID { get; set; }
-        public ulong User_id { get; set; }
+        public ulong User_ID { get; set; }
         public ulong Client_time { get; set; }
         public ulong Login_on { get; set; }
         public bool Deleted { get; set; }

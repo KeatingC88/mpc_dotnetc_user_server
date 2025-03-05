@@ -4,13 +4,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
 {
     public class Login_Time_Stamp_HistoryDTO
     {
-        public ulong User_id { get; set; }
+        public ulong End_User_ID { get; set; }
 
         [Required(ErrorMessage = "Application Login Time is Missing.")]
         public ulong Login_on { get; set; }
 
         [Required(ErrorMessage = "Application Client Time is Missing.")]
-        public ulong Client_time { get; set; }
+        public string Client_time { get; set; } = string.Empty;
+        public ulong Client_Time_Parsed { get; set; }
 
         [Required(ErrorMessage = "Application Location is Missing.")]
         public string Location { get; set; } = string.Empty;
