@@ -11,7 +11,6 @@ namespace mpc_dotnetc_user_server.Models.Users.WebSocket_Chat
         public byte Approved { get; set; }
         public byte Requested { get; set; }
         public byte Blocked { get; set; }
-        public string Message { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Application Token is Missing.")]
         public string Token { get; set; } = string.Empty;  

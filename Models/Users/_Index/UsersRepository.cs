@@ -137,7 +137,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             await _UsersDBC.Selected_NameTbl.AddAsync(new Selected_NameTbl {
                 ID = Convert.ToUInt64(_UsersDBC.Login_Email_AddressTbl.Count() + 1),
-                Name = $@"{dto.Name}#{user_public_id}",
+                Name = $@"{dto.Name}",
                 User_ID = ID_Record.ID,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
@@ -726,10 +726,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             byte requested = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Requested).SingleOrDefault();
             byte approved = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Approved).SingleOrDefault();
             byte blocked = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Blocked).SingleOrDefault();
+            bool deleted = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Deleted).SingleOrDefault();
 
             byte requested_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Requested).SingleOrDefault();
             byte approved_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Approved).SingleOrDefault();
             byte blocked_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Blocked).SingleOrDefault();
+            bool deleted_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Deleted).SingleOrDefault();
 
 
             if (requested == 1 || requested_swap_ids == 1)
@@ -753,9 +755,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 obj.approved = 0;
             }
 
-            if (requested == 0 && approved == 0 && blocked == 0 && requested_swap_ids == 0 && approved_swap_ids == 0 && blocked_swap_ids == 0)
+            if (requested == 0 && approved == 0 && blocked == 0 && requested_swap_ids == 0 && approved_swap_ids == 0 && blocked_swap_ids == 0 && deleted == false && deleted_swap_ids == false)
             {
                 await Create_WebSocket_Permission_Record(dto);
+                obj.requested = 1;
+                obj.blocked = 0;
+                obj.approved = 0;
+            }
+
+            if (requested == 0 && approved == 0 && blocked == 0 && requested_swap_ids == 0 && approved_swap_ids == 0 && blocked_swap_ids == 0 && (deleted == true || deleted_swap_ids == true))
+            {
+                await Update_Chat_Web_Socket_Permissions_Tbl(new WebSocket_Chat_PermissionTbl {
+                    User_ID = dto.End_User_ID,
+                    Participant_ID = dto.Participant_ID,
+                    Updated_on = TimeStamp,
+                    Updated_by = dto.End_User_ID,
+                    Requested = 1,
+                    Blocked = 0,
+                    Approved = 0
+                });
                 obj.requested = 1;
                 obj.blocked = 0;
                 obj.approved = 0;
