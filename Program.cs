@@ -80,8 +80,10 @@ static string GetLocalIpAddress()
 
 string local_network_ip_address = GetLocalIpAddress();
 
+builder.Services.AddHttpContextAccessor();
+
 var app = builder.Build();
-// Configure the HTTP request pipeline.
+Network.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();

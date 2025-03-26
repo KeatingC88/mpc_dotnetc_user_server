@@ -15,11 +15,13 @@ namespace mpc_dotnetc_user_server.Models.Report
         public string Client_IP { get; set; } = string.Empty;
         public int Client_Port { get; set; }
         public string Server_IP { get; set; } = string.Empty;
+        public string Remote_IP { get; set; } = string.Empty;
         public string Reason { get; set; } = string.Empty;
         public string Controller { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
         public int Server_Port { get; set; }
+        public int Remote_Port { get; set; }
         public ulong Client_id { get; set; }
         public ulong JWT_id { get; set; }
         public ulong User_ID { get; set; }

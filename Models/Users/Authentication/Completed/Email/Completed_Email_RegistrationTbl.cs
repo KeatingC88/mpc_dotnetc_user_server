@@ -44,10 +44,16 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
         public string Server_IP { get; set; } = string.Empty;
 
         [Required]
+        public int Server_Port { get; set; }
+
+        [Required]
+        public string Remote_IP { get; set; } = string.Empty;
+
+        [Required]
         public int Client_Port { get; set; }
 
         [Required]
-        public int Server_Port { get; set; }
+        public int Remote_Port { get; set; }
 
         [Required]
         public string User_agent { get; set; } = string.Empty;

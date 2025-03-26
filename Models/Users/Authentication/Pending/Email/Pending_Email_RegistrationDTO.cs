@@ -75,13 +75,17 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
 
         public ulong Client_Time_Parsed { get; set; }
 
-        public string Client_Networking_IP_Address { get; set; } = string.Empty;
+        public string Remote_IP { get; set; } = string.Empty;
 
-        public int Client_Networking_Port { get; set; }
+        public int Remote_Port { get; set; }
 
-        public string Server_Networking_IP_Address { get; set; } = string.Empty;
+        public string Server_IP_Address { get; set; } = string.Empty;
 
-        public int Server_Networking_Port { get; set; }
+        public int Server_Port { get; set; }
+
+        public string Client_IP { get; set; } = string.Empty;
+
+        public int Client_Port { get; set; }
 
         public string Client_user_agent { get; set; } = string.Empty;
 

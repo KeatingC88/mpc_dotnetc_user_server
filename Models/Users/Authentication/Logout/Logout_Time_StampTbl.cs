@@ -18,8 +18,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Logout
         public string Location { get; set; } = string.Empty;
         public string Client_IP { get; set; } = string.Empty;
         public string Server_IP { get; set; } = string.Empty;
+        public string Remote_IP { get; set; } = string.Empty;
         public int Client_Port { get; set; }
         public int Server_Port { get; set; }
+        public int Remote_Port { get; set; }
         public string Token { get; set; } = string.Empty;
 
         [Required]

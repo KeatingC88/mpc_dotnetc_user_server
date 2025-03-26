@@ -39,6 +39,12 @@ namespace mpc_dotnetc_user_server.Models.Report
         public int Server_Port { get; set; }
 
         [Required]
+        public string Remote_IP { get; set; } = string.Empty;
+
+        [Required]
+        public int Remote_Port { get; set; }
+
+        [Required]
         public string Language_Region { get; set; } = string.Empty;
 
         [Required]

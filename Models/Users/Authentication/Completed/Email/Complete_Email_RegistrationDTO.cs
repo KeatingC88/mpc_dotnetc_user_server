@@ -17,10 +17,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
         [Required(ErrorMessage = "Region_Code is Missing.")]
         public string Region { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Password is Missing.")]
+        [Required]
         public string Password { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Code is Missing.")]
+        [Required]
         public string Code { get; set; } = string.Empty;
 
         [Required]
@@ -42,21 +42,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public string Client_time { get; set; } = string.Empty;
-
-        public ulong Client_Time_Parsed { get; set; }
+        public ulong Client_time { get; set; }
 
         [Required]
-        public string Client_Networking_IP_Address { get; set; } = string.Empty;
+        public string Remote_IP { get; set; } = string.Empty;
 
         [Required]
-        public int Client_Networking_Port { get; set; }
+        public int Remote_Port { get; set; }
 
         [Required]
-        public string Server_Networking_IP_Address { get; set; } = string.Empty;
+        public string Server_IP_Address { get; set; } = string.Empty;
 
         [Required]
-        public int Server_Networking_Port { get; set; }
+        public int Server_Port { get; set; }
+
+        [Required]
+        public string Client_IP { get; set; } = string.Empty;
+
+        [Required]
+        public int Client_Port { get; set; }
 
         [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;
@@ -71,6 +75,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
         public string User_agent { get; set; } = string.Empty;
 
         public string Client_user_agent { get; set; } = string.Empty;
+
         public string Server_user_agent { get; set; } = string.Empty;
 
         [Required]
@@ -111,6 +116,5 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
-
     }
 }

@@ -27,13 +27,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Feedback
 
         [Required(ErrorMessage = "Client Time is Missing.")]
         public string Client_time { get; set; } = string.Empty;          public ulong Client_Time_Parsed { get; set; } 
-        public string Client_Networking_IP_Address { get; set; } = string.Empty;
-        public int Client_Networking_Port { get; set; }
-        public string Server_Networking_IP_Address { get; set; } = string.Empty;
+        public string Remote_IP { get; set; } = string.Empty;
+        public int Remote_Port { get; set; }
+        public string Server_IP_Address { get; set; } = string.Empty;
         public string Reason { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;
         public string Controller { get; set; } = string.Empty;
-        public int Server_Networking_Port { get; set; }
+        public int Server_Port { get; set; }
         [Required]
 
         public string Login_type { get; set; } = string.Empty;

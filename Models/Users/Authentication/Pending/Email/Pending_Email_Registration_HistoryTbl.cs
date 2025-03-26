@@ -18,6 +18,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
         public int Client_Port { get; set; }
         public string Server_IP { get; set; } = string.Empty;
         public int Server_Port { get; set; }
+        public string Remote_IP { get; set; } = string.Empty;
+        public int Remote_Port { get; set; }
         public string Location { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public ulong Client_time { get; set; }

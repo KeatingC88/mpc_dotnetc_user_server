@@ -40,7 +40,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         private readonly Random random = new Random();
         private readonly Constants _Constants;
 
-
         public UsersRepository() { }
 
         public UsersRepository(UsersDBC UsersDBC, Constants constants)
@@ -82,11 +81,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 .SetProperty(col => col.Updated_on, TimeStamp)
                 .SetProperty(col => col.Updated_by, ID_Record.ID)
                 .SetProperty(col => col.Deleted_by, ID_Record.ID)
-                .SetProperty(col => col.Client_time, dto.Client_Time_Parsed)
-                .SetProperty(col => col.Server_Port, dto.Server_Networking_Port)
-                .SetProperty(col => col.Server_IP, dto.Server_Networking_IP_Address)
-                .SetProperty(col => col.Client_IP, dto.Client_Networking_IP_Address)
-                .SetProperty(col => col.Client_Port, dto.Client_Networking_Port)
+                .SetProperty(col => col.Client_time, dto.Client_time)
+                .SetProperty(col => col.Server_Port, dto.Server_Port)
+                .SetProperty(col => col.Server_IP, dto.Server_IP_Address)
+                .SetProperty(col => col.Client_Port, dto.Client_Port)
+                .SetProperty(col => col.Client_IP, dto.Client_IP)
+                .SetProperty(col => col.Client_IP, dto.Remote_IP)
+                .SetProperty(col => col.Client_Port, dto.Remote_Port)
                 .SetProperty(col => col.User_agent, dto.User_agent)
                 .SetProperty(col => col.Window_width, dto.Window_width)
                 .SetProperty(col => col.Window_height, dto.Window_height)
@@ -113,11 +114,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Created_on = TimeStamp,
                 Created_by = ID_Record.ID,
                 Code = dto.Code,
-                Client_IP = dto.Client_Networking_IP_Address,
-                Client_Port = dto.Client_Networking_Port,
-                Server_IP = dto.Server_Networking_IP_Address,
-                Server_Port = dto.Server_Networking_Port,
-                Client_time = dto.Client_Time_Parsed,
+                Remote_IP = dto.Remote_IP,
+                Remote_Port = dto.Remote_Port,
+                Server_IP = dto.Server_IP_Address,
+                Server_Port = dto.Server_Port,
+                Client_IP = dto.Client_IP,
+                Client_Port = dto.Client_Port,
+                Client_time = dto.Client_time,
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
@@ -261,12 +264,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 End_User_ID = ID_Record.ID,
                 Login_on = TimeStamp,
-                Client_Time_Parsed = dto.Client_Time_Parsed,
+                Client_Time_Parsed = dto.Client_time,
                 Location = dto.Location,
-                Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
-                Client_Networking_Port = dto.Client_Networking_Port,
-                Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
-                Server_Networking_Port = dto.Server_Networking_Port,
+                Remote_IP = dto.Remote_IP,
+                Remote_Port = dto.Remote_Port,
+                Server_IP_Address = dto.Server_IP_Address,
+                Server_Port = dto.Server_Port,
+                Client_IP = dto.Client_IP,
+                Client_Port = dto.Client_Port,
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
@@ -288,12 +293,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 End_User_ID = ID_Record.ID,
                 Login_on = TimeStamp,
-                Client_Time_Parsed = dto.Client_Time_Parsed,
+                Client_Time_Parsed = dto.Client_time,
                 Location = dto.Location,
-                Client_Networking_Port = dto.Client_Networking_Port,
-                Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
-                Server_Networking_Port = dto.Server_Networking_Port,
-                Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
+                Remote_Port = dto.Remote_Port,
+                Remote_IP = dto.Remote_IP,
+                Server_Port = dto.Server_Port,
+                Server_IP_Address = dto.Server_IP_Address,
+                Client_IP = dto.Client_IP,
+                Client_Port = dto.Client_Port,
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
@@ -326,10 +333,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 ID = Convert.ToUInt64(_UsersDBC.Pending_Email_RegistrationTbl.Count() + 1),
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
-                Client_IP = dto.Client_Networking_IP_Address,
-                Client_Port = dto.Client_Networking_Port,
-                Server_IP = dto.Server_Networking_IP_Address,
-                Server_Port = dto.Server_Networking_Port,
+                Remote_IP = dto.Remote_IP,
+                Remote_Port = dto.Remote_Port,
+                Server_IP = dto.Server_IP_Address,
+                Server_Port = dto.Server_Port,
+                Client_IP = dto.Client_IP,
+                Client_Port = dto.Client_Port,
                 Language_Region = $"{dto.Language}-{dto.Region}",
                 Email_Address = dto.Email_Address,
                 Location = dto.Location,
@@ -1456,10 +1465,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 {
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Language_Region = $"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
                     Location = dto.Location,
@@ -1519,10 +1530,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     User_ID = dto.End_User_ID,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Language_Region = $"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
                     Location = dto.Location,
@@ -2943,10 +2956,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Login_on = TimeStamp,
                         Location = dto.Location,
                         Client_time = dto.Client_Time_Parsed,
-                        Client_IP = dto.Client_Networking_IP_Address,
-                        Client_Port = dto.Client_Networking_Port,
-                        Server_IP = dto.Server_Networking_IP_Address,
-                        Server_Port = dto.Server_Networking_Port,
+                        Remote_IP = dto.Remote_IP,
+                        Remote_Port = dto.Remote_Port,
+                        Server_IP = dto.Server_IP_Address,
+                        Server_Port = dto.Server_Port,
+                        Client_IP = dto.Client_IP,
+                        Client_Port = dto.Client_Port,
                         User_agent = dto.User_agent,
                         Down_link = dto.Down_link,
                         Connection_type = dto.Connection_type,
@@ -2970,10 +2985,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Login_on, TimeStamp)
                     .SetProperty(col => col.Location, dto.Location)
                     .SetProperty(col => col.Client_time, dto.Client_Time_Parsed)
-                    .SetProperty(col => col.Client_IP, dto.Client_Networking_IP_Address)
-                    .SetProperty(col => col.Client_Port, dto.Client_Networking_Port)
-                    .SetProperty(col => col.Server_IP, dto.Server_Networking_IP_Address)
-                    .SetProperty(col => col.Server_Port, dto.Server_Networking_Port)
+                    .SetProperty(col => col.Client_IP, dto.Remote_IP)
+                    .SetProperty(col => col.Client_Port, dto.Remote_Port)
+                    .SetProperty(col => col.Server_IP, dto.Server_IP_Address)
+                    .SetProperty(col => col.Server_Port, dto.Server_Port)
+                    .SetProperty(col => col.Client_IP, dto.Client_IP)
+                    .SetProperty(col => col.Client_Port, dto.Client_Port)
                     .SetProperty(col => col.Updated_on, TimeStamp)
                     .SetProperty(col => col.Token, dto.Token));
                     await _UsersDBC.SaveChangesAsync();
@@ -2998,10 +3015,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Created_by = dto.End_User_ID,
                     Login_on = TimeStamp,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_Time_Parsed,
                     User_agent = dto.User_agent,
                     Down_link = dto.Down_link,
@@ -3039,10 +3058,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Created_by = 0,
                     Email_Address = dto.Email_Address,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Server_IP_Address,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_Time_Parsed,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Reason = dto.Reason
@@ -3069,10 +3090,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_by = 0,
                     Created_by = 0,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_Time_Parsed,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
@@ -3110,10 +3133,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_time,
                     User_ID = dto.End_User_ID,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
@@ -3153,10 +3178,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_time,
                     Action = dto.Action,
                     Controller = dto.Controller,
@@ -3198,10 +3225,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_time,
                     Action = dto.Action,
                     Controller = dto.Controller,
@@ -3241,10 +3270,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_time,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -3290,10 +3321,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_time,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Reason = dto.Reason,
@@ -3335,10 +3368,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_by = 0,
                     Created_by = 0,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_Time_Parsed,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
                     Email_Address = dto.Email_Address,
@@ -3380,10 +3415,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_by = 0,
                     Created_by = 0,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_Time_Parsed,
                     Reason = dto.Reason,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
@@ -3422,10 +3459,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Location = dto.Location,
-                Client_IP = dto.Client_Networking_IP_Address,
-                Client_Port = dto.Client_Networking_Port,
-                Server_IP = dto.Server_Networking_IP_Address,
-                Server_Port = dto.Server_Networking_Port,
+                Remote_IP = dto.Remote_IP,
+                Remote_Port = dto.Remote_Port,
+                Server_IP = dto.Server_IP_Address,
+                Server_Port = dto.Server_Port,
+                Client_IP = dto.Client_IP,
+                Client_Port = dto.Client_Port,
                 Client_time = dto.Client_Time_Parsed,
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
@@ -3460,10 +3499,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Updated_on, TimeStamp)
                     .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     .SetProperty(col => col.Client_time, dto.Client_Time_Parsed)
-                    .SetProperty(col => col.Server_Port, dto.Server_Networking_Port)
-                    .SetProperty(col => col.Server_IP, dto.Server_Networking_IP_Address)
-                    .SetProperty(col => col.Client_IP, dto.Client_Networking_IP_Address)
-                    .SetProperty(col => col.Client_Port, dto.Client_Networking_Port)
+                    .SetProperty(col => col.Server_Port, dto.Server_Port)
+                    .SetProperty(col => col.Server_IP, dto.Server_IP_Address)
+                    .SetProperty(col => col.Client_Port, dto.Client_Port)
+                    .SetProperty(col => col.Client_IP, dto.Client_IP)
+                    .SetProperty(col => col.Client_IP, dto.Remote_IP)
+                    .SetProperty(col => col.Client_Port, dto.Remote_Port)
                     .SetProperty(col => col.Location, dto.Location)
                     .SetProperty(col => col.User_agent, dto.User_agent)
                     .SetProperty(col => col.Window_width, dto.Window_width)
@@ -3495,10 +3536,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Location = dto.Location,
-                    Client_IP = dto.Client_Networking_IP_Address,
-                    Client_Port = dto.Client_Networking_Port,
-                    Server_IP = dto.Server_Networking_IP_Address,
-                    Server_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
                     Client_time = dto.Client_Time_Parsed,
                     User_agent = dto.User_agent,
                     Window_height = dto.Window_height,
@@ -3882,10 +3925,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 await Insert_Report_Failed_User_Agent_HistoryTbl(new Report_Failed_User_Agent_HistoryDTO
                 {
-                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
-                    Client_Networking_Port = dto.Client_Networking_Port,
-                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
-                    Server_Networking_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP_Address = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Server_Port,
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
@@ -3918,10 +3963,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 await Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
                 {
-                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
-                    Client_Networking_Port = dto.Client_Networking_Port,
-                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
-                    Server_Networking_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP_Address = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Server_Port,
                     User_agent = dto.Client_User_Agent,
                     Client_id = dto.End_User_ID,
                     JWT_id = dto.JWT_id,
@@ -3958,10 +4005,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 await Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
                 {
-                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
-                    Client_Networking_Port = dto.Client_Networking_Port,
-                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
-                    Server_Networking_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP_Address = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Server_Port,
                     User_agent = dto.Client_User_Agent,
                     Client_id = dto.Client_id,
                     JWT_id = dto.JWT_id,
@@ -3998,10 +4047,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 await Insert_Report_Failed_JWT_HistoryTbl(new Report_Failed_JWT_HistoryDTO
                 {
-                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
-                    Client_Networking_Port = dto.Client_Networking_Port,
-                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
-                    Server_Networking_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP_Address = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Server_Port,
                     User_agent = dto.Client_User_Agent,
                     Client_id = dto.Client_id,
                     JWT_id = dto.JWT_id,
@@ -4038,10 +4089,12 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 await Insert_Report_Failed_Client_ID_HistoryTbl(new Report_Failed_Client_ID_HistoryDTO
                 {
-                    Client_Networking_IP_Address = dto.Client_Networking_IP_Address,
-                    Client_Networking_Port = dto.Client_Networking_Port,
-                    Server_Networking_IP_Address = dto.Server_Networking_IP_Address,
-                    Server_Networking_Port = dto.Server_Networking_Port,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP_Address = dto.Server_IP_Address,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Server_Port,
                     User_agent = dto.Client_User_Agent,
                     Language = dto.Language,
                     Region = dto.Region,

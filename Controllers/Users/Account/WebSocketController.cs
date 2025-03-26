@@ -3,6 +3,7 @@ using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
+using System.Net.Http;
 
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -59,10 +60,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
-                Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                Client_Networking_Port = HttpContext.Connection.RemotePort,
-                Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                Server_Networking_Port = HttpContext.Connection.LocalPort,
+                Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                Server_Port = HttpContext.Connection.LocalPort,
+                Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                 JWT_client_address = dto.JWT_client_address,
                 JWT_client_key = dto.JWT_client_key,
                 JWT_issuer_key = dto.JWT_issuer_key,
@@ -134,13 +137,15 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
-
+            
             if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
-                Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                Client_Networking_Port = HttpContext.Connection.RemotePort,
-                Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                Server_Networking_Port = HttpContext.Connection.LocalPort,
+                Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
+                Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                Server_Port = HttpContext.Connection.LocalPort,
                 JWT_client_address = dto.JWT_client_address,
                 JWT_client_key = dto.JWT_client_key,
                 JWT_issuer_key = dto.JWT_issuer_key,
@@ -215,10 +220,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
-                Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                Client_Networking_Port = HttpContext.Connection.RemotePort,
-                Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                Server_Networking_Port = HttpContext.Connection.LocalPort,
+                Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                Server_Port = HttpContext.Connection.LocalPort,
+                Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                 JWT_client_address = dto.JWT_client_address,
                 JWT_client_key = dto.JWT_client_key,
                 JWT_issuer_key = dto.JWT_issuer_key,
@@ -293,10 +300,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
-                Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                Client_Networking_Port = HttpContext.Connection.RemotePort,
-                Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                Server_Networking_Port = HttpContext.Connection.LocalPort,
+                Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                Server_Port = HttpContext.Connection.LocalPort,
+                Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                 JWT_client_address = dto.JWT_client_address,
                 JWT_client_key = dto.JWT_client_key,
                 JWT_issuer_key = dto.JWT_issuer_key,
@@ -371,10 +380,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
-                Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                Client_Networking_Port = HttpContext.Connection.RemotePort,
-                Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                Server_Networking_Port = HttpContext.Connection.LocalPort,
+                Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                Server_Port = HttpContext.Connection.LocalPort,
+                Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                 JWT_client_address = dto.JWT_client_address,
                 JWT_client_key = dto.JWT_client_key,
                 JWT_issuer_key = dto.JWT_issuer_key,
@@ -449,10 +460,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
-                Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                Client_Networking_Port = HttpContext.Connection.RemotePort,
-                Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                Server_Networking_Port = HttpContext.Connection.LocalPort,
+                Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                Server_Port = HttpContext.Connection.LocalPort,
+                Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                 JWT_client_address = dto.JWT_client_address,
                 JWT_client_key = dto.JWT_client_key,
                 JWT_issuer_key = dto.JWT_issuer_key,
@@ -529,10 +542,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
-                Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                Client_Networking_Port = HttpContext.Connection.RemotePort,
-                Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                Server_Networking_Port = HttpContext.Connection.LocalPort,
+                Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                Server_Port = HttpContext.Connection.LocalPort,
+                Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                 JWT_client_address = dto.JWT_client_address,
                 JWT_client_key = dto.JWT_client_key,
                 JWT_issuer_key = dto.JWT_issuer_key,
@@ -616,10 +631,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
-                Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                Client_Networking_Port = HttpContext.Connection.RemotePort,
-                Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                Server_Networking_Port = HttpContext.Connection.LocalPort,
+                Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                Server_Port = HttpContext.Connection.LocalPort,
+                Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                 JWT_client_address = dto.JWT_client_address,
                 JWT_client_key = dto.JWT_client_key,
                 JWT_issuer_key = dto.JWT_issuer_key,
@@ -705,10 +722,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
-                Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                Client_Networking_Port = HttpContext.Connection.RemotePort,
-                Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                Server_Networking_Port = HttpContext.Connection.LocalPort,
+                Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                Server_Port = HttpContext.Connection.LocalPort,
+                Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                 JWT_client_address = dto.JWT_client_address,
                 JWT_client_key = dto.JWT_client_key,
                 JWT_issuer_key = dto.JWT_issuer_key,
@@ -793,10 +812,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
-                Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                Client_Networking_Port = HttpContext.Connection.RemotePort,
-                Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                Server_Networking_Port = HttpContext.Connection.LocalPort,
+                Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                Server_Port = HttpContext.Connection.LocalPort,
+                Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                 JWT_client_address = dto.JWT_client_address,
                 JWT_client_key = dto.JWT_client_key,
                 JWT_issuer_key = dto.JWT_issuer_key,

@@ -80,10 +80,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
-                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                    Client_Networking_Port = HttpContext.Connection.RemotePort,
-                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                    Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Port = HttpContext.Connection.LocalPort,
                     JWT_issuer_key = dto.JWT_issuer_key,
                     JWT_client_key = dto.JWT_client_key,
                     JWT_client_address = dto.JWT_client_address,
@@ -118,10 +118,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 {
                     await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
                     {
-                        Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                        Client_Networking_Port = HttpContext.Connection.RemotePort,
-                        Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Networking_Port = HttpContext.Connection.LocalPort,
+                        Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                        Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Port = HttpContext.Connection.LocalPort,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
                         Language = dto.Language,
@@ -155,10 +155,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     if (!_UsersRepository.Compare_Password_Byte_Arrays(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash).Result) {
                         await _UsersRepository.Insert_Report_Failed_Email_Login_HistoryTbl(new Report_Failed_Email_Login_HistoryDTO
                         {
-                            Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                            Client_Networking_Port = HttpContext.Connection.RemotePort,
-                            Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                            Server_Networking_Port = HttpContext.Connection.LocalPort,
+                            Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                            Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                            Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                            Server_Port = HttpContext.Connection.LocalPort,
                             User_agent = dto.Server_user_agent,
                             Email_Address = dto.Email_Address,
                             Language = dto.Language,
@@ -249,10 +249,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 await _UsersRepository.Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
                 {
                     End_User_ID = user_id,
-                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                    Client_Networking_Port = HttpContext.Connection.RemotePort,
-                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                    Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Port = HttpContext.Connection.LocalPort,
                     User_agent = dto.Server_user_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
@@ -275,10 +275,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 await _UsersRepository.Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
                 {
                     End_User_ID = user_id,
-                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                    Client_Networking_Port = HttpContext.Connection.RemotePort,
-                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                    Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Port = HttpContext.Connection.LocalPort,
                     User_agent = dto.Server_user_agent,
                     Location = dto.Location,
                         Client_Time_Parsed = dto.Client_Time_Parsed,
@@ -351,10 +351,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
-                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                    Client_Networking_Port = HttpContext.Connection.RemotePort,
-                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                    Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Port = HttpContext.Connection.LocalPort,
                     Token = dto.Token,
                     Client_id = dto.Client_id,
                     JWT_id = dto.JWT_id,
@@ -426,10 +426,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }
 
                 await _UsersRepository.Insert_End_User_Logout_HistoryTbl(new Logout_Time_StampDTO {
-                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                    Client_Networking_Port = HttpContext.Connection.RemotePort,
-                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                    Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Port = HttpContext.Connection.LocalPort,
                     User_agent = dto.Server_user_agent,
                     Language = dto.Language,
                     Region = dto.Region,
@@ -453,10 +453,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 });
 
                 await _UsersRepository.Update_End_User_Logout(new Logout_Time_StampDTO {
-                    Client_Networking_IP_Address = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "error",
-                    Client_Networking_Port = HttpContext.Connection.RemotePort,
-                    Server_Networking_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                    Server_Networking_Port = HttpContext.Connection.LocalPort,
+                    Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                    Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Port = HttpContext.Connection.LocalPort,
                     User_agent = dto.Server_user_agent,
                     Language = dto.Language,
                     Region = dto.Region,
