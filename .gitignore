@@ -367,6 +367,7 @@ FodyWeavers.xsd
 
 # Ignore all .txt files
 *.txt
+mpc_account.txt
 
 # Ignore build and output directories
 bin/

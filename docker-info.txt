@@ -1,4 +1,0 @@
-docker build -t mpc_dotnetc_user_server_rom .
-docker run -d -p 5177:80 --name mpc_dotnetc_user_server mpc_dotnetc_user_server_rom
-
-docker compose -f mpc_dotnetc_user_server.yaml up -d
