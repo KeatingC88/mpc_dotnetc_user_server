@@ -2816,7 +2816,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return JsonSerializer.Serialize(obj);
             }
         }
-
         public async Task<string> Update_End_User_Button_Font(Selected_App_Custom_DesignDTO dto)
         {
             try

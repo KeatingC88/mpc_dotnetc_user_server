@@ -5,13 +5,22 @@ using mpc_dotnetc_user_server.Models.Users.Index;
 using System.Runtime.InteropServices;
 using mpc_dotnetc_user_server.Controllers;
 using System.Net;
+using DotNetEnv;
 //...
 string server_origin = "MPC_Users_Server_Origin";
 string sqlite3_users_database_path = "";
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+/*
+    Load .env file
+ */
+
+Env.Load();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 /*
     Select database path.
 */
@@ -19,13 +28,21 @@ string environment = builder.Environment.EnvironmentName;
 string dir = Directory.GetCurrentDirectory();
 IWebHostEnvironment env = builder.Environment;
 if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+
     sqlite3_users_database_path = $"{dir}\\bin\\Debug\\net8.0\\mpc_sqlite_users_db\\Users.db";
+
 } else if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+
     sqlite3_users_database_path = $"{dir}/bin/Debug/net8.0/mpc_sqlite_users_db/Users.db";
+
 } else if (env.EnvironmentName == "Docker") {
+
     sqlite3_users_database_path = "/app/Users.db";//This must match Dockerfile's COPY Cmd.
+
 } else if (env.IsProduction() && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {//Linux for AWS Production.
+
     sqlite3_users_database_path = Path.Combine(dir, "mpc_sqlite_users_db", "Users.db");
+
 }
 /*
     Use Database Context for ORM.
@@ -48,8 +65,6 @@ builder.Services.AddSingleton<Constants>();
 /*
     Initiate Cryptography Class for this server.
 */
-
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.RequireHttpsMetadata = false;
@@ -58,13 +73,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     {
         ValidateIssuer = true,
         ValidateAudience = true,
-        ValidAudience = $"{AES.Process_Encryption("JWT-Servicing-MPC-Client-As-Audience")}",
-        ValidIssuer = $"{AES.Process_Encryption(@$"JWT-Authentication-MPC-User-Server-As-Issuer")}",
-        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("9!5@a$59#%8^7MPC]1MPC999587)($@!53DataMonkey78912345645447890#%^2345vvcczxxedddg!#$%132577979798dA&*($##$$%@!^&*DFGGFFFFA^%YHBFSSDFTYG"))
+        ValidAudience = $"{AES.Process_Encryption(Environment.GetEnvironmentVariable("JWT_ISSUER_KEY"))}",
+        ValidIssuer = $"{AES.Process_Encryption(Environment.GetEnvironmentVariable("JWT_CLIENT_KEY"))}",
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SIGN_KEY")))
     };
 });
 
-static string GetLocalIpAddress()
+static string get_local_machine_ip_address()
 {
     var host = Dns.GetHostEntry(Dns.GetHostName());
     foreach (var ip in host.AddressList)
@@ -78,7 +93,7 @@ static string GetLocalIpAddress()
     return "IP Address not found.";
 }
 
-string local_network_ip_address = GetLocalIpAddress();
+string local_network_ip_address = get_local_machine_ip_address();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -99,9 +114,9 @@ app.Run();
 
 public class Constants
 {
-    public string JWT_ISSUER_KEY { get; set; } = "JWT-Authentication-MPC-User-Server-As-Issuer";
-    public string JWT_CLIENT_KEY { get; set; } = "JWT-Servicing-MPC-Client-As-Audience";
-    public string JWT_SECURITY_KEY { get; set; } = "9!5@a$59#%8^7MPC]1MPC999587)($@!53DataMonkey78912345645447890#%^2345vvcczxxedddg!#$%132577979798dA&*($##$$%@!^&*DFGGFFFFA^%YHBFSSDFTYG";
+    public string JWT_ISSUER_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_ISSUER_KEY");
+    public string JWT_CLIENT_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_CLIENT_KEY");
+    public string JWT_SECURITY_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_SIGN_KEY");
     //public string JWT_CLAIM_WEBPAGE { get; set; } = "http://192.168.0.102:6499";//do not remove -- use on host
     public string JWT_CLAIM_WEBPAGE { get; set; } = "http://localhost:6499";
 }
