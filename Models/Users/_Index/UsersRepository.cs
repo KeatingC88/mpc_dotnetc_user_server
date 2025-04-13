@@ -1521,34 +1521,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return JsonSerializer.Serialize(obj);
             }
         }
-        public async Task<string> Create_Reported_Email_Registration_Record(Report_Email_RegistrationDTO dto)
-        {
-            try
-            {
-                await _UsersDBC.Report_Email_RegistrationTbl.AddAsync(new Report_Email_RegistrationTbl
-                {
-                    User_ID = dto.End_User_ID,
-                    Updated_on = TimeStamp,
-                    Created_on = TimeStamp,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP_Address,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Language_Region = $"{dto.Language}-{dto.Region}",
-                    Email_Address = dto.Email_Address,
-                    Location = dto.Location,
-                    Client_time = dto.Client_Time_Parsed
-                });
-                await _UsersDBC.SaveChangesAsync();
-                obj.recorded_on = TimeStamp;
-                return JsonSerializer.Serialize(obj);
-            } catch {
-                obj.error = "Server Error: Record Creation Failed.";
-                return JsonSerializer.Serialize(obj);
-            }
-        }
         public async Task<string> Update_End_User_Avatar(Selected_AvatarDTO dto)
         {
             try {
@@ -3065,7 +3037,21 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_Port = dto.Client_Port,
                     Client_time = dto.Client_Time_Parsed,
                     Language_Region = $@"{dto.Language}-{dto.Region}",
-                    Reason = dto.Reason
+                    Reason = dto.Reason,
+                    User_agent = dto.User_agent,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_extend = dto.Screen_extend,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb
                 });
                 await _UsersDBC.SaveChangesAsync();
                 obj.insert = "completed";

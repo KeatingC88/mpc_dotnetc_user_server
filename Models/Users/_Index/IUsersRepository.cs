@@ -36,7 +36,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<bool> Create_Contact_Us_Record(Contact_UsDTO dto);
         Task<byte[]> Create_Salted_Hash_String(byte[] text, byte[] salt);
         Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
-        Task<string> Create_Reported_Email_Registration_Record(Report_Email_RegistrationDTO dto);
         Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto);
         Task<string> Create_Reported_User_Profile_Record(Reported_ProfileDTO dto);
         Task<string> Delete_Account_By_User_id(Delete_UserDTO dto);
