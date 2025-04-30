@@ -15,11 +15,24 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<WebSocketController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
-        public WebSocketController(ILogger<WebSocketController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
+        private readonly IAES AES;
+        private readonly IJWT JWT;
+        private readonly INetwork Network;
+        public WebSocketController(
+            ILogger<WebSocketController> logger, 
+            IConfiguration configuration, 
+            IUsersRepository users_repository,
+            IJWT jwt,
+            IAES aes,
+            INetwork network
+            )
         {
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = UsersRepository;
+            _UsersRepository = users_repository;
+            JWT = jwt;
+            AES = aes;
+            Network = network;
         }
 
         [HttpPost("Chat_Requests/Participant")]

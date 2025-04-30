@@ -2,16 +2,16 @@
 
 namespace mpc_dotnetc_user_server.Controllers
 {
-    public class Network
+    public class Network : INetwork
     {
-        private static IHttpContextAccessor _httpContextAccessor;
+        private static IHttpContextAccessor _httpContextAccessor = default!;
 
         public static void Configure(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public static async Task<string> Get_Client_Remote_Internet_Protocol_Address()
+        public async Task<string> Get_Client_Remote_Internet_Protocol_Address()
         {
             return await Task.Run(() => {
                 if (_httpContextAccessor == null)
@@ -41,7 +41,7 @@ namespace mpc_dotnetc_user_server.Controllers
             });
         }
 
-        public static async Task<int> Get_Client_Remote_Internet_Protocol_Port()
+        public async Task<int> Get_Client_Remote_Internet_Protocol_Port()
         {
             return await Task.Run(() =>
             {
@@ -68,13 +68,13 @@ namespace mpc_dotnetc_user_server.Controllers
 
         }
 
-        public static async Task<string> Get_Client_Internet_Protocol_Address()
+        public async Task<string> Get_Client_Internet_Protocol_Address()
         {
             using var httpClient = new HttpClient();
             return await httpClient.GetStringAsync("https://api64.ipify.org");
         }
 
-        public static async Task<int> Get_Client_Internet_Protocol_Port()
+        public async Task<int> Get_Client_Internet_Protocol_Port()
         {
             return await Task.Run(() =>
             {

@@ -21,7 +21,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Feedback
         public string Token { get; set; } = string.Empty;
         public ulong? Report_Chat_TS { get; set; }
 
-        public string ID { get; set; }
+        public string ID { get; set; } = string.Empty;
         public ulong End_User_ID { get; set; }
         public string URL { get; set; } = string.Empty;
         public string Detail { get; set; } = string.Empty;

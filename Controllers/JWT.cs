@@ -7,12 +7,18 @@ using System.Text;
 
 namespace mpc_dotnetc_user_server.Controllers
 {
-    public class JWT
+    public class JWT : IJWT
     {
         private static readonly Constants Constants = new Constants();
         private static readonly ushort token_expire_time = 16;
+        private readonly IAES AES;
 
-        public static async Task<string> Create_Email_Account_Token(JWT_DTO dto)
+        public JWT(IAES aes)
+        {
+            AES = aes;
+        }
+
+        public async Task<string> Create_Email_Account_Token(JWT_DTO dto)
         {
             List<Claim> claims = new List<Claim>
             {
@@ -38,7 +44,7 @@ namespace mpc_dotnetc_user_server.Controllers
             return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
         }
 
-        public static async Task<ulong> Read_Email_Account_User_ID_By_JWToken(string jwt_token)
+        public async Task<ulong> Read_Email_Account_User_ID_By_JWToken(string jwt_token)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(jwt_token);
@@ -54,7 +60,7 @@ namespace mpc_dotnetc_user_server.Controllers
             return await Task.FromResult(Convert.ToUInt64(AES.Process_Decryption($"{values[1].ToString()}")));
         }
 
-        public static async Task<ulong> Read_Email_Account_User_Role_By_JWToken(string jwt_token)
+        public async Task<ulong> Read_Email_Account_User_Role_By_JWToken(string jwt_token)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(jwt_token);

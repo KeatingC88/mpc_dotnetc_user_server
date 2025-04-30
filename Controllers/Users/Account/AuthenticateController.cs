@@ -21,15 +21,30 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
     {
         private readonly Constants _Constants;
         private readonly ILogger<AuthenticateController> _logger;
-        private static IConfiguration _configuration;
+        private static IConfiguration? _configuration;
         private readonly IUsersRepository _UsersRepository;
 
-        public AuthenticateController(ILogger<AuthenticateController> logger, IConfiguration configuration, IUsersRepository UsersRepository, Constants constants)
+        private readonly IAES AES;
+        private readonly IJWT JWT;
+        private readonly INetwork Network;
+
+        public AuthenticateController(
+            ILogger<AuthenticateController> logger,
+            IConfiguration configuration,
+            IUsersRepository users_repository,
+            Constants constants,
+            IAES aes,
+            IJWT jwt,
+            INetwork network
+            )
         {
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = UsersRepository;
+            _UsersRepository = users_repository;
             _Constants = constants;
+            AES = aes;
+            JWT = jwt;
+            Network = network;
         }
 
         [HttpPut("Login/Email")]

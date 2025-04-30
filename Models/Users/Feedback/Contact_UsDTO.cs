@@ -12,7 +12,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Feedback
         public ulong Updated_by { get; set; }
         public string Subject_line { get; set; } = string.Empty;
         public string Summary { get; set; } = string.Empty;
-        public string ID { get; set; }
+        public string ID { get; set; } = string.Empty;
         public ulong End_User_ID { get; set; }
         public string URL { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;

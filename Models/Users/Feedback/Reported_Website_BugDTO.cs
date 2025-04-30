@@ -4,7 +4,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Feedback
 {
     public class Reported_Website_BugDTO
     {
-        public string ID { get; set; }
+        public string ID { get; set; } = string.Empty;
         public ulong End_User_ID { get; set; }
         public ulong Created_on { get; set; }
         public byte Deleted { get; set; }

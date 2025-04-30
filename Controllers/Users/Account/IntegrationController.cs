@@ -12,11 +12,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
 
-        public IntegrationController(ILogger<IntegrationController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
-        {
+        public IntegrationController(
+            ILogger<IntegrationController> logger, 
+            IConfiguration configuration, 
+            IUsersRepository users_repository
+        ){
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = UsersRepository;
+            _UsersRepository = users_repository;
         }
 
         [HttpPost("Twitch")]

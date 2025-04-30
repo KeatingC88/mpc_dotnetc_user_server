@@ -5,7 +5,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Selection
     public class Selected_App_Custom_DesignDTO
     {
         [Required]
-        public string ID { get; set; }
+        public string ID { get; set; } = string.Empty;
         public ulong End_User_ID { get; set; }
         public ulong Updated_by { get; set; }
         public ulong Created_by { get; set; }

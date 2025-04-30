@@ -37,15 +37,18 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         private readonly ulong TimeStamp = Convert.ToUInt64(DateTimeOffset.Now.ToUnixTimeSeconds());
         private dynamic obj = new ExpandoObject();
         private readonly UsersDBC _UsersDBC;
-        private readonly Random random = new Random();
+        private readonly Random random = new();
         private readonly Constants _Constants;
 
-        public UsersRepository() { }
+        private readonly IAES AES;
+        private readonly IJWT JWT;
 
-        public UsersRepository(UsersDBC UsersDBC, Constants constants)
+        public UsersRepository(UsersDBC UsersDBC, Constants constants, IAES aes, IJWT jwt)
         {
             _UsersDBC = UsersDBC;
             _Constants = constants;
+            AES = aes;
+            JWT = jwt;
         }
 
         public async Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto)
@@ -673,10 +676,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.token = JWT.Create_Email_Account_Token(new JWT_DTO
             {
                 End_User_ID = end_user_id,
-                User_groups = groups,
-                User_roles = roles,
+                User_groups = groups ?? "none",
+                User_roles = roles ?? "none",
                 Account_type = account_type,
-                Email_address = email_address
+                Email_address = email_address ?? "none"
             }).Result;
 
             return Task.FromResult(JsonSerializer.Serialize(obj));
@@ -3249,6 +3252,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
+                Console.WriteLine(dto.ToString());
                 await _UsersDBC.Report_Failed_JWT_HistoryTbl.AddAsync(new Report_Failed_JWT_HistoryTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.Report_Failed_JWT_HistoryTbl.Count() + 1),

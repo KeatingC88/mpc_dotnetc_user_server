@@ -15,13 +15,26 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<LoadController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
+        private readonly IAES AES;
+        private readonly IJWT JWT;
+        private readonly INetwork Network;
 
-        public LoadController(ILogger<LoadController> logger, IConfiguration configuration, IUsersRepository UsersRepository, Constants constants)
-        {
+        public LoadController(
+            ILogger<LoadController> logger, 
+            IConfiguration configuration, 
+            IUsersRepository users_repository, 
+            IAES aes,
+            IJWT jwt,
+            INetwork network,
+            Constants constants
+        ){
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = UsersRepository;
+            _UsersRepository = users_repository;
             _Constants = constants;
+            AES = aes;
+            JWT = jwt;
+            Network = network;
         }
 
         [HttpPost("Token")]

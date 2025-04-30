@@ -12,12 +12,23 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<IdentityController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
-
-        public IdentityController(ILogger<IdentityController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
-        {
+        private readonly IAES AES;
+        private readonly IJWT JWT;
+        private readonly INetwork Network;
+        public IdentityController(
+            ILogger<IdentityController> logger,
+            IConfiguration configuration, 
+            IUsersRepository users_repository,
+            IAES aes,
+            IJWT jwt,
+            INetwork network
+        ){
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = UsersRepository;
+            _UsersRepository = users_repository;
+            AES = aes;
+            JWT = jwt;
+            Network = network;
         }
 
         [HttpPost("FirstName")]

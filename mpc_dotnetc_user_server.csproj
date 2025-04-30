@@ -1,28 +1,41 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EnableUnsupportedRuntimeIdentifierWarning>false</EnableUnsupportedRuntimeIdentifierWarning>
+    <NoWarn>$(NoWarn);CS7022</NoWarn>
+    <NoWarn>$(NoWarn);NETSDK1206</NoWarn>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <Compile Remove=".github\**" />
     <Compile Remove="bin\**" />
+    <Compile Remove="mpc_dotnetc_user_server.tests\**" />
     <Compile Remove="obj\**" />
     <Content Remove=".github\**" />
     <Content Remove="bin\**" />
+    <Content Remove="mpc_dotnetc_user_server.tests\**" />
     <Content Remove="obj\**" />
     <EmbeddedResource Remove=".github\**" />
     <EmbeddedResource Remove="bin\**" />
+    <EmbeddedResource Remove="mpc_dotnetc_user_server.tests\**" />
     <EmbeddedResource Remove="obj\**" />
     <None Remove=".github\**" />
     <None Remove="bin\**" />
+    <None Remove="mpc_dotnetc_user_server.tests\**" />
     <None Remove="obj\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\mpc_sqlite_users_database\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
+    <PackageReference Include="FakeItEasy" Version="8.3.0" />
+    <PackageReference Include="FluentAssertions" Version="8.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.33" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.18" />
@@ -31,7 +44,13 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.18" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

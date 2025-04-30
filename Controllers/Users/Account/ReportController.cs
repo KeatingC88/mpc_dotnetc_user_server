@@ -12,14 +12,26 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<ReportController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
+        private readonly IAES AES;
+        private readonly IJWT JWT;
+        private readonly INetwork Network;
 
-
-        public ReportController(ILogger<ReportController> logger, IConfiguration configuration, IUsersRepository UsersRepository)
-        {
+        public ReportController(
+            ILogger<ReportController> logger, 
+            IConfiguration configuration, 
+            IUsersRepository users_repository,
+            IAES aes,
+            IJWT jwt,
+            INetwork network
+        ) {
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = UsersRepository;
+            _UsersRepository = users_repository;
+            AES = aes;
+            JWT = jwt;
+            Network = network;
         }
+
         [HttpPost("Broken_Link")]
         public async Task<ActionResult<bool>> EmailRegister([FromBody] Reported_Broken_LinkDTO dto)
         {

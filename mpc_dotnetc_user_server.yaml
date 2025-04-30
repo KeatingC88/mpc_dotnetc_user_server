@@ -3,13 +3,14 @@ services:
   mpc_dotnetc_user_server:
     container_name: ${DOCKER_CONTAINER_NAME}
     image: ${DOCKER_CONTAINER_IMAGE_NAME}
-    build: ./Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
       - ./data:/data
     ports:
-      - ${SERVER_NETWORK_PORT_NUMBER}:80
+      - ${SERVER_NETWORK_PORT_NUMBER}:5177
+    env_file:
+      - .env
 volumes:
   data:
-
-
-

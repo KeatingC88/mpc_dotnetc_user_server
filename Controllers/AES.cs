@@ -1,25 +1,36 @@
-﻿
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace mpc_dotnetc_user_server.Controllers
 {
-    public class AES
+    public class AES : IAES
     {
-        private static readonly byte[] key = SHA256.HashData(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("ENCRYPTION_KEY")));
-        private static readonly byte[] iv = Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("ENCRYPTION_IV")).Take(16).ToArray();
+        public readonly byte[] key;
+        public readonly byte[] iv;
 
-        public static string Process_Decryption(string encryption_code)
+        public AES()
+        {
+            key = SHA256.HashData(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("ENCRYPTION_KEY") ?? string.Empty));
+            iv = Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("ENCRYPTION_IV") ?? string.Empty).Take(16).ToArray();
+        }
+
+        public AES(byte[] _key, byte[] _iv)
+        {
+            key = _key;
+            iv = _iv;
+        }
+
+        public string Process_Decryption(string encryption_code)
         {
             return Decrypt(encryption_code);
         }
 
-        public static string Process_Encryption(string cipherBytes)
+        public string Process_Encryption(string cipherBytes)
         {
             return Encrypt(cipherBytes);
         }
 
-        private static string Decrypt(string str)
+        private string Decrypt(string str)
         {
             byte[] string_bytes = Convert.FromBase64String(str);
             byte[] decrypted_bytes;
@@ -40,7 +51,7 @@ namespace mpc_dotnetc_user_server.Controllers
             return Encoding.UTF8.GetString(decrypted_bytes);
         }
 
-        private static string Encrypt(string str)
+        private string Encrypt(string str)
         {
             byte[] string_bytes = Encoding.UTF8.GetBytes(str);
             byte[] encrypted_bytes;

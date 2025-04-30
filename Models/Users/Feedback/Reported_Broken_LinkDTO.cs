@@ -7,7 +7,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Feedback
         [Required(ErrorMessage = "URL is missing.")]
         public string URL { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
-        public string ID { get; set; }
+        public string ID { get; set; } = string.Empty;
         public ulong End_User_ID { get; set; }
         public ulong Created_on { get; set; }
         public byte Deleted { get; set; }

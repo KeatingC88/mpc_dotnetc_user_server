@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mpc_dotnetc_user_server", "mpc_dotnetc_user_server.csproj", "{D38E7E0C-DE10-4E1F-9213-F13AFB0AE513}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mpc_dotnetc_user_server.tests", "mpc_dotnetc_user_server.tests\mpc_dotnetc_user_server.tests.csproj", "{897062E4-7586-4098-A8FE-DDE25A2E7C05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D38E7E0C-DE10-4E1F-9213-F13AFB0AE513}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D38E7E0C-DE10-4E1F-9213-F13AFB0AE513}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D38E7E0C-DE10-4E1F-9213-F13AFB0AE513}.Release|Any CPU.Build.0 = Release|Any CPU
+		{897062E4-7586-4098-A8FE-DDE25A2E7C05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{897062E4-7586-4098-A8FE-DDE25A2E7C05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{897062E4-7586-4098-A8FE-DDE25A2E7C05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{897062E4-7586-4098-A8FE-DDE25A2E7C05}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

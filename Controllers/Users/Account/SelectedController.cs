@@ -21,12 +21,26 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<SelectedController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsersRepository _UsersRepository;
-        public SelectedController(ILogger<SelectedController> logger, IConfiguration configuration, IUsersRepository UsersRepository, Constants constants)
-        {
+        private readonly IAES AES;
+        private readonly IJWT JWT;
+        private readonly INetwork Network;
+
+        public SelectedController(
+            ILogger<SelectedController> logger, 
+            IConfiguration configuration, 
+            IUsersRepository users_repository, 
+            IAES aes,
+            IJWT jwt,
+            INetwork network,
+            Constants constants
+        ){
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = UsersRepository;
+            _UsersRepository = users_repository;
             _Constants = constants;
+            AES = aes;
+            JWT = jwt;
+            Network = network;
         }
 
         [HttpPut("Alignment")]
