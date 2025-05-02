@@ -4,6 +4,7 @@ using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using mpc_dotnetc_user_server.Models.Users.Profile;
 using mpc_dotnetc_user_server.Models.Users.Community;
+using mpc_dotnetc_user_server.Controllers.Interfaces;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {

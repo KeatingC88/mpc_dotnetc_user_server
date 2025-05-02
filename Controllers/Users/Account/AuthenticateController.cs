@@ -12,6 +12,7 @@ using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 using System.Text.Json;
+using mpc_dotnetc_user_server.Controllers.Interfaces;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {

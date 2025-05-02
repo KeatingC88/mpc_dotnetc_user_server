@@ -3,9 +3,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using System.Runtime.InteropServices;
-using mpc_dotnetc_user_server.Controllers;
 using System.Net;
 using DotNetEnv;
+using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Controllers.Services;
 
 string sqlite3_users_database_path = "";
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -40,8 +41,6 @@ if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
 
 builder.Services.AddDbContext<UsersDBC>(options => options.UseSqlite($"Data Source = {sqlite3_users_database_path}"));
 
-
-
 builder.Services.AddCors(options => { 
     options.AddPolicy(name: Environment.GetEnvironmentVariable("SERVER_ORIGIN") ?? string.Empty, policy => {
         policy.WithOrigins("http://localhost:6499/").AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
@@ -50,8 +49,10 @@ builder.Services.AddCors(options => {
 
 builder.Services.AddSingleton<Constants>();
 
+builder.Services.AddSingleton<IValid, Valid>();
 builder.Services.AddSingleton<IAES, AES>();
 builder.Services.AddSingleton<IJWT, JWT>();
+
 
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<INetwork, Network>();

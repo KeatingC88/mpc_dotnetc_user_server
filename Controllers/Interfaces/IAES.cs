@@ -1,4 +1,4 @@
-﻿namespace mpc_dotnetc_user_server.Controllers
+﻿namespace mpc_dotnetc_user_server.Controllers.Interfaces
 {
     public interface IAES
     {

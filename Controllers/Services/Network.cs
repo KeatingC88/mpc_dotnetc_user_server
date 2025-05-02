@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
+using mpc_dotnetc_user_server.Controllers.Interfaces;
 
-namespace mpc_dotnetc_user_server.Controllers
+namespace mpc_dotnetc_user_server.Controllers.Services
 {
     public class Network : INetwork
     {
@@ -13,7 +14,8 @@ namespace mpc_dotnetc_user_server.Controllers
 
         public async Task<string> Get_Client_Remote_Internet_Protocol_Address()
         {
-            return await Task.Run(() => {
+            return await Task.Run(() =>
+            {
                 if (_httpContextAccessor == null)
                     return "error";
 

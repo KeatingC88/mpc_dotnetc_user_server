@@ -1,47 +1,74 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using mpc_dotnetc_user_server.Controllers.Interfaces;
 using mpc_dotnetc_user_server.Controllers.Users.Account;
 using mpc_dotnetc_user_server.Models;
 using System.Text.RegularExpressions;
 
-namespace mpc_dotnetc_user_server.Controllers
+namespace mpc_dotnetc_user_server.Controllers.Services
 {
-    public class Valid
+    public class Valid : IValid
     {
-        static public bool Email(string email)
+        public Valid()
         {
-            char symbol = '@';
-            bool hasAtSymbol = email.Contains(symbol);
+
+        }
+
+        public bool Email(string email_address)
+        {
+            if (email_address.IsNullOrEmpty())
+                return false;
+
+            char at_symbol = '@';
+            char dot_symbol = '.';
+
+            bool hasAtSymbol = email_address.Contains(at_symbol);
             if (!hasAtSymbol)
                 return false;
 
-            symbol = '.';
-            bool hasDot = email.Contains(symbol);
+            bool hasDot = email_address.Contains(dot_symbol);
             if (!hasDot)
                 return false;
 
-            string[] emailHasTwoParts = email.Split('@');
-            if (emailHasTwoParts[0].Length < 2)
+            string[] email_address_has_two_parts = email_address.Split(at_symbol);
+
+            if (email_address_has_two_parts[0].Length < 2)
                 return false;
 
-            if (emailHasTwoParts[1].Length < 7)
+            if (email_address_has_two_parts[0].Contains(at_symbol))
                 return false;
 
-            var trimmedEmail = email.Trim();
-            if (trimmedEmail.EndsWith("."))
+            if (email_address_has_two_parts[0].StartsWith(" "))
+                return false;
+
+            if (email_address_has_two_parts[0].EndsWith(dot_symbol))
+                return false;
+
+            if (email_address_has_two_parts[1].Length < 7)
+                return false;
+
+            if (email_address_has_two_parts[1].Contains(at_symbol))
+                return false;
+
+            var trimmedEmail = email_address.Trim();
+
+            if (trimmedEmail.EndsWith(dot_symbol))
                 return false;
 
             try
             {
-                var addr = new System.Net.Mail.MailAddress(email);
+                var addr = new System.Net.Mail.MailAddress(email_address);
                 if (addr.Address != trimmedEmail)
                     return false;
-            } catch {
+            }
+            catch
+            {
                 return false;
             }
 
             return true;
         }
-        static public bool Password(string password)
+        public bool Password(string password)
         {
             Regex check = new Regex(@"/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)[A-Za-z\d\W]{8,}$/gm");
             if (check.IsMatch(password))
@@ -49,12 +76,8 @@ namespace mpc_dotnetc_user_server.Controllers
 
             return true;
         }
-        static public bool Phone(string phone)
-        {
-            return true;
-        }
 
-        static public bool Language_Code(string language_code) 
+        public bool Language_Code(string language_code)
         {
             if (!Regex.IsMatch(language_code, @"^[a-z]+$"))
                 return false;
@@ -74,11 +97,11 @@ namespace mpc_dotnetc_user_server.Controllers
             return false;
         }
 
-        static public bool Region_Code(string region_code)
+        public bool Region_Code(string region_code)
         {
             if (!Regex.IsMatch(region_code, @"^[A-Z]+$"))
                 return false;
-            
+
             switch (region_code.ToUpper())
             {
                 case "DE":

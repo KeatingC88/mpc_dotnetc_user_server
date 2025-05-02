@@ -6,6 +6,7 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Controllers.Users.Account;
+using mpc_dotnetc_user_server.Controllers.Interfaces;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
@@ -19,11 +20,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         private readonly IUsersRepository _UsersRepository;
         private readonly IAES AES;
         private readonly INetwork Network;
+        private readonly IValid Valid;
 
         public EmailController(
             ILogger<EmailController> logger,
             IConfiguration configuration,
             IUsersRepository users_repository,
+            IValid valid,
             IAES aes,
             INetwork network,
             Constants constants)
@@ -34,6 +37,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
             _Constants = constants;
             AES = aes;
             Network = network;
+            Valid = valid;
         }
 
         [HttpPost("Confirmation")]

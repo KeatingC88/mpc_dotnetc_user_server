@@ -8,7 +8,6 @@ using mpc_dotnetc_user_server.Models.Users.Integration;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 
 using mpc_dotnetc_user_server.Models.Users.Selection;
-using mpc_dotnetc_user_server.Controllers;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
@@ -29,6 +28,7 @@ using mpc_dotnetc_user_server.Models.Users.Account_Type;
 using mpc_dotnetc_user_server.Models.Users.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
+using mpc_dotnetc_user_server.Controllers.Interfaces;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {

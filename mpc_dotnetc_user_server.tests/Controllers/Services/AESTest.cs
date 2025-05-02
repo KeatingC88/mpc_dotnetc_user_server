@@ -1,8 +1,9 @@
 ﻿using FluentAssertions;
-using mpc_dotnetc_user_server.Controllers;
+using mpc_dotnetc_user_server.Controllers.Services;
+using mpc_dotnetc_user_server.Controllers.Interfaces;
 using System.Security.Cryptography;
 
-namespace mpc_dotnetc_user_server.tests.Controllers
+namespace mpc_dotnetc_user_server.tests.Controllers.Services
 {
     public class AESTest
     {
