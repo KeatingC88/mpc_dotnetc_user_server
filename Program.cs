@@ -7,6 +7,7 @@ using System.Net;
 using DotNetEnv;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
 using mpc_dotnetc_user_server.Controllers.Services;
+using mpc_dotnetc_user_server.Models.Interfaces;
 
 string sqlite3_users_database_path = "";
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -23,11 +24,11 @@ IWebHostEnvironment env = builder.Environment;
 
 if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
 
-    sqlite3_users_database_path = $"{dir}\\bin\\Debug\\net8.0\\mpc_sqlite_users_db\\Users.db";
+    sqlite3_users_database_path = $"{dir}\\bin\\Debug\\net8.0\\mpc_sqlite_users_database\\Users.db";
 
 } else if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
 
-    sqlite3_users_database_path = $"{dir}/bin/Debug/net8.0/mpc_sqlite_users_db/Users.db";
+    sqlite3_users_database_path = $"{dir}/bin/Debug/net8.0/mpc_sqlite_users_database/Users.db";
 
 } else if (env.EnvironmentName == "Docker") {
 
@@ -35,11 +36,11 @@ if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
 
 } else if (env.IsProduction() && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {//Linux for AWS Production.
 
-    sqlite3_users_database_path = Path.Combine(dir, "mpc_sqlite_users_db", "Users.db");
+    sqlite3_users_database_path = Path.Combine(dir, "mpc_sqlite_users_database", "Users.db");
 
 }
 
-builder.Services.AddDbContext<UsersDBC>(options => options.UseSqlite($"Data Source = {sqlite3_users_database_path}"));
+builder.Services.AddDbContext<Users_Database_Context>(options => options.UseSqlite($"Data Source = {sqlite3_users_database_path}"));
 
 builder.Services.AddCors(options => { 
     options.AddPolicy(name: Environment.GetEnvironmentVariable("SERVER_ORIGIN") ?? string.Empty, policy => {
@@ -52,9 +53,10 @@ builder.Services.AddSingleton<Constants>();
 builder.Services.AddSingleton<IValid, Valid>();
 builder.Services.AddSingleton<IAES, AES>();
 builder.Services.AddSingleton<IJWT, JWT>();
+builder.Services.AddSingleton<IPassword, Password>();
 
 
-builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+builder.Services.AddScoped<IUsers_Repository, Users_Repository>();
 builder.Services.AddScoped<INetwork, Network>();
 
 var tempProvider = builder.Services.BuildServiceProvider();

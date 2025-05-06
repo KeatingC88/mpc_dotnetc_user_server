@@ -9,7 +9,7 @@ services:
     volumes:
       - ./data:/data
     ports:
-      - ${SERVER_NETWORK_PORT_NUMBER}:5177
+      - ${SERVER_NETWORK_PORT_NUMBER}:${DOCKER_CONTAINER_PORT_NUMBER}
     env_file:
       - .env
 volumes:

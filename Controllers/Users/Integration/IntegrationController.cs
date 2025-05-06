@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users.Index;
+using mpc_dotnetc_user_server.Models.Interfaces;
 using mpc_dotnetc_user_server.Models.Users.Integration;
 
-namespace mpc_dotnetc_user_server.Controllers.Users.Account
+namespace mpc_dotnetc_user_server.Controllers.Users.Integration
 {
     [ApiController]
     [Route("api/Integration")]
@@ -10,16 +10,17 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
     {
         private readonly ILogger<IntegrationController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsersRepository _UsersRepository;
+        private readonly IUsers_Repository Users_Repository;
 
         public IntegrationController(
-            ILogger<IntegrationController> logger, 
-            IConfiguration configuration, 
-            IUsersRepository users_repository
-        ){
+            ILogger<IntegrationController> logger,
+            IConfiguration configuration,
+            IUsers_Repository users_repository
+        )
+        {
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = users_repository;
+            Users_Repository = users_repository;
         }
 
         [HttpPost("Twitch")]
@@ -31,17 +32,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
 
                 /* If Twitch Email Matches one our accounts in out database...?
-                    if (!UsersDBC.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address))
+                    if (!Users_Database_Context.Email_Exists_In_Login_Email_AddressTbl(obj.Email_Address))
                         return NotFound();
-                    ulong user_id = UsersDBC.Read_User_id_By_Email_Address(obj.Email_Address);
-                    if (user_id == 0 || !_UsersRepository.ID_Exists_In_Users_IDTbl(user_id).Result)
+                    ulong user_id = Users_Database_Context.Read_User_id_By_Email_Address(obj.Email_Address);
+                    if (user_id == 0 || !Users_Repository.ID_Exists_In_Users_IDTbl(user_id).Result)
                         return NotFound();
                     obj.ID = user_id;
                 */
 
 
-                return await Task.FromResult(_UsersRepository.Create_Integration_Twitch_Record(obj)).Result;//return timestamp and id
-            } catch (Exception e) {
+                return await Task.FromResult(Users_Repository.Create_Integration_Twitch_Record(obj)).Result;//return timestamp and id
+            }
+            catch (Exception e)
+            {
                 return StatusCode(500, $"{e.Message}");
             }
         }//Twitch.

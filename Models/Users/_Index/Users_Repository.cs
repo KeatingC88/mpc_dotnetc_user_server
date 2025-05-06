@@ -1,6 +1,5 @@
 ﻿using System.Dynamic;
 using System.Text.Json;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using mpc_dotnetc_user_server.Models.Users.Identity;
@@ -29,26 +28,37 @@ using mpc_dotnetc_user_server.Models.Users.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Models.Interfaces;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
-    public class UsersRepository : IUsersRepository
+    public class Users_Repository : IUsers_Repository
     {
         private readonly ulong TimeStamp = Convert.ToUInt64(DateTimeOffset.Now.ToUnixTimeSeconds());
+
         private dynamic obj = new ExpandoObject();
-        private readonly UsersDBC _UsersDBC;
+
+        private readonly Users_Database_Context _UsersDBC;
         private readonly Random random = new();
         private readonly Constants _Constants;
 
         private readonly IAES AES;
         private readonly IJWT JWT;
+        private readonly IPassword Password;
 
-        public UsersRepository(UsersDBC UsersDBC, Constants constants, IAES aes, IJWT jwt)
+        public Users_Repository(
+            Users_Database_Context Users_Database_Context, 
+            Constants constants, 
+            IAES aes, 
+            IJWT jwt,
+            IPassword password
+        )
         {
-            _UsersDBC = UsersDBC;
+            _UsersDBC = Users_Database_Context;
             _Constants = constants;
             AES = aes;
             JWT = jwt;
+            Password = password;
         }
 
         public async Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto)
@@ -170,7 +180,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_PasswordTbl.Count() + 1),
                 User_ID = ID_Record.ID,
-                Password = Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result,
+                Password = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
                 Created_by = ID_Record.ID,
@@ -2901,7 +2911,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             try {
                 if (!dto.Email_address.IsNullOrEmpty()) {
                     await _UsersDBC.Login_PasswordTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
-                        .SetProperty(col => col.Password, Create_Salted_Hash_String(Encoding.UTF8.GetBytes($"{dto.New_password}"), Encoding.UTF8.GetBytes($"{dto.Email_address}{_Constants.JWT_SECURITY_KEY}")).Result)
+                        .SetProperty(col => col.Password, Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes($"{dto.New_password}"), Encoding.UTF8.GetBytes($"{dto.Email_address}{_Constants.JWT_SECURITY_KEY}")).Result)
                         .SetProperty(col => col.Updated_by, dto.End_User_ID)
                         .SetProperty(col => col.Updated_on, TimeStamp)
                     );
@@ -3581,43 +3591,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<string?> Read_User_Email_By_ID(ulong id)
         {
             return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Where(x => x.User_ID == id).Select(x => x.Email_Address).SingleOrDefault());
-        }
-        public async Task<byte[]> Create_Salted_Hash_String(byte[] text, byte[] salt)
-        {
-            HashAlgorithm algorithm = SHA256.Create();
-
-            byte[] textWithSaltBytes = new byte[text.Length + salt.Length];
-
-            for (int i = 0; i < text.Length; i++)
-            {
-                textWithSaltBytes[i] = text[i];
-            }
-
-            for (int i = 0; i < salt.Length; i++)
-            {
-                textWithSaltBytes[text.Length + i] = salt[i];
-            }
-
-            return await Task.FromResult(algorithm.ComputeHash(textWithSaltBytes));
-        }
-        public async Task<bool> Compare_Password_Byte_Arrays(byte[] array1, byte[] array2)
-        {
-            if (array1.Length != array2.Length)
-            {
-                return false;
-            }
-
-            await Task.Delay(1);
-
-            for (int i = 0; i < array1.Length; i++)
-            {
-                if (array1[i] != array2[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
         public async Task<string> Create_Integration_Twitch_Record(Integration_TwitchDTO dto)
         {

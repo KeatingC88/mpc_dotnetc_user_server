@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using mpc_dotnetc_user_server.Models.Users.Profile;
 using mpc_dotnetc_user_server.Models.Users.Community;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Models.Interfaces;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -15,7 +15,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly Constants _Constants;
         private readonly ILogger<LoadController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsersRepository _UsersRepository;
+        private readonly IUsers_Repository Users_Repository;
         private readonly IAES AES;
         private readonly IJWT JWT;
         private readonly INetwork Network;
@@ -23,7 +23,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         public LoadController(
             ILogger<LoadController> logger, 
             IConfiguration configuration, 
-            IUsersRepository users_repository, 
+            IUsers_Repository users_repository, 
             IAES aes,
             IJWT jwt,
             INetwork network,
@@ -31,7 +31,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         ){
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = users_repository;
+            Users_Repository = users_repository;
             _Constants = constants;
             AES = aes;
             JWT = jwt;
@@ -78,7 +78,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.ID = AES.Process_Decryption(dto.ID);
 
-                var validationResult = await _UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                var validationResult = await Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = await Network.Get_Client_Remote_Internet_Protocol_Address(),
                     Remote_Port = await Network.Get_Client_Remote_Internet_Protocol_Port(),
@@ -121,7 +121,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 return dto.Login_type.ToUpper() switch
                 {
-                    "EMAIL" => await _UsersRepository.Read_Email_User_Data_By_ID(dto.End_User_ID),
+                    "EMAIL" => await Users_Repository.Read_Email_User_Data_By_ID(dto.End_User_ID),
                     _ => "Token Error"
                 };
             }
@@ -170,7 +170,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.ID = AES.Process_Decryption(dto.ID);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -209,7 +209,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await _UsersRepository.Read_Users();
+                return await Users_Repository.Read_Users();
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -256,7 +256,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.ID = AES.Process_Decryption(dto.ID);
                 dto.Profile_id = AES.Process_Decryption(dto.Profile_id);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -295,7 +295,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await _UsersRepository.Read_User_Profile_By_ID(ulong.Parse(dto.Profile_id));
+                return await Users_Repository.Read_User_Profile_By_ID(ulong.Parse(dto.Profile_id));
             }
             catch (Exception e)
             {

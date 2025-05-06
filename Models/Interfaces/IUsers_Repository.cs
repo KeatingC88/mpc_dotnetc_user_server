@@ -19,9 +19,9 @@ using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 
-namespace mpc_dotnetc_user_server.Models.Users.Index
+namespace mpc_dotnetc_user_server.Models.Interfaces
 {
-    public interface IUsersRepository
+    public interface IUsers_Repository
     {
         Task<string> Create_Reported_WebSocket_Records(Reported_WebSocketDTO dto);
         Task<bool> Create_Comment_Box_Record(Comment_BoxDTO dto);
@@ -34,7 +34,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<string> Update_End_User_Account_Roles(Account_RolesDTO dto);
         Task<string> Update_End_User_Account_Groups(Account_GroupsDTO dto);
         Task<bool> Create_Contact_Us_Record(Contact_UsDTO dto);
-        Task<byte[]> Create_Salted_Hash_String(byte[] text, byte[] salt);
         Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
         Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto);
         Task<string> Create_Reported_User_Profile_Record(Reported_ProfileDTO dto);
@@ -107,7 +106,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         Task<bool> Validate_Client_With_Server_Authorization(Report_Failed_Authorization_HistoryDTO dto);
         Task<string> Insert_Report_Failed_Client_ID_HistoryTbl(Report_Failed_Client_ID_HistoryDTO dto);
         Task Create_WebSocket_Permission_Record(WebSocket_Chat_PermissionDTO dto);
-        Task<bool> Compare_Password_Byte_Arrays(byte[] array1, byte[] array2);
         Task<bool> Email_Exists_In_Pending_Email_RegistrationTbl(string email_address);
         Task<bool> Email_Exists_In_Login_Email_AddressTbl(string email_address);
         Task<bool> ID_Exists_In_Users_IDTbl(ulong id);

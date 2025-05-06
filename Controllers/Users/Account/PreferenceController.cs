@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Models.Interfaces;
 using mpc_dotnetc_user_server.Models.Report;
-using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
@@ -16,32 +16,35 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
     [ApiController]
     [Route("api/Selected")]
-    public class SelectedController : ControllerBase
+    public class PreferenceController : ControllerBase
     {
         private readonly Constants _Constants;
-        private readonly ILogger<SelectedController> _logger;
+        private readonly ILogger<PreferenceController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsersRepository _UsersRepository;
+        private readonly IUsers_Repository Users_Repository;
         private readonly IAES AES;
         private readonly IJWT JWT;
         private readonly INetwork Network;
+        private readonly IPassword Password;
 
-        public SelectedController(
-            ILogger<SelectedController> logger, 
+        public PreferenceController(
+            ILogger<PreferenceController> logger, 
             IConfiguration configuration, 
-            IUsersRepository users_repository, 
+            IUsers_Repository users_repository, 
             IAES aes,
             IJWT jwt,
             INetwork network,
-            Constants constants
+            Constants constants,
+            IPassword password
         ){
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = users_repository;
+            Users_Repository = users_repository;
             _Constants = constants;
             AES = aes;
             JWT = jwt;
             Network = network;
+            Password = password;
         }
 
         [HttpPut("Alignment")]
@@ -83,7 +86,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Alignment = AES.Process_Decryption(dto.Alignment);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -122,7 +125,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO { 
+                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO { 
                     Alignment = dto.Alignment,
                     End_User_ID = dto.End_User_ID
                 })).Result;
@@ -170,7 +173,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Text_alignment = AES.Process_Decryption(dto.Text_alignment);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -209,7 +212,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_TextAlignment(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Selected_TextAlignment(dto)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -253,7 +256,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.Avatar_url_path = AES.Process_Decryption(dto.Avatar_url_path);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -268,7 +271,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_Time_Parsed = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -292,7 +295,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Avatar(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Avatar(dto)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -337,7 +340,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Avatar_title = AES.Process_Decryption(dto.Avatar_title);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -376,7 +379,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Avatar_Title(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Avatar_Title(dto)).Result;
             }
             catch (Exception e)
             {
@@ -422,7 +425,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.Name = AES.Process_Decryption(dto.Name);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -461,7 +464,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Name(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Name(dto)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -505,7 +508,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.Grid = AES.Process_Decryption(dto.Grid);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -544,7 +547,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Grid_Type(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Grid_Type(dto)).Result;
             }
             catch (Exception e)
             {
@@ -589,7 +592,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -628,7 +631,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Language(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Language(dto)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -674,7 +677,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Locked = AES.Process_Decryption(dto.Locked);
                 dto.ID = AES.Process_Decryption(dto.ID);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -713,7 +716,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Nav_Lock(dto).Result);
+                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Nav_Lock(dto).Result);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -760,7 +763,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     dto.Password = AES.Process_Decryption(dto.Password);
                     dto.New_password = AES.Process_Decryption(dto.New_password);
 
-                    if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                    if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -800,16 +803,16 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     dto.End_User_ID = dto.JWT_id;
 
                     if (dto.Login_type.ToUpper() == "EMAIL") {
-                        string? email_address = _UsersRepository.Read_User_Email_By_ID(dto.JWT_id).Result;
+                        string? email_address = Users_Repository.Read_User_Email_By_ID(dto.JWT_id).Result;
 
-                        byte[]? usersdb_SavedPasswordHash = _UsersRepository.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
-                        byte[]? given_PasswordHash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes($"{dto.Password}"), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}")).Result;
+                        byte[]? usersdb_SavedPasswordHash = Users_Repository.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
+                        byte[]? given_PasswordHash = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes($"{dto.Password}"), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}")).Result;
 
                         if (usersdb_SavedPasswordHash != null)
-                            if (!_UsersRepository.Compare_Password_Byte_Arrays(usersdb_SavedPasswordHash, given_PasswordHash).Result)
+                            if (!Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(usersdb_SavedPasswordHash, given_PasswordHash).Result)
                                 return Unauthorized();
 
-                        return await Task.FromResult(_UsersRepository.Update_End_User_Password(new Password_ChangeDTO
+                        return await Task.FromResult(Users_Repository.Update_End_User_Password(new Password_ChangeDTO
                         {
                             End_User_ID = dto.JWT_id,
                             Password = dto.Password,
@@ -862,7 +865,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.Online_status = AES.Process_Decryption(dto.Online_status);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -901,7 +904,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Status(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Status(dto)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -945,7 +948,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.Custom_lbl = AES.Process_Decryption(dto.Custom_lbl);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -985,7 +988,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.End_User_ID = dto.JWT_id;
                 dto.Online_status = 5.ToString();
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Status(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Status(dto)).Result;
             }
             catch (Exception e)
             {
@@ -1032,7 +1035,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Theme = AES.Process_Decryption(dto.Theme);
                 dto.ID = AES.Process_Decryption(dto.ID);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO {
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
                     Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
@@ -1070,7 +1073,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Selected_Theme(dto).Result);
+                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Theme(dto).Result);
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -1121,7 +1124,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.ID = AES.Process_Decryption(dto.ID);
 
                 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1160,7 +1163,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Card_Border_Color(dto).Result);
+                return await Task.FromResult(Users_Repository.Update_End_User_Card_Border_Color(dto).Result);
             }
             catch (Exception e)
             {
@@ -1209,7 +1212,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.ID = AES.Process_Decryption(dto.ID);
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1250,7 +1253,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            return await Task.FromResult(_UsersRepository.Update_End_User_Card_Header_Font(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Card_Header_Font(dto).Result);
         }
 
         [HttpPut("Card_Header_Background_Color")]
@@ -1296,7 +1299,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1336,7 +1339,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Card_Header_Background_Color(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Card_Header_Background_Color(dto).Result);
         }
 
         [HttpPut("Card_Header_Font_Color")]
@@ -1382,7 +1385,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1422,7 +1425,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Card_Header_Font_Color(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Card_Header_Font_Color(dto).Result);
         }
 
         [HttpPut("Card_Body_Font")]
@@ -1468,7 +1471,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1508,7 +1511,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Card_Body_Font(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Card_Body_Font(dto).Result);
         }
 
         [HttpPut("Card_Body_Background_Color")]
@@ -1553,7 +1556,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1593,7 +1596,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Card_Body_Background_Color(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Card_Body_Background_Color(dto).Result);
         }
 
         [HttpPut("Card_Body_Font_Color")]
@@ -1639,7 +1642,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1679,7 +1682,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Card_Body_Font_Color(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Card_Body_Font_Color(dto).Result);
         }
 
         [HttpPut("Card_Footer_Font")]
@@ -1725,7 +1728,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1765,7 +1768,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Card_Footer_Font(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Card_Footer_Font(dto).Result);
         }
 
         [HttpPut("Card_Footer_Background_Color")]
@@ -1811,7 +1814,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1851,7 +1854,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Card_Footer_Background_Color(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Card_Footer_Background_Color(dto).Result);
         }
 
         [HttpPut("Card_Footer_Font_Color")]
@@ -1897,7 +1900,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1937,7 +1940,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Card_Footer_Font_Color(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Card_Footer_Font_Color(dto).Result);
         }
 
         [HttpPut("Navigation_Menu_Background_Color")]
@@ -1983,7 +1986,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -2023,7 +2026,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Navigation_Menu_Background_Color(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Navigation_Menu_Background_Color(dto).Result);
         }
 
         [HttpPut("Navigation_Menu_Font_Color")]
@@ -2069,7 +2072,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -2109,7 +2112,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Navigation_Menu_Font_Color(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Navigation_Menu_Font_Color(dto).Result);
         }
 
         [HttpPut("Navigation_Menu_Font")]
@@ -2155,7 +2158,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -2195,7 +2198,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Navigation_Menu_Font(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Navigation_Menu_Font(dto).Result);
         }
 
         [HttpPut("Button_Background_Color")]
@@ -2241,7 +2244,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -2281,7 +2284,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Button_Background_Color(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Button_Background_Color(dto).Result);
         }
 
         [HttpPut("Button_Font_Color")]
@@ -2327,7 +2330,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.ID = AES.Process_Decryption(dto.ID);
 
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -2367,7 +2370,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Button_Font_Color(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Button_Font_Color(dto).Result);
         }
 
         [HttpPut("Button_Font")]
@@ -2403,7 +2406,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Button_Font = AES.Process_Decryption(dto.Button_Font);
             dto.ID = AES.Process_Decryption(dto.ID);
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -2443,7 +2446,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Update_End_User_Button_Font(dto).Result);
+            return await Task.FromResult(Users_Repository.Update_End_User_Button_Font(dto).Result);
         }
 
         [HttpPut("Theme_Default_Settings")]
@@ -2478,7 +2481,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
             dto.ID = AES.Process_Decryption(dto.ID);
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -2518,7 +2521,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             dto.End_User_ID = dto.JWT_id;
-            return await Task.FromResult(_UsersRepository.Delete_End_User_Selected_App_Custom_Design(dto).Result);
+            return await Task.FromResult(Users_Repository.Delete_End_User_Selected_App_Custom_Design(dto).Result);
         }
 
     }

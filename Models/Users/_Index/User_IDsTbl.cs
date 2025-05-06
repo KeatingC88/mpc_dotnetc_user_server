@@ -1,16 +1,30 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Index
+﻿using System.ComponentModel.DataAnnotations;
+using Xunit.Sdk;
+
+namespace mpc_dotnetc_user_server.Models.Users.Index
 {
     public class User_IDsTbl
     {
+        [Required]
+        [Range(1, ulong.MaxValue, ErrorMessage = "ID must be greater than 0.")]
         public ulong ID { get; set; }
         public string Public_id { get; set; } = string.Empty;
         public string Secret_id { get; set; } = string.Empty;
-        public ulong Created_on { get; set; }
+        [Required]
+        [Range(1, ulong.MaxValue, ErrorMessage = "End User ID must be greater than 0.")]
         public ulong Created_by { get; set; }
+        [Range(0, 1, ErrorMessage = "Deleted column must be 0 or 1.")]
         public byte Deleted { get; set; }
-        public ulong Deleted_on { get; set; }
+        [Required]
+        [Range(1, ulong.MaxValue, ErrorMessage = "End User ID must be greater than 0.")]
         public ulong Deleted_by { get; set; }
+        [Timestamp_Is_Today_Or_Later]
+        public ulong Created_on { get; set; }
+        [Timestamp_Is_Today_Or_Later]
         public ulong Updated_on { get; set; }
+        [Timestamp_Is_Today_Or_Later]
         public ulong Updated_by { get; set; }
+        [Timestamp_Is_Today_Or_Later]
+        public ulong Deleted_on { get; set; }
     }
 }

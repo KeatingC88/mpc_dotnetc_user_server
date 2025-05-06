@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Models.Interfaces;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
-using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
 using System.Net.Http;
 
@@ -15,14 +15,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
     {
         private readonly ILogger<WebSocketController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsersRepository _UsersRepository;
+        private readonly IUsers_Repository Users_Repository;
         private readonly IAES AES;
         private readonly IJWT JWT;
         private readonly INetwork Network;
         public WebSocketController(
             ILogger<WebSocketController> logger, 
             IConfiguration configuration, 
-            IUsersRepository users_repository,
+            IUsers_Repository users_repository,
             IJWT jwt,
             IAES aes,
             INetwork network
@@ -30,7 +30,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = users_repository;
+            Users_Repository = users_repository;
             JWT = jwt;
             AES = aes;
             Network = network;
@@ -72,7 +72,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -113,7 +113,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            return await Task.FromResult(_UsersRepository.Read_All_End_User_WebSocket_Received_Chat_Requests(dto.End_User_ID).Result);
+            return await Task.FromResult(Users_Repository.Read_All_End_User_WebSocket_Received_Chat_Requests(dto.End_User_ID).Result);
         }
 
         [HttpPost("Chat_Blocks/Participant")]
@@ -152,7 +152,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
             
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -193,7 +193,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            return await Task.FromResult(_UsersRepository.Read_All_End_User_WebSocket_Received_Chat_Blocks(dto.End_User_ID).Result);
+            return await Task.FromResult(Users_Repository.Read_All_End_User_WebSocket_Received_Chat_Blocks(dto.End_User_ID).Result);
         }
 
         [HttpPost("Chat_Approvals/Participant")]
@@ -232,7 +232,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -273,7 +273,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            return await Task.FromResult(_UsersRepository.Read_All_End_User_WebSocket_Received_Chat_Approvals(dto.End_User_ID).Result);
+            return await Task.FromResult(Users_Repository.Read_All_End_User_WebSocket_Received_Chat_Approvals(dto.End_User_ID).Result);
         }
 
         [HttpPost("Chat_Requests/End_User")]
@@ -312,7 +312,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -353,7 +353,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            return await Task.FromResult(_UsersRepository.Read_All_End_User_WebSocket_Sent_Chat_Requests(dto.End_User_ID).Result);
+            return await Task.FromResult(Users_Repository.Read_All_End_User_WebSocket_Sent_Chat_Requests(dto.End_User_ID).Result);
         }
 
         [HttpPost("Chat_Blocks/End_User")]
@@ -392,7 +392,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -433,7 +433,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            return await Task.FromResult(_UsersRepository.Read_All_End_User_WebSocket_Sent_Chat_Blocks(dto.End_User_ID).Result);
+            return await Task.FromResult(Users_Repository.Read_All_End_User_WebSocket_Sent_Chat_Blocks(dto.End_User_ID).Result);
         }
 
         [HttpPost("Chat_Approvals/End_User")]
@@ -472,7 +472,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -513,7 +513,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            return await Task.FromResult(_UsersRepository.Read_All_End_User_WebSocket_Sent_Chat_Approvals(dto.End_User_ID).Result);
+            return await Task.FromResult(Users_Repository.Read_All_End_User_WebSocket_Sent_Chat_Approvals(dto.End_User_ID).Result);
         }
 
         [HttpPost("Approve_Invite")]
@@ -554,7 +554,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.Participant_ID = ulong.Parse(AES.Process_Decryption(dto.User));
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -595,7 +595,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(new WebSocket_Chat_PermissionTbl
+            return await Task.FromResult(Users_Repository.Update_Chat_Web_Socket_Permissions_Tbl(new WebSocket_Chat_PermissionTbl
             {
                 User_ID = dto.Participant_ID,
                 Participant_ID = dto.End_User_ID,
@@ -643,7 +643,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.Participant_ID = ulong.Parse(AES.Process_Decryption(dto.User));
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -684,7 +684,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            return await Task.FromResult(_UsersRepository.Delete_Chat_Web_Socket_Permissions_Tbl(new WebSocket_Chat_PermissionTbl
+            return await Task.FromResult(Users_Repository.Delete_Chat_Web_Socket_Permissions_Tbl(new WebSocket_Chat_PermissionTbl
             {
                 User_ID = dto.Participant_ID,
                 Participant_ID = dto.End_User_ID,
@@ -734,7 +734,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Participant_ID = ulong.Parse(AES.Process_Decryption(dto.user));
             dto.Report_type = AES.Process_Decryption(dto.Report_type);
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -775,9 +775,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            await Task.FromResult(_UsersRepository.Create_Reported_WebSocket_Records(dto).Result);
+            await Task.FromResult(Users_Repository.Create_Reported_WebSocket_Records(dto).Result);
 
-            return await Task.FromResult(_UsersRepository.Update_Chat_Web_Socket_Permissions_Tbl(new WebSocket_Chat_PermissionTbl
+            return await Task.FromResult(Users_Repository.Update_Chat_Web_Socket_Permissions_Tbl(new WebSocket_Chat_PermissionTbl
             {
                 User_ID = dto.End_User_ID,
                 Participant_ID = dto.Participant_ID,
@@ -824,7 +824,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
             dto.Participant_ID = ulong.Parse(AES.Process_Decryption(dto.User));
 
-            if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -865,11 +865,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             dto.End_User_ID = dto.JWT_id;
 
-            if (!_UsersRepository.ID_Exists_In_Users_IDTbl(dto.End_User_ID).Result || 
-                !_UsersRepository.ID_Exists_In_Users_IDTbl(dto.Participant_ID).Result)
+            if (!Users_Repository.ID_Exists_In_Users_IDTbl(dto.End_User_ID).Result || 
+                !Users_Repository.ID_Exists_In_Users_IDTbl(dto.Participant_ID).Result)
                 return BadRequest();
 
-            return await Task.FromResult(_UsersRepository.Read_WebSocket_Permission_Record_For_Both_End_Users(dto)).Result;
+            return await Task.FromResult(Users_Repository.Read_WebSocket_Permission_Record_For_Both_End_Users(dto)).Result;
         }
     }
 }

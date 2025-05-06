@@ -26,6 +26,7 @@ namespace mpc_dotnetc_user_server.tests
             string[] env_required_keys = {
                 "DOCKER_CONTAINER_NAME",
                 "DOCKER_CONTAINER_IMAGE_NAME",
+                "DOCKER_CONTAINER_PORT_NUMBER",
                 "SERVER_NETWORK_PORT_NUMBER",
                 "SERVER_ORIGIN",
                 "ENCRYPTION_KEY",

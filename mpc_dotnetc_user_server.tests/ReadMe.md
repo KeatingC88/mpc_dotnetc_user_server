@@ -1,0 +1,1 @@
+#To run xUnit tests in terminal, use command: dotnet test

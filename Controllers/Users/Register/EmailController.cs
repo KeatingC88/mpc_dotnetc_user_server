@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
 using mpc_dotnetc_user_server.Models.Report;
-using mpc_dotnetc_user_server.Controllers.Users.Account;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Models.Interfaces;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Register
 {
@@ -17,7 +16,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         private readonly Constants _Constants;
         private readonly ILogger<EmailController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsersRepository _UsersRepository;
+        private readonly IUsers_Repository Users_Repository;
         private readonly IAES AES;
         private readonly INetwork Network;
         private readonly IValid Valid;
@@ -25,7 +24,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         public EmailController(
             ILogger<EmailController> logger,
             IConfiguration configuration,
-            IUsersRepository users_repository,
+            IUsers_Repository users_repository,
             IValid valid,
             IAES aes,
             INetwork network,
@@ -33,7 +32,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
         {
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = users_repository;
+            Users_Repository = users_repository;
             _Constants = constants;
             AES = aes;
             Network = network;
@@ -74,7 +73,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -111,7 +110,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (!Valid.Email(dto.Email_Address))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -147,7 +146,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (!Valid.Language_Code(dto.Language))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -183,7 +182,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (!Valid.Region_Code(dto.Region))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -217,9 +216,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     return BadRequest();
                 }
 
-                if (!_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(dto.Email_Address).Result)
+                if (!Users_Repository.Email_Exists_In_Pending_Email_RegistrationTbl(dto.Email_Address).Result)
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -251,9 +250,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     return BadRequest();
                 }
 
-                if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
+                if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -302,6 +301,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     BadRequest();
 
                 dto.Email_Address = AES.Process_Decryption(dto.Email_Address).ToUpper();
+
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
@@ -327,7 +327,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -364,7 +364,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (!Valid.Email(dto.Email_Address))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -400,7 +400,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (!Valid.Language_Code(dto.Language))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -436,7 +436,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (!Valid.Region_Code(dto.Region))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -470,11 +470,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     return BadRequest();
                 }
 
-                if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
+                if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
                 {
-                    ulong user_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
+                    ulong user_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
 
-                    await _UsersRepository.Insert_Report_Email_RegistrationTbl(new Report_Email_RegistrationDTO
+                    await Users_Repository.Insert_Report_Email_RegistrationTbl(new Report_Email_RegistrationDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -548,7 +548,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -585,7 +585,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (!Valid.Email(dto.Email_Address))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -621,7 +621,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (!Valid.Language_Code(dto.Language))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -657,7 +657,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (!Valid.Region_Code(dto.Region))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -691,9 +691,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     return BadRequest();
                 }
 
-                if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
+                if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -727,7 +727,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     return BadRequest();
                 }
 
-                await _UsersRepository.Insert_Pending_Email_Registration_History_Record(new Pending_Email_Registration_HistoryDTO
+                await Users_Repository.Insert_Pending_Email_Registration_History_Record(new Pending_Email_Registration_HistoryDTO
                 {
                     Email_Address = dto.Email_Address,
                     Language = dto.Language,
@@ -757,10 +757,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     Device_ram_gb = dto.Device_ram_gb
                 });
 
-                if (_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(dto.Email_Address).Result)
-                    return await Task.FromResult(_UsersRepository.Update_Pending_Email_Registration_Record(dto)).Result;
+                if (Users_Repository.Email_Exists_In_Pending_Email_RegistrationTbl(dto.Email_Address).Result)
+                    return await Task.FromResult(Users_Repository.Update_Pending_Email_Registration_Record(dto)).Result;
 
-                return await _UsersRepository.Create_Pending_Email_Registration_Record(new Pending_Email_RegistrationDTO {
+                return await Users_Repository.Create_Pending_Email_Registration_Record(new Pending_Email_RegistrationDTO {
                     Email_Address = dto.Email_Address,
                     Language = dto.Language,
                     Region = dto.Region,
@@ -835,7 +835,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -870,9 +870,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 }).Result)
                     return Conflict();
 
-                if (_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
+                if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -906,9 +906,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     return BadRequest();
                 }
 
-                if (!_UsersRepository.Email_Exists_In_Pending_Email_RegistrationTbl(dto.Email_Address).Result)
+                if (!Users_Repository.Email_Exists_In_Pending_Email_RegistrationTbl(dto.Email_Address).Result)
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -944,7 +944,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 if (!Valid.Email(dto.Email_Address))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -979,7 +979,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 }
                 if (!Valid.Password(dto.Password))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1014,7 +1014,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 }
                 if (!Valid.Language_Code(dto.Language))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1049,7 +1049,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 }
                 if (!Valid.Region_Code(dto.Region))
                 {
-                    await _UsersRepository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1083,7 +1083,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     return BadRequest();
                 }
 
-                return await Task.FromResult(_UsersRepository.Create_Account_By_Email(new Complete_Email_RegistrationDTO
+                return await Task.FromResult(Users_Repository.Create_Account_By_Email(new Complete_Email_RegistrationDTO
                 {
                     Email_Address = dto.Email_Address,
                     Language = dto.Language,

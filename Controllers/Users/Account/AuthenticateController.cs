@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users.Index;
 
 using System.Text;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
@@ -13,6 +12,7 @@ using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 using System.Text.Json;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Models.Interfaces;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -23,29 +23,32 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly Constants _Constants;
         private readonly ILogger<AuthenticateController> _logger;
         private static IConfiguration? _configuration;
-        private readonly IUsersRepository _UsersRepository;
+        private readonly IUsers_Repository Users_Repository;
 
         private readonly IAES AES;
         private readonly IJWT JWT;
         private readonly INetwork Network;
+        private readonly IPassword Password;
 
         public AuthenticateController(
             ILogger<AuthenticateController> logger,
             IConfiguration configuration,
-            IUsersRepository users_repository,
+            IUsers_Repository users_repository,
             Constants constants,
             IAES aes,
             IJWT jwt,
-            INetwork network
+            INetwork network,
+            IPassword password
             )
         {
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = users_repository;
+            Users_Repository = users_repository;
             _Constants = constants;
             AES = aes;
             JWT = jwt;
             Network = network;
+            Password = password;
         }
 
         [HttpPut("Login/Email")]
@@ -74,7 +77,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Location = AES.Process_Decryption(dto.Location);
                 dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
                 
-                dto.Client_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
+                dto.Client_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
                 dto.JWT_id = dto.Client_id;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -94,7 +97,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -130,9 +133,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                if (!_UsersRepository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
+                if (!Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
                 {
-                    await _UsersRepository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -162,14 +165,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return NotFound();
                 }
 
-                ulong user_id = _UsersRepository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
+                ulong user_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
                     
-                byte[]? user_password_hash_in_the_database = _UsersRepository.Read_User_Password_Hash_By_ID(user_id).Result;
-                byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result;
+                byte[]? user_password_hash_in_the_database = Users_Repository.Read_User_Password_Hash_By_ID(user_id).Result;
+                byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result;
 
                 if (user_password_hash_in_the_database != null) {
-                    if (!_UsersRepository.Compare_Password_Byte_Arrays(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash).Result) {
-                        await _UsersRepository.Insert_Report_Failed_Email_Login_HistoryTbl(new Report_Failed_Email_Login_HistoryDTO
+                    if (!Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash).Result) {
+                        await Users_Repository.Insert_Report_Failed_Email_Login_HistoryTbl(new Report_Failed_Email_Login_HistoryDTO
                         {
                             Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                             Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -201,13 +204,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     }
                 }
                     
-                byte end_user_selected_status = _UsersRepository.Read_End_User_Selected_Status(new Selected_StatusDTO { 
+                byte end_user_selected_status = Users_Repository.Read_End_User_Selected_Status(new Selected_StatusDTO { 
                     End_User_ID = user_id                
                 }).Result;
 
                 if (end_user_selected_status == 0)
                 {//User does not have a Status Record and will be set to Online Status.
-                    await _UsersRepository.Create_End_User_Status_Record(new Selected_StatusDTO
+                    await Users_Repository.Create_End_User_Status_Record(new Selected_StatusDTO
                     {
                         End_User_ID = user_id
                     });
@@ -215,45 +218,45 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (end_user_selected_status != 1 && end_user_selected_status != 0)
                 {//User has a Hidden Status Saved in the Database from Previous Login.
-                    await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
+                    await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
                     {
                         End_User_ID = user_id,
                         Online_status = 2.ToString()
                     });
                 }
 
-                await _UsersRepository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO 
+                await Users_Repository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO 
                 { 
                     End_User_ID = user_id,
                     Alignment = dto.Alignment
                 });
 
-                await _UsersRepository.Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
+                await Users_Repository.Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
                 {
                     End_User_ID = user_id,
                     Text_alignment = dto.Text_alignment
                 });
 
-                await _UsersRepository.Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
+                await Users_Repository.Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
                 {
                     End_User_ID = user_id,
                     Locked = dto.Locked
                 });
 
-                await _UsersRepository.Update_End_User_Selected_Language(new Selected_LanguageDTO
+                await Users_Repository.Update_End_User_Selected_Language(new Selected_LanguageDTO
                 {
                     End_User_ID = user_id,
                     Language = dto.Language,
                     Region = dto.Region
                 });
 
-                await _UsersRepository.Update_End_User_Selected_Theme(new Selected_ThemeDTO
+                await Users_Repository.Update_End_User_Selected_Theme(new Selected_ThemeDTO
                 {
                     End_User_ID = user_id,
                     Theme = dto.Theme
                 });
 
-                string user_data = await Task.FromResult(_UsersRepository.Read_Email_User_Data_By_ID(user_id)).Result;
+                string user_data = await Task.FromResult(Users_Repository.Read_Email_User_Data_By_ID(user_id)).Result;
                 var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, string>>(user_data);
                 string user_token = "";
 
@@ -262,7 +265,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     user_token = jsonDoc["token"];
                 }
 
-                await _UsersRepository.Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
+                await Users_Repository.Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
                 {
                     End_User_ID = user_id,
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
@@ -288,7 +291,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Token = user_token
                 });
 
-                await _UsersRepository.Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
+                await Users_Repository.Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
                 {
                     End_User_ID = user_id,
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
@@ -365,7 +368,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -406,34 +409,34 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 switch (int.Parse(dto.Online_status)) {
                     case 1:
-                        await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO { 
+                        await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO { 
                             End_User_ID = dto.End_User_ID,
                             Online_status = 10.ToString()
                         });
                         break;
                     case 2:
-                        await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
+                        await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
                         {
                             End_User_ID = dto.End_User_ID,
                             Online_status = 20.ToString()
                         });
                         break;
                     case 3:
-                        await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
+                        await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
                         {
                             End_User_ID = dto.End_User_ID,
                             Online_status = 30.ToString()
                         });
                         break;
                     case 4:
-                        await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
+                        await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
                         {
                             End_User_ID = dto.End_User_ID,
                             Online_status = 40.ToString()
                         });
                         break;
                     case 5:
-                        await _UsersRepository.Update_End_User_Selected_Status(new Selected_StatusDTO
+                        await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
                         {
                             End_User_ID = dto.End_User_ID,
                             Online_status = 50.ToString()
@@ -441,7 +444,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         break;
                 }
 
-                await _UsersRepository.Insert_End_User_Logout_HistoryTbl(new Logout_Time_StampDTO {
+                await Users_Repository.Insert_End_User_Logout_HistoryTbl(new Logout_Time_StampDTO {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
                     Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
@@ -468,7 +471,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Token = dto.Token,
                 });
 
-                await _UsersRepository.Update_End_User_Logout(new Logout_Time_StampDTO {
+                await Users_Repository.Update_End_User_Logout(new Logout_Time_StampDTO {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
                     Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",

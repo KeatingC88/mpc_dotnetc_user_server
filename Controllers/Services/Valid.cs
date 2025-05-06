@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
-using mpc_dotnetc_user_server.Controllers.Users.Account;
-using mpc_dotnetc_user_server.Models;
 using System.Text.RegularExpressions;
 
 namespace mpc_dotnetc_user_server.Controllers.Services
@@ -70,18 +67,15 @@ namespace mpc_dotnetc_user_server.Controllers.Services
         }
         public bool Password(string password)
         {
-            Regex check = new Regex(@"/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W)[A-Za-z\d\W]{8,}$/gm");
+            Regex check = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,}$");
+
             if (check.IsMatch(password))
                 return false;
 
             return true;
         }
-
         public bool Language_Code(string language_code)
         {
-            if (!Regex.IsMatch(language_code, @"^[a-z]+$"))
-                return false;
-
             switch (language_code.ToUpper())
             {
                 case "DE":
@@ -96,7 +90,6 @@ namespace mpc_dotnetc_user_server.Controllers.Services
 
             return false;
         }
-
         public bool Region_Code(string region_code)
         {
             if (!Regex.IsMatch(region_code, @"^[A-Z]+$"))

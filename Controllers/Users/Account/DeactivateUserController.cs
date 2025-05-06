@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text;
-using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Models.Interfaces;
 
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -14,29 +14,32 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
     {
         private readonly ILogger<DeactivateUserController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsersRepository _UsersRepository;
+        private readonly IUsers_Repository Users_Repository;
         private readonly Constants _Constants;
 
         private readonly IAES AES;
         private readonly IJWT JWT;
         private readonly INetwork Network;
+        private readonly IPassword Password;
 
         public DeactivateUserController(
             ILogger<DeactivateUserController> logger,
             IConfiguration configuration,
-            IUsersRepository users_repository,
+            IUsers_Repository users_repository,
             IAES aes,
             IJWT jwt,
             INetwork network,
-            Constants constants)
+            Constants constants,
+            IPassword password)
         {
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = users_repository;
+            Users_Repository = users_repository;
             _Constants = constants;
             AES = aes;
             JWT = jwt;
             Network = network;
+            Password = password;
         }
 
         [HttpPost("User")]
@@ -79,7 +82,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.Password = AES.Process_Decryption(dto.Password);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -116,14 +119,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                string? email_address = _UsersRepository.Read_User_Email_By_ID(dto.JWT_id).Result;
-                byte[]? user_password_hash_from_database_storage = _UsersRepository.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
-                byte[]? user_password_given_from_end_user_on_gui_client = _UsersRepository.Create_Salted_Hash_String(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}")).Result;
+                string? email_address = Users_Repository.Read_User_Email_By_ID(dto.JWT_id).Result;
+                byte[]? user_password_hash_from_database_storage = Users_Repository.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
+                byte[]? user_password_given_from_end_user_on_gui_client = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}")).Result;
                 if (user_password_hash_from_database_storage != null)
-                    if (!_UsersRepository.Compare_Password_Byte_Arrays(user_password_hash_from_database_storage, user_password_given_from_end_user_on_gui_client).Result)
+                    if (!Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(user_password_hash_from_database_storage, user_password_given_from_end_user_on_gui_client).Result)
                         return Unauthorized();
 
-                return await Task.FromResult(_UsersRepository.Delete_Account_By_User_id(new Delete_UserDTO { 
+                return await Task.FromResult(Users_Repository.Delete_Account_By_User_id(new Delete_UserDTO { 
                     ID = dto.Client_id.ToString(),
                     Target_User = dto.Target_User
                 }).Result);

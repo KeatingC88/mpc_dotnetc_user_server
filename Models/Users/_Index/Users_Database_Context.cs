@@ -24,7 +24,7 @@ using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
-    public class UsersDBC : DbContext
+    public class Users_Database_Context : DbContext
     {
         private readonly IConfiguration _configuration;
         public DbSet<User_IDsTbl> User_IDsTbl { get; set; } = null!;
@@ -73,7 +73,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Reported_WebSocketTbl> Reported_WebSocketTbl { get; set; } = null!;
         public DbSet<Reported_WebSocket_HistoryTbl> Reported_WebSocket_HistoryTbl { get; set; } = null!;
         public DbSet<WebSocket_Chat_PermissionTbl> WebSocket_Chat_PermissionTbl { get; set; } = null!;
-        public UsersDBC(DbContextOptions<UsersDBC> options, IConfiguration configuration) : base(options)
+        public Users_Database_Context(DbContextOptions<Users_Database_Context> options, IConfiguration configuration) : base(options)
         {
             _configuration = configuration;
         }

@@ -14,11 +14,11 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=build /app/out .
 
-EXPOSE 5177
+EXPOSE ${DOCKER_CONTAINER_PORT_NUMBER}
 
 #Copy SQLite Database
 WORKDIR /app
 COPY --from=build /app/out .
-COPY bin/Debug/net8.0/mpc_sqlite_users_db/ /app/mpc_sqlite_users_db/
+COPY bin/Debug/net8.0/mpc_sqlite_users_database/ /app/mpc_sqlite_users_database/
 
 ENTRYPOINT ["dotnet", "mpc_dotnetc_user_server.dll"]

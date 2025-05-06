@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Models.Interfaces;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Identity;
-using mpc_dotnetc_user_server.Models.Users.Index;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -12,21 +12,21 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
     {
         private readonly ILogger<IdentityController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsersRepository _UsersRepository;
+        private readonly IUsers_Repository Users_Repository;
         private readonly IAES AES;
         private readonly IJWT JWT;
         private readonly INetwork Network;
         public IdentityController(
             ILogger<IdentityController> logger,
             IConfiguration configuration, 
-            IUsersRepository users_repository,
+            IUsers_Repository users_repository,
             IAES aes,
             IJWT jwt,
             INetwork network
         ){
             _logger = logger;
             _configuration = configuration;
-            _UsersRepository = users_repository;
+            Users_Repository = users_repository;
             AES = aes;
             JWT = jwt;
             Network = network;
@@ -72,7 +72,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.First_name = AES.Process_Decryption(dto.First_name);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -111,7 +111,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_First_Name(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_First_Name(dto)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -157,7 +157,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Last_name = AES.Process_Decryption(dto.Last_name);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -196,7 +196,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Last_Name(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Last_Name(dto)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -242,7 +242,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Middle_name = AES.Process_Decryption(dto.Middle_name);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -281,7 +281,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Middle_Name(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Middle_Name(dto)).Result;
             }
             catch (Exception e)
             {
@@ -329,7 +329,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Maiden_name = AES.Process_Decryption(dto.Maiden_name);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -368,7 +368,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Maiden_Name(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Maiden_Name(dto)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -414,7 +414,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Gender = AES.Process_Decryption(dto.Gender);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -453,7 +453,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Gender(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Gender(dto)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -499,7 +499,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Ethnicity = AES.Process_Decryption(dto.Ethnicity);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -538,7 +538,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Ethnicity(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Ethnicity(dto)).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -586,7 +586,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Month = AES.Process_Decryption(dto.Month);
                 dto.Year = AES.Process_Decryption(dto.Year);
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -625,7 +625,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Birth_Date(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Birth_Date(dto)).Result;
             }
             catch (Exception e)
             {
@@ -675,7 +675,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Month = "0";
                 dto.Year = "0";
 
-                if (!_UsersRepository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -714,7 +714,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(_UsersRepository.Update_End_User_Birth_Date(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Birth_Date(dto)).Result;
             }
             catch (Exception e)
             {
