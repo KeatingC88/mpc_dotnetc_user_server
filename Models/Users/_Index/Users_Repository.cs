@@ -3262,7 +3262,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                Console.WriteLine(dto.ToString());
                 await _UsersDBC.Report_Failed_JWT_HistoryTbl.AddAsync(new Report_Failed_JWT_HistoryTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.Report_Failed_JWT_HistoryTbl.Count() + 1),
@@ -3275,7 +3274,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Server_Port = dto.Server_Port,
                     Client_IP = dto.Client_IP,
                     Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_time,
+                    Client_time = dto.Client_Time_Parsed,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
                     JWT_issuer_key = dto.JWT_issuer_key,
@@ -3894,6 +3893,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Client_IP = dto.Client_IP,
                     Client_Port = dto.Server_Port,
                     Language = dto.Language,
+                    Login_type = dto.Login_type,
                     Region = dto.Region,
                     Location = dto.Location,
                     Client_time = dto.Client_Time_Parsed,
@@ -3937,6 +3937,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
+                    Login_type = dto.Login_type,
                     Client_Time_Parsed = dto.Client_Time_Parsed,
                     Reason = "JWT Client-Server Mismatch",
                     Controller = dto.Controller,
@@ -3979,6 +3980,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
+                    Login_type = dto.Login_type,
                     Client_Time_Parsed = dto.Client_Time_Parsed,
                     Reason = "JWT Client-ID Mismatch",
                     Controller = dto.Controller,
@@ -4021,6 +4023,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
+                    Login_type = dto.Login_type,
                     Client_Time_Parsed = dto.Client_Time_Parsed,
                     Reason = "JWT ID is Deleted or DNE",
                     Controller = dto.Controller,
@@ -4061,6 +4064,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
+                    Login_type = dto.Login_type,
                     Client_time = dto.Client_Time_Parsed,
                     Reason = "Client ID is Deleted or DNE",
                     Controller = dto.Controller,

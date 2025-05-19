@@ -341,6 +341,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
+                    Login_type = "Email Login Type Failed",
                     Client_Time_Parsed = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,

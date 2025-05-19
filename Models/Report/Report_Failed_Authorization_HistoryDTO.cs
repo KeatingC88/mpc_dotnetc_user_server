@@ -16,6 +16,9 @@ namespace mpc_dotnetc_user_server.Models.Report
         [Required]
         public string Language { get; set; } = string.Empty;
 
+        [Required]
+        public string Login_type { get; set; } = string.Empty;
+
         public ulong Client_Time_Parsed { get; set; }
 
         [Required]

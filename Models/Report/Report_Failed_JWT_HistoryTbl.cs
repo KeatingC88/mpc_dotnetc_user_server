@@ -7,7 +7,7 @@ namespace mpc_dotnetc_user_server.Models.Report
     {
         public string Language_Region { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
-        public string Client_time { get; set; } = string.Empty;     
+        public ulong Client_time { get; set; }
         public string Login_type { get; set; } = string.Empty;
         public string JWT_issuer_key { get; set; } = string.Empty;
         public string JWT_client_key { get; set; } = string.Empty;

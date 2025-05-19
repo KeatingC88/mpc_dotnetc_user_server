@@ -15,6 +15,7 @@ namespace mpc_dotnetc_user_server.Models.Report
 
         [Required(ErrorMessage = "Location is Missing.")]
         public string Location { get; set; } = string.Empty;
+        public string Login_type { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Client Time is Missing.")]
         public ulong Client_time { get; set; }
