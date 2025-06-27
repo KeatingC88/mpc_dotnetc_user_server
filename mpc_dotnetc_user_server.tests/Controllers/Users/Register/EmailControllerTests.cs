@@ -77,7 +77,6 @@ namespace mpc_dotnetc_user_server.tests.Controllers.Users.Register
                 User_agent = AES.Process_Encryption("Mozilla"),
                 Window_height = AES.Process_Encryption("1080"),
                 Window_width = AES.Process_Encryption("1920"),
-                Screen_extend = AES.Process_Encryption("false"),
                 Screen_width = AES.Process_Encryption("1920"),
                 Screen_height = AES.Process_Encryption("1080"),
                 RTT = AES.Process_Encryption("50"),

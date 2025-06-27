@@ -43,7 +43,7 @@ namespace mpc_dotnetc_user_server.Controllers.Services
         {
             var result = Valid.Password(password);
 
-            result.Should().BeFalse(); 
+            result.Should().BeTrue(); 
         }
 
         [Theory]
@@ -57,7 +57,7 @@ namespace mpc_dotnetc_user_server.Controllers.Services
         {
             var result = Valid.Password(password);
 
-            result.Should().BeTrue();
+            result.Should().BeFalse();
         }
 
         [Theory]

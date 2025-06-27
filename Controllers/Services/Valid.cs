@@ -69,7 +69,7 @@ namespace mpc_dotnetc_user_server.Controllers.Services
         {
             Regex check = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*\W).{8,}$");
 
-            if (check.IsMatch(password))
+            if (!check.IsMatch(password))
                 return false;
 
             return true;

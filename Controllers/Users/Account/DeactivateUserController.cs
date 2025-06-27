@@ -69,7 +69,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
-                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+    
                 dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
                 dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
                 dto.RTT = AES.Process_Decryption(dto.RTT);
@@ -103,7 +103,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     End_User_ID = dto.Client_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,

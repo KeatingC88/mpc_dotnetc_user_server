@@ -84,9 +84,6 @@ namespace mpc_dotnetc_user_server.Models.Report
         public string Screen_height { get; set; } = string.Empty;
 
         [Required]
-        public string Screen_extend { get; set; } = string.Empty;
-
-        [Required]
         public string Color_depth { get; set; } = string.Empty;
 
         [Required]
@@ -97,6 +94,10 @@ namespace mpc_dotnetc_user_server.Models.Report
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
+        [Required]
+        public string Action { get; set; } = string.Empty;
+        [Required]
+        public string Controller { get; set; }= string.Empty;
 
     }
 }

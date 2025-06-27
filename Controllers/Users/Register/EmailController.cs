@@ -61,7 +61,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
-                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+    
                 dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
                 dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
                 dto.RTT = AES.Process_Decryption(dto.RTT);
@@ -92,7 +92,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -129,7 +129,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Email Address",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -165,7 +165,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Language Code",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -201,7 +201,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Region Code",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -235,7 +235,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "JWT Mismatch",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -271,7 +271,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Email Already Registered",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -315,7 +315,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
-                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+    
                 dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
                 dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
                 dto.RTT = AES.Process_Decryption(dto.RTT);
@@ -341,13 +341,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Login_type = "Email Login Type Failed",
+                    Login_type = "Email Exists Failed",
                     Client_Time_Parsed = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -384,7 +384,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Email Address",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -420,7 +420,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Language Code",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -456,7 +456,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Region Code",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -493,7 +493,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Email Already Exists in Login_Email_AddressTbl",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -537,7 +537,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
-                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+    
                 dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
                 dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
                 dto.RTT = AES.Process_Decryption(dto.RTT);
@@ -568,7 +568,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -605,7 +605,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Email Address",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -641,7 +641,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Language Code",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -677,7 +677,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Region Code",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -713,7 +713,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Email Already Registered",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -745,7 +745,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     Code = dto.Code,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -777,7 +777,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     Code = dto.Code,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -824,7 +824,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
-                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+    
                 dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
                 dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
                 dto.RTT = AES.Process_Decryption(dto.RTT);
@@ -855,7 +855,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -892,7 +892,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Email Already Registered in Login_Email_AddressTbl",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -928,7 +927,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Email Not Found in Pending_Email_RegistrationTbl",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -964,7 +963,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Email Address",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -999,7 +998,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Password",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -1034,7 +1033,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Language Code",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -1069,7 +1068,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                         Reason = "Invalid Region Code",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -1108,7 +1107,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                     Name = dto.Name,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,

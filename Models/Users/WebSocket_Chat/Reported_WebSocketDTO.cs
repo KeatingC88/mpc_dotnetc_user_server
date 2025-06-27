@@ -69,8 +69,6 @@ namespace mpc_dotnetc_user_server.Models.Users.WebSocket_Chat
 
         public string Screen_height { get; set; } = string.Empty;
 
-        public string Screen_extend { get; set; } = string.Empty;
-
         public string Color_depth { get; set; } = string.Empty;
 
         public string Pixel_depth { get; set; } = string.Empty;

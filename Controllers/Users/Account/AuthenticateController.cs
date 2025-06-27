@@ -85,7 +85,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
-                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+    
                 dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
                 dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
                 dto.RTT = AES.Process_Decryption(dto.RTT);
@@ -117,7 +117,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     End_User_ID = dto.Client_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -150,7 +150,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Reason = "Unregistered Email",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
-                        Screen_extend = dto.Screen_extend,
+        
                         Screen_height = dto.Screen_height,
                         Screen_width = dto.Screen_width,
                         RTT = dto.RTT,
@@ -171,7 +171,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result;
 
                 if (user_password_hash_in_the_database != null) {
-                    if (!Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash).Result) {
+                    if (Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash).Result) {
                         await Users_Repository.Insert_Report_Failed_Email_Login_HistoryTbl(new Report_Failed_Email_Login_HistoryDTO
                         {
                             Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
@@ -188,7 +188,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                             End_User_ID = user_id,
                             Window_height = dto.Window_height,
                             Window_width = dto.Window_width,
-                            Screen_extend = dto.Screen_extend,
+            
                             Screen_height = dto.Screen_height,
                             Screen_width = dto.Screen_width,
                             RTT = dto.RTT,
@@ -275,7 +275,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     User_agent = dto.Server_user_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -303,7 +303,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Client_Time_Parsed = dto.Client_Time_Parsed,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -356,7 +356,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
-                dto.Screen_extend = AES.Process_Decryption(dto.Screen_extend);
+    
                 dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
                 dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
                 dto.RTT = AES.Process_Decryption(dto.RTT);
@@ -389,7 +389,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     End_User_ID = dto.Client_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -457,7 +457,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     End_User_ID = dto.JWT_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -484,7 +484,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     End_User_ID = dto.JWT_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-                    Screen_extend = dto.Screen_extend,
+    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,

@@ -113,10 +113,9 @@ app.Run();
 
 public class Constants
 {
-    private static readonly string local_network_ip_address = local_network_ip_address ?? "0.0.0.0";
+    private static readonly string local_network_ip_address = local_network_ip_address ?? "localhost";
     public string JWT_ISSUER_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_ISSUER_KEY") ?? string.Empty;
     public string JWT_CLIENT_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_CLIENT_KEY") ?? string.Empty;
     public string JWT_SECURITY_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_SIGN_KEY") ?? string.Empty;
-    public string JWT_CLAIM_WEBPAGE { get; set; } = @$"http://localhost:6499";
-    //public string JWT_CLAIM_WEBPAGE { get; set; } = @$"http://{local_network_ip_address}:6499";
+    public string JWT_CLAIM_WEBPAGE { get; set; } = @$"http://{local_network_ip_address}:3000";
 }
