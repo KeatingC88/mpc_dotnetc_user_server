@@ -41,7 +41,6 @@ namespace mpc_dotnetc_user_server.Models.Interfaces
         Task<string> Insert_End_User_Login_Time_Stamp_History(Login_Time_Stamp_HistoryDTO dto);
         Task<string> Insert_Report_Email_RegistrationTbl(Report_Email_RegistrationDTO dto);
         Task<string> Read_Email_User_Data_By_ID(ulong end_user_id);
-        Task<string> Read_Users();
         Task<string> Read_User_Profile_By_ID(ulong end_user_id);
         Task<string> Read_WebSocket_Permission_Record_For_Both_End_Users(WebSocket_Chat_PermissionDTO dto);
         Task<string> Read_All_End_User_WebSocket_Sent_Chat_Requests(ulong end_user_id);

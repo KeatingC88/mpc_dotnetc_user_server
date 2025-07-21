@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Integration;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
-
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
@@ -137,7 +136,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
-
                 Screen_height = dto.Screen_height,
                 Screen_width = dto.Screen_width,
                 RTT = dto.RTT,
@@ -288,7 +286,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
-
                 Screen_height = dto.Screen_height,
                 Screen_width = dto.Screen_width,
                 RTT = dto.RTT,
@@ -317,7 +314,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
-
                 Screen_height = dto.Screen_height,
                 Screen_width = dto.Screen_width,
                 RTT = dto.RTT,
@@ -2953,7 +2949,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Data_saver = dto.Data_saver,
                         Device_ram_gb = dto.Device_ram_gb,
                         Orientation = dto.Orientation,
-        
                         Screen_width = dto.Screen_width,
                         Screen_height = dto.Screen_height,
                         Window_height = dto.Window_height,
@@ -3013,7 +3008,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Data_saver = dto.Data_saver,
                     Device_ram_gb = dto.Device_ram_gb,
                     Orientation = dto.Orientation,
-    
                     Screen_width = dto.Screen_width,
                     Screen_height = dto.Screen_height,
                     Window_height = dto.Window_height,
@@ -3054,7 +3048,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     User_agent = dto.User_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -3152,7 +3145,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Data_saver = dto.Data_saver,
                     Device_ram_gb = dto.Device_ram_gb,
                     Orientation = dto.Orientation,
-    
                     Screen_width = dto.Screen_width,
                     Screen_height = dto.Screen_height,
                     Window_height = dto.Window_height,
@@ -3196,7 +3188,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Data_saver = dto.Data_saver,
                     Device_ram_gb = dto.Device_ram_gb,
                     Orientation = dto.Orientation,
-    
                     Screen_width = dto.Screen_width,
                     Screen_height = dto.Screen_height,
                     Window_height = dto.Window_height,
@@ -3243,7 +3234,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Data_saver = dto.Data_saver,
                     Device_ram_gb = dto.Device_ram_gb,
                     Orientation = dto.Orientation,
-    
                     Screen_width = dto.Screen_width,
                     Screen_height = dto.Screen_height,
                     Window_height = dto.Window_height,
@@ -3294,7 +3284,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Data_saver = dto.Data_saver,
                     Device_ram_gb = dto.Device_ram_gb,
                     Orientation = dto.Orientation,
-    
                     Screen_width = dto.Screen_width,
                     Screen_height = dto.Screen_height,
                     Window_height = dto.Window_height,
@@ -3339,7 +3328,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Data_saver = dto.Data_saver,
                     Device_ram_gb = dto.Device_ram_gb,
                     Orientation = dto.Orientation,
-    
                     Screen_width = dto.Screen_width,
                     Screen_height = dto.Screen_height,
                     Window_height = dto.Window_height,
@@ -3380,7 +3368,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     User_agent = dto.User_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -3427,7 +3414,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     User_agent = dto.User_agent,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -3468,7 +3454,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 User_agent = dto.User_agent,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
-
                 Screen_height = dto.Screen_height,
                 Screen_width = dto.Screen_width,
                 RTT = dto.RTT,
@@ -3508,7 +3493,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.User_agent, dto.User_agent)
                     .SetProperty(col => col.Window_width, dto.Window_width)
                     .SetProperty(col => col.Window_height, dto.Window_height)
-    
                     .SetProperty(col => col.Screen_width, dto.Screen_width)
                     .SetProperty(col => col.Screen_height, dto.Screen_height)
                     .SetProperty(col => col.RTT, dto.RTT)
@@ -3562,16 +3546,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             obj.End_User_ID = dto.End_User_ID;
             obj.logout_on = TimeStamp;
             return Task.FromResult(JsonSerializer.Serialize(obj)).Result;
-        }
-        public Task<string> Read_Users()
-        {
-            obj.logoutsTS = _UsersDBC.Logout_Time_StampTbl.Select(x => x).ToList();
-            obj.loginsTS = _UsersDBC.Login_Time_StampTbl.Select(x => x).ToList();
-            obj.display_names = _UsersDBC.Selected_NameTbl.Select(x => x).ToList();
-            obj.avatars = _UsersDBC.Selected_AvatarTbl.Select(x => x).ToList();
-            obj.languages = _UsersDBC.Selected_LanguageTbl.Select(x => x).ToList();
-            obj.account_types = _UsersDBC.Account_TypeTbl.Select(x => x).ToList();
-            return Task.FromResult(JsonSerializer.Serialize(obj));
         }
         public Task<bool> ID_Exists_In_Users_IDTbl(ulong user_id) {
             return Task.FromResult(_UsersDBC.User_IDsTbl.Any(x => x.ID == user_id && x.Deleted == 0));
