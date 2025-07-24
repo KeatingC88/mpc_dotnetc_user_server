@@ -95,7 +95,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 End_User_ID = dto.Client_id,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
-
                 Screen_height = dto.Screen_height,
                 Screen_width = dto.Screen_width,
                 RTT = dto.RTT,
@@ -335,7 +334,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 End_User_ID = dto.Client_id,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
-
                 Screen_height = dto.Screen_height,
                 Screen_width = dto.Screen_width,
                 RTT = dto.RTT,
@@ -757,7 +755,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 End_User_ID = dto.Client_id,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
-
                 Screen_height = dto.Screen_height,
                 Screen_width = dto.Screen_width,
                 RTT = dto.RTT,
