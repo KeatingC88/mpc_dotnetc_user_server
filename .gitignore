@@ -369,6 +369,9 @@ FodyWeavers.xsd
 *.txt
 mpc_account.txt
 
+mpc_sqlite_users_database/
+mpc_sqlite_users_database/*
+
 # Ignore build and output directories
 bin/
 obj/

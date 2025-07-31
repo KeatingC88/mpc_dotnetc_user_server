@@ -1422,9 +1422,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         );
                     await _UsersDBC.SaveChangesAsync();
                     obj.updated_on = TimeStamp;
-                }
-                if (_UsersDBC.WebSocket_Chat_PermissionTbl.Any((x) => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.User_ID))
-                {
+                } else if (_UsersDBC.WebSocket_Chat_PermissionTbl.Any((x) => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.User_ID)) {
                     await _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.User_ID).ExecuteUpdateAsync(s => s
                             .SetProperty(dto => dto.Requested, dto.Requested)
                             .SetProperty(dto => dto.Blocked, dto.Blocked)

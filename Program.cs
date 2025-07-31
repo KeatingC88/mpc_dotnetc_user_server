@@ -1,10 +1,10 @@
+using System.Runtime.InteropServices;
+using System.Net;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using mpc_dotnetc_user_server.Models.Users.Index;
-using System.Runtime.InteropServices;
-using System.Net;
-using DotNetEnv;
 using mpc_dotnetc_user_server.Controllers.Interfaces;
 using mpc_dotnetc_user_server.Controllers.Services;
 using mpc_dotnetc_user_server.Models.Interfaces;
@@ -42,22 +42,22 @@ if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) 
 
 builder.Services.AddDbContext<Users_Database_Context>(options => options.UseSqlite($"Data Source = {sqlite3_users_database_path}"));
 
-builder.Services.AddCors(options => { 
-    options.AddPolicy(name: Environment.GetEnvironmentVariable("SERVER_ORIGIN") ?? string.Empty, policy => {
-        policy.WithOrigins("http://localhost:6499/").AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: Environment.GetEnvironmentVariable("SERVER_ORIGIN") ?? string.Empty, policy =>
+    {
+        policy.WithOrigins(Environment.GetEnvironmentVariable("REMOTE_ORIGIN") ?? string.Empty).AllowAnyHeader().AllowAnyMethod();
     });
 });
 
-builder.Services.AddSingleton<Constants>();
+builder.Services.AddScoped<IUsers_Repository, Users_Repository>();
+builder.Services.AddScoped<INetwork, Network>();
 
+builder.Services.AddSingleton<Constants>();
 builder.Services.AddSingleton<IValid, Valid>();
 builder.Services.AddSingleton<IAES, AES>();
 builder.Services.AddSingleton<IJWT, JWT>();
 builder.Services.AddSingleton<IPassword, Password>();
-
-
-builder.Services.AddScoped<IUsers_Repository, Users_Repository>();
-builder.Services.AddScoped<INetwork, Network>();
 
 var tempProvider = builder.Services.BuildServiceProvider();
 var AES = tempProvider.GetRequiredService<IAES>();
@@ -107,6 +107,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+Console.WriteLine("Host IP");
+Console.WriteLine(local_network_ip_address);
+Console.WriteLine("Remote Audience");
+Console.WriteLine(Environment.GetEnvironmentVariable("REMOTE_ORIGIN") ?? string.Empty);
+Console.WriteLine("\n");
+
 app.Urls.Add(@$"http://{local_network_ip_address}:{Environment.GetEnvironmentVariable("SERVER_NETWORK_PORT_NUMBER")}");
 
 app.Run();
@@ -117,5 +123,5 @@ public class Constants
     public string JWT_ISSUER_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_ISSUER_KEY") ?? string.Empty;
     public string JWT_CLIENT_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_CLIENT_KEY") ?? string.Empty;
     public string JWT_SECURITY_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_SIGN_KEY") ?? string.Empty;
-    public string JWT_CLAIM_WEBPAGE { get; set; } = @$"http://{local_network_ip_address}:3000";
+    public string JWT_CLAIM_WEBPAGE { get; set; } = Environment.GetEnvironmentVariable("REMOTE_ORIGIN") ?? string.Empty;
 }
