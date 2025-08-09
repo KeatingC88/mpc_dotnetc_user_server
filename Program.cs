@@ -10,6 +10,9 @@ using mpc_dotnetc_user_server.Controllers.Services;
 using mpc_dotnetc_user_server.Models.Interfaces;
 
 string sqlite3_users_database_path = "";
+//...
+
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 Env.Load();
@@ -46,7 +49,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: Environment.GetEnvironmentVariable("SERVER_ORIGIN") ?? string.Empty, policy =>
     {
-        policy.WithOrigins(Environment.GetEnvironmentVariable("REMOTE_ORIGIN") ?? string.Empty).AllowAnyHeader().AllowAnyMethod();
+        policy.WithOrigins(Environment.GetEnvironmentVariable("REMOTE_ORIGIN") ?? string.Empty).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });
 
@@ -106,12 +109,6 @@ app.UseCors(Environment.GetEnvironmentVariable("SERVER_ORIGIN") ?? string.Empty)
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-Console.WriteLine("Host IP");
-Console.WriteLine(local_network_ip_address);
-Console.WriteLine("Remote Audience");
-Console.WriteLine(Environment.GetEnvironmentVariable("REMOTE_ORIGIN") ?? string.Empty);
-Console.WriteLine("\n");
 
 app.Urls.Add(@$"http://{local_network_ip_address}:{Environment.GetEnvironmentVariable("SERVER_NETWORK_PORT_NUMBER")}");
 

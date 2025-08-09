@@ -3,7 +3,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
 {
-    public class Login_Email_PasswordDTO
+    public class Login_Twitchdto
     {
         [Required]
         public string Email_Address { get; set; } = string.Empty;

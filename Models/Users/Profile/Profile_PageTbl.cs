@@ -1,6 +1,6 @@
 ﻿namespace mpc_dotnetc_user_server.Models.Users.Profile
 {
-    public class ProfilePageTbl
+    public class Profile_PageTbl
     {
         public ulong ID { get; set; }
         public ulong User_ID { get; set; }

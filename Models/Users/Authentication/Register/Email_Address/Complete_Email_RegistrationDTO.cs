@@ -1,26 +1,66 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
+using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address
 {
-    public class Pending_Email_RegistrationDTO
+    public class Complete_Email_RegistrationDTO
     {
-        [Required]
+        [Required(ErrorMessage = "Name is Missing.")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email Address is Missing.")]
         public string Email_Address { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Language_Code is Missing.")]
         public string Language { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Region_Code is Missing.")]
         public string Region { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
 
         [Required]
         public string Code { get; set; } = string.Empty;
 
         [Required]
-        public string Client_time { get; set; } = string.Empty;
+        public byte Alignment { get; set; }
+
+        [Required]
+        public byte Text_alignment { get; set; }
+
+        [Required]
+        public bool Nav_lock { get; set; }
+
+        [Required]
+        public byte Theme { get; set; }
+
+        [Required]
+        public byte Grid_type { get; set; }
 
         [Required]
         public string Location { get; set; } = string.Empty;
+
+        [Required]
+        public ulong Client_time { get; set; }
+
+        [Required]
+        public string Remote_IP { get; set; } = string.Empty;
+
+        [Required]
+        public int Remote_Port { get; set; }
+
+        [Required]
+        public string Server_IP_Address { get; set; } = string.Empty;
+
+        [Required]
+        public int Server_Port { get; set; }
+
+        [Required]
+        public string Client_IP { get; set; } = string.Empty;
+
+        [Required]
+        public int Client_Port { get; set; }
 
         [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;
@@ -33,6 +73,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
 
         [Required]
         public string User_agent { get; set; } = string.Empty;
+
+        public string Client_user_agent { get; set; } = string.Empty;
+
+        public string Server_user_agent { get; set; } = string.Empty;
 
         [Required]
         public string Down_link { get; set; } = string.Empty;
@@ -69,24 +113,5 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
-
-        public ulong Client_Time_Parsed { get; set; }
-
-        public string Remote_IP { get; set; } = string.Empty;
-
-        public int Remote_Port { get; set; }
-
-        public string Server_IP_Address { get; set; } = string.Empty;
-
-        public int Server_Port { get; set; }
-
-        public string Client_IP { get; set; } = string.Empty;
-
-        public int Client_Port { get; set; }
-
-        public string Client_user_agent { get; set; } = string.Empty;
-
-        public string Server_user_agent { get; set; } = string.Empty;
-
     }
 }

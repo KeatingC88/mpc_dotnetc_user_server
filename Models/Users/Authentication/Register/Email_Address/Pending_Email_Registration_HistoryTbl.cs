@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address
 {
     public class Pending_Email_Registration_HistoryTbl
     {

@@ -1,4 +1,4 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Integration
+﻿namespace mpc_dotnetc_user_server.Models.Users.Integration.Twitch
 {
     public class Integration_TwitchTbl
     {

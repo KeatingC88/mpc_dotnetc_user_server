@@ -52,7 +52,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         }
 
         [HttpPut("Login/Email")]
-        public async Task<ActionResult<string>> Login_Login_Email_Address_And_Password([FromBody] Login_Email_PasswordDTO dto)
+        public async Task<ActionResult<string>> Login_Email_Address_And_Password([FromBody] Login_Twitchdto dto)
         {
             try
             {
@@ -499,6 +499,148 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 });
 
                 return "Successfully Logged out.";
+            } catch (Exception e) {
+                return StatusCode(500, $"{e.Message}");
+            }
+        }
+
+        [HttpPut("Login/Twitch")]
+        public async Task<ActionResult<string>> Login_Twitch_Account([FromBody] Login_TwitchDTO dto) {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest();
+
+                dto.Password = AES.Process_Decryption(dto.Password);
+
+                dto.Locked = AES.Process_Decryption(dto.Locked);
+                dto.Alignment = AES.Process_Decryption(dto.Alignment);
+                dto.Text_alignment = AES.Process_Decryption(dto.Text_alignment);
+                dto.Theme = AES.Process_Decryption(dto.Theme);
+                dto.Grid_type = AES.Process_Decryption(dto.Grid_type);
+
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
+
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+
+                dto.Client_id = Users_Repository.Read_User_ID_By_Twitch_Account_ID(dto.Twitch_ID).Result;
+                dto.JWT_id = dto.Client_id;
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                    Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Port = HttpContext.Connection.LocalPort,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_client_address = dto.JWT_client_address,
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.JWT_id,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    End_User_ID = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Email",
+                    Action = "Login"
+                }).Result)
+                    return Conflict();
+
+                ulong user_id = Users_Repository.Read_User_ID_By_Twitch_Account_ID(dto.Twitch_ID).Result;
+
+                byte end_user_selected_status = Users_Repository.Read_End_User_Selected_Status(new Selected_StatusDTO
+                {
+                    End_User_ID = user_id
+                }).Result;
+
+                if (end_user_selected_status == 0)
+                {//User does not have a Status Record and will be set to Online Status.
+                    await Users_Repository.Create_End_User_Status_Record(new Selected_StatusDTO
+                    {
+                        End_User_ID = user_id
+                    });
+                }
+
+                if (end_user_selected_status != 1 && end_user_selected_status != 0)
+                {//User has a Hidden Status Saved in the Database from Previous Login.
+                    await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
+                    {
+                        End_User_ID = user_id,
+                        Online_status = 2.ToString()
+                    });
+                }
+
+                await Users_Repository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO
+                {
+                    End_User_ID = user_id,
+                    Alignment = dto.Alignment
+                });
+
+                await Users_Repository.Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
+                {
+                    End_User_ID = user_id,
+                    Text_alignment = dto.Text_alignment
+                });
+
+                await Users_Repository.Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
+                {
+                    End_User_ID = user_id,
+                    Locked = dto.Locked
+                });
+
+                await Users_Repository.Update_End_User_Selected_Language(new Selected_LanguageDTO
+                {
+                    End_User_ID = user_id,
+                    Language = dto.Language,
+                    Region = dto.Region
+                });
+
+                await Users_Repository.Update_End_User_Selected_Theme(new Selected_ThemeDTO
+                {
+                    End_User_ID = user_id,
+                    Theme = dto.Theme
+                });
+
+                return Ok();
+
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

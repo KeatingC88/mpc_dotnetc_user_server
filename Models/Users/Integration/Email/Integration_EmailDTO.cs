@@ -1,6 +1,6 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Integration
+﻿namespace mpc_dotnetc_user_server.Models.Users.Integration.Twitch
 {
-    public class Integration_TwitchDTO
+    public class Integration_EmailDTO
     {
         public ulong ID { get; set; }
         public ulong End_User_ID { get; set; }

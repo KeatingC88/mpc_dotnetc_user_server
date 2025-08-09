@@ -1,10 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
-using mpc_dotnetc_user_server.Models.Users.Integration;
 using mpc_dotnetc_user_server.Models.Users.Selection;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Pending.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
@@ -21,6 +18,8 @@ using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Account_Type;
 using mpc_dotnetc_user_server.Models.Users.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Account_Groups;
+using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -32,7 +31,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Selected_App_Grid_TypeTbl> Selected_App_Grid_TypeTbl { get; set; } = null!;
         public DbSet<Account_RolesTbl> Account_RolesTbl { get; set; } = null!;
         public DbSet<Account_GroupsTbl> Account_GroupsTbl { get; set; } = null!;
-        public DbSet<Completed_Email_RegistrationTbl> Completed_Email_RegistrationTbl { get; set; } = null!;
+        public DbSet<Completed_Twitch_RegistrationTbl> Completed_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_RegistrationTbl> Pending_Email_RegistrationTbl { get; set; } = null!;
         public DbSet<Pending_Email_Registration_HistoryTbl> Pending_Email_Registration_HistoryTbl { get; set; } = null!;
         public DbSet<Report_Email_RegistrationTbl> Report_Email_RegistrationTbl { get; set; } = null!;
@@ -55,7 +54,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Logout_Time_Stamp_HistoryTbl> Logout_Time_Stamp_HistoryTbl { get; set; } = null!;
         public DbSet<IdentityTbl> IdentityTbl { get; set; } = null!;
         public DbSet<Birth_DateTbl> Birth_DateTbl { get; set; } = null!;
-        public DbSet<ProfilePageTbl> ProfilePageTbl { get; set; } = null!;
+        public DbSet<Profile_PageTbl> Profile_PageTbl { get; set; } = null!;
         public DbSet<Integration_TwitchTbl> Integration_TwitchTbl { get; set; } = null!;
         public DbSet<Selected_StatusTbl> Selected_StatusTbl { get; set; } = null!;
         public DbSet<Selected_LanguageTbl> Selected_LanguageTbl { get; set; } = null!;
@@ -73,6 +72,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Reported_WebSocketTbl> Reported_WebSocketTbl { get; set; } = null!;
         public DbSet<Reported_WebSocket_HistoryTbl> Reported_WebSocket_HistoryTbl { get; set; } = null!;
         public DbSet<WebSocket_Chat_PermissionTbl> WebSocket_Chat_PermissionTbl { get; set; } = null!;
+        public DbSet<Login_TwitchTbl> Login_TwitchTbl { get;set; } = null!;
+        public DbSet<Twitch_IDsTbl> Twitch_IDsTbl { get;set; } = null!;
         public Users_Database_Context(DbContextOptions<Users_Database_Context> options, IConfiguration configuration) : base(options)
         {
             _configuration = configuration;

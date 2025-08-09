@@ -2234,7 +2234,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 End_User_ID = dto.Client_id,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
-
                 Screen_height = dto.Screen_height,
                 Screen_width = dto.Screen_width,
                 RTT = dto.RTT,
@@ -2265,7 +2264,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
             dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
 
-            
             dto.Language = AES.Process_Decryption(dto.Language);
             dto.Region = AES.Process_Decryption(dto.Region);
             dto.Location = AES.Process_Decryption(dto.Location);
@@ -2273,14 +2271,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
             dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-            
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
             dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
 
-            
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
             dto.Window_width = AES.Process_Decryption(dto.Window_width);
-
             dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
             dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
             dto.RTT = AES.Process_Decryption(dto.RTT);
@@ -2292,11 +2287,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
             dto.Button_Font_Color = AES.Process_Decryption(dto.Button_Font_Color);
-
-            
             dto.ID = AES.Process_Decryption(dto.ID);
 
-            
             if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
@@ -2320,7 +2312,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 End_User_ID = dto.Client_id,
                 Window_height = dto.Window_height,
                 Window_width = dto.Window_width,
-
                 Screen_height = dto.Screen_height,
                 Screen_width = dto.Screen_width,
                 RTT = dto.RTT,
@@ -2359,7 +2350,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
             dto.Window_width = AES.Process_Decryption(dto.Window_width);
-
             dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
             dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
             dto.RTT = AES.Process_Decryption(dto.RTT);

@@ -1,58 +1,36 @@
-﻿using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using mpc_dotnetc_user_server.Models.Users.Selection;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address
 {
-    public class Submit_Email_RegistrationDTO
+    public class Validate_Email_AddressDTO
     {
-        [Required(ErrorMessage = "Name is Missing.")]
-        public string Name { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Email Address is Missing.")]
+        [Required]
         public string Email_Address { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Password is Missing.")]
-        public string Password { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Language_Code is Missing.")]
+        [Required]
         public string Language { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Region_Code is Missing.")]
+        [Required]
         public string Region { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Code is Missing.")]
-        public string Code { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Location is Missing.")]
+        [Required]
         public string Location { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Client Time is Missing.")]
+        public string Login_type { get; set; } = string.Empty;
+
+        [Required]
         public string Client_time { get; set; } = string.Empty;
 
         public ulong Client_Time_Parsed { get; set; }
 
-        [Required(ErrorMessage = "Theme is Missing.")]
-        public string Theme { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Alignment is Missing.")]
-        public string Alignment { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Text_alignment is Missing.")]
-        public string Text_alignment { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Nav_Lock is Missing.")]
-        public string Nav_lock { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Grid Type is Missing.")]
-        public string Grid_type { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "JWT Issuer Key is Missing.")]
+        [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "JWT Client Key is Missing.")]
+        [Required]
         public string JWT_client_key { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "JWT Client Address is Missing.")]
+        [Required]
         public string JWT_client_address { get; set; } = string.Empty;
 
         [Required]
@@ -86,8 +64,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
         [Required]
         public string Screen_height { get; set; } = string.Empty;
 
-
-
         [Required]
         public string Color_depth { get; set; } = string.Empty;
 
@@ -99,6 +75,5 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
-
     }
 }

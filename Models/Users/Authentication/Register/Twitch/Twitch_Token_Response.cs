@@ -1,23 +1,24 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using mpc_dotnetc_user_server.Models.Users.Selection;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Twitch
 {
-    public class Confirmation_Email_RegistrationDTO
+    public class Twitch_Token_Response
     {
-        [Required(ErrorMessage = "Email Address is Missing.")]
-        public string Email_Address { get; set; } = string.Empty;
+        [Required]
+        public ulong Twitch_ID { get; set; }
 
-        [Required(ErrorMessage = "Language_Code is Missing.")]
+        [Required]
         public string Language { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Region_Code is Missing.")]
+        [Required]
         public string Region { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Code is Missing.")]
-        public string Code { get; set; } = string.Empty;
 
         [Required]
         public string Location { get; set; } = string.Empty;
+
+        public string Login_type { get; set; } = string.Empty;
 
         [Required]
         public string Client_time { get; set; } = string.Empty;
@@ -76,6 +77,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation
         [Required]
         public string Window_height { get; set; } = string.Empty;
 
+        [JsonPropertyName("access_token")]
+        public string? AccessToken { get; set; }
 
+        [JsonPropertyName("expires_in")]
+        public int ExpiresIn { get; set; }
+
+        [JsonPropertyName("token_type")]
+        public string? TokenType { get; set; }
     }
 }

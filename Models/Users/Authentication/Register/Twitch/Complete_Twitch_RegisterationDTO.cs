@@ -1,9 +1,9 @@
 ﻿using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address
 {
-    public class Complete_Email_RegistrationDTO
+    public class Complete_Twitch_RegisterationDTO
     {
         [Required(ErrorMessage = "Name is Missing.")]
         public string Name { get; set; } = string.Empty;
@@ -11,64 +11,54 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
         [Required(ErrorMessage = "Email Address is Missing.")]
         public string Email_Address { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Password is Missing.")]
+        public string Password { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Language_Code is Missing.")]
         public string Language { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Region_Code is Missing.")]
         public string Region { get; set; } = string.Empty;
 
-        [Required]
-        public string Password { get; set; } = string.Empty;
-
-        [Required]
+        [Required(ErrorMessage = "Code is Missing.")]
         public string Code { get; set; } = string.Empty;
 
-        [Required]
-        public byte Alignment { get; set; }
-
-        [Required]
-        public byte Text_alignment { get; set; }
-
-        [Required]
-        public bool Nav_lock { get; set; }
-
-        [Required]
-        public byte Theme { get; set; }
-
-        [Required]
-        public byte Grid_type { get; set; }
-
-        [Required]
+        [Required(ErrorMessage = "Location is Missing.")]
         public string Location { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Twitch Name is Missing.")]
+        public string Twitch_Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Client Time is Missing.")]
         public ulong Client_time { get; set; }
 
-        [Required]
-        public string Remote_IP { get; set; } = string.Empty;
+        public ulong Client_Time_Parsed { get; set; }
 
-        [Required]
-        public int Remote_Port { get; set; }
+        [Required(ErrorMessage ="Twitch ID is Missing.")]
+        public ulong Twitch_ID { get; set; }
 
-        [Required]
-        public string Server_IP_Address { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Theme is Missing.")]
+        public byte Theme { get; set; }
 
-        [Required]
-        public int Server_Port { get; set; }
+        [Required(ErrorMessage = "Alignment is Missing.")]
+        public byte Alignment { get; set; }
 
-        [Required]
-        public string Client_IP { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Text_alignment is Missing.")]
+        public byte Text_alignment { get; set; } 
 
-        [Required]
-        public int Client_Port { get; set; }
+        [Required(ErrorMessage = "Nav_Lock is Missing.")]
+        public bool Nav_lock { get; set; } 
 
-        [Required]
+        [Required(ErrorMessage = "Grid Type is Missing.")]
+        public byte Grid_type { get; set; }
+
+        [Required(ErrorMessage = "JWT Issuer Key is Missing.")]
         public string JWT_issuer_key { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "JWT Client Key is Missing.")]
         public string JWT_client_key { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "JWT Client Address is Missing.")]
         public string JWT_client_address { get; set; } = string.Empty;
 
         [Required]
@@ -113,5 +103,24 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Completed.Email
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
+
+        [Required]
+        public string Remote_IP { get; set; } = string.Empty;
+
+        [Required]
+        public int Remote_Port { get; set; }
+
+        [Required]
+        public string Server_IP_Address { get; set; } = string.Empty;
+
+        [Required]
+        public int Server_Port { get; set; }
+
+        [Required]
+        public string Client_IP { get; set; } = string.Empty;
+
+        [Required]
+        public int Client_Port { get; set; }
+
     }
 }
