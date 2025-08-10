@@ -7,7 +7,7 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Twitch;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
-namespace mpc_dotnetc_user_server.Controllers.Users.Register
+namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
     [ApiController]
     [Route("api/Twitch")]
@@ -39,7 +39,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
             Valid = valid;
         }
 
-        [HttpPost("Register")]
+        [HttpPost("Login")]
         public async Task<ActionResult<string>> Validating_Twitch_ID_Exists_In_Twitch_IDTbl([FromBody] Validate_TwitchDTO dto) 
         {
             try
@@ -149,7 +149,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Register
                 });
 
                 string user_email = "";
-                string user_id = "";
 
                 if (userData == null || userData.Data == null || userData.Data[0].Id == null || userData.Data[0].Email == null)
                 {

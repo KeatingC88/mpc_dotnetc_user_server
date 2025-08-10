@@ -2,7 +2,7 @@
 using mpc_dotnetc_user_server.Models.Interfaces;
 using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
 
-namespace mpc_dotnetc_user_server.Controllers.Users.Integration
+namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
     [ApiController]
     [Route("api/Integration")]

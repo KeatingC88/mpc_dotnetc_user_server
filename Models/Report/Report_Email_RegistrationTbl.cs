@@ -7,7 +7,6 @@ namespace mpc_dotnetc_user_server.Models.Report
     public class Report_Email_RegistrationTbl
     {
         public ulong ID { get; set; }
-        public ulong User_ID { get; set; }
         public bool Deleted { get; set; }
         public ulong Updated_by { get; set; }
         public ulong Created_on { get; set; }

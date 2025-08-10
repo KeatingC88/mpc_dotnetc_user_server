@@ -115,7 +115,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             await _UsersDBC.Completed_Email_RegistrationTbl.AddAsync(new Completed_Twitch_RegistrationTbl
             {
-                Email_Address = dto.Email_Address,
+                Email_Address = dto.Email_Address.ToUpper(),
                 Updated_on = clocked,
                 Updated_by = (ulong)0,
                 Language_Region = @$"{dto.Language}-{dto.Region}",
@@ -160,7 +160,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_Email_AddressTbl.Count() + 1),
                 User_ID = ID_Record.ID,
-                Email_Address = dto.Email_Address,
+                Email_Address = dto.Email_Address.ToUpper(),
                 Updated_on = clocked,
                 Created_on = clocked,
                 Created_by = ID_Record.ID,
@@ -324,24 +324,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             string time = clocked.ToString();
 
             return JsonSerializer.Serialize(new {
-                created_on = AES.Process_Encryption(time),
-                login_on = AES.Process_Encryption(time),
-                location = AES.Process_Encryption(dto.Location),
-                login_type = AES.Process_Encryption("email"),
-                account_type = AES.Process_Encryption("1"),
-                grid_type = AES.Process_Encryption(dto.Grid_type.ToString()),
-                online_status = AES.Process_Encryption("2"),
-                id = AES.Process_Encryption(ID_Record.ID.ToString()),
-                name = AES.Process_Encryption($@"{dto.Name}#{user_public_id}"),
-                email_address = AES.Process_Encryption(dto.Email_Address),
-                language = AES.Process_Encryption(dto.Language),
-                region = AES.Process_Encryption(dto.Region),
-                alignment = AES.Process_Encryption($"{dto.Alignment}"),
-                nav_lock = AES.Process_Encryption($"{dto.Nav_lock}"),
-                text_alignment = AES.Process_Encryption($"{dto.Text_alignment}"),
-                theme = AES.Process_Encryption($"{dto.Theme}"),
-                roles = AES.Process_Encryption(JsonSerializer.Serialize("User")),
-                groups = AES.Process_Encryption(JsonSerializer.Serialize("0")),
+                created_on = time,
+                login_on = time,
+                location = dto.Location,
+                login_type = "email",
+                account_type = 1,
+                grid_type = dto.Grid_type.ToString(),
+                online_status = 2,
+                id = ID_Record.ID.ToString(),
+                name = $@"{dto.Name}#{user_public_id}",
+                email_address = dto.Email_Address,
+                language = dto.Language,
+                region = dto.Region,
+                alignment = dto.Alignment,
+                nav_lock = dto.Nav_lock,
+                text_alignment = dto.Text_alignment,
+                theme = dto.Theme,
+                roles = "User",
+                groups = "0",
+                token = token
             });
         }
         public async Task<string> Create_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto)
@@ -399,7 +400,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_TwitchTbl.Count() + 1),
                 User_ID = ID_Record.ID,
-                Email_Address = dto.Email_Address,
+                Email_Address = dto.Email_Address.ToUpper(),
                 Updated_on = clocked,
                 Created_on = clocked,
                 Created_by = ID_Record.ID,
@@ -610,20 +611,20 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             return JsonSerializer.Serialize(new
             {
-                email_address = AES.Process_Encryption(dto.Email_Address),
-                code = AES.Process_Encryption(dto.Code),
-                language = AES.Process_Encryption(dto.Language),
-                region = AES.Process_Encryption(dto.Region),
-                created_on = AES.Process_Encryption(TimeStamp.ToString()),
+                email_address = dto.Email_Address,
+                code = dto.Code,
+                language = dto.Language,
+                region = dto.Region,
+                created_on = TimeStamp.ToString(),
             });
         }
         public async Task<bool> Email_Exists_In_Login_Email_AddressTbl(string email_address)
         {
-            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Any(x => x.Email_Address == email_address && x.Deleted == 0));
+            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Any(x => x.Email_Address.ToUpper() == email_address));
         }
         public async Task<bool> Email_Exists_In_Login_TwitchTbl(string email_address)
         {
-            return await Task.FromResult(_UsersDBC.Login_TwitchTbl.Any(x => x.Email_Address == email_address && x.Deleted == 0));
+            return await Task.FromResult(_UsersDBC.Login_TwitchTbl.Any(x => x.Email_Address.ToUpper() == email_address));
         }
         public async Task<bool> Create_Contact_Us_Record(Contact_UsDTO dto)
         {
@@ -3500,7 +3501,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 await _UsersDBC.Report_Email_RegistrationTbl.AddAsync(new Report_Email_RegistrationTbl
                 {
                     ID = Convert.ToUInt64(_UsersDBC.Report_Email_RegistrationTbl.Count() + 1),
-                    User_ID = dto.End_User_ID,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
                     Updated_by = 0,
@@ -4048,7 +4048,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<bool> Email_Exists_In_Pending_Email_RegistrationTbl(string email_address)
         {
-            return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Email_Address == email_address));
+            return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Email_Address.ToUpper() == email_address));
         }
         public async Task<bool> Confirmation_Code_Exists_In_Pending_Email_Address_RegistrationTbl(string Code)
         {

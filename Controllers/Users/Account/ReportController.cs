@@ -4,7 +4,7 @@ using mpc_dotnetc_user_server.Models.Interfaces;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 
-namespace mpc_dotnetc_user_server.Controllers.Users.Report
+namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
     [ApiController]
     [Route("api/Report")]
