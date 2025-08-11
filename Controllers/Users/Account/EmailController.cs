@@ -256,6 +256,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 });
 
                 string user_data = await Task.FromResult(Users_Repository.Read_Email_User_Data_By_ID(user_id)).Result;
+
                 var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, string>>(user_data);
                 string user_token = "";
 
@@ -314,7 +315,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Token = user_token
                 });
 
-                return user_data;
+                return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
+                {
+                    mpc_data = user_data
+                }))));
 
             }
             catch (Exception e)
