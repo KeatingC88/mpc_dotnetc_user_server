@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Interfaces;
 
-namespace mpc_dotnetc_user_server.Controllers.Services
+namespace mpc_dotnetc_user_server.Services
 {
     public class Network : INetwork
     {

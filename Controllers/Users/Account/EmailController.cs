@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Controllers.Interfaces;
-using mpc_dotnetc_user_server.Controllers.Services;
-using mpc_dotnetc_user_server.Models.Interfaces;
+using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Report;
+using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
@@ -28,7 +27,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly INetwork Network;
         private readonly IValid Valid;
         private readonly IPassword Password;
-
+        private readonly IJWT JWT;
+        private readonly IWebHostEnvironment _env;
         public EmailController(
             ILogger<EmailController> logger,
             IConfiguration configuration,
@@ -38,7 +38,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             IPassword password,
             INetwork network,
             IJWT jwt,
-            Constants constants)
+            Constants constants,
+            IWebHostEnvironment env)
         {
             _logger = logger;
             _configuration = configuration;
@@ -48,6 +49,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             Network = network;
             Valid = valid;
             Password = password;
+            JWT = jwt;
+            _env = env;
         }
 
         [HttpPut("Login")]
@@ -80,7 +83,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = dto.Client_id;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -255,15 +258,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Theme = dto.Theme
                 });
 
-                string user_data = await Task.FromResult(Users_Repository.Read_Email_User_Data_By_ID(user_id)).Result;
-
-                var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, string>>(user_data);
-                string user_token = "";
-
-                if (jsonDoc != null && jsonDoc.ContainsKey("token"))
-                {
-                    user_token = jsonDoc["token"];
-                }
+                User_Data_DTO user_data = await Task.FromResult(Users_Repository.Read_User_Data_By_ID(user_id)).Result;
 
                 await Users_Repository.Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
                 {
@@ -286,8 +281,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Down_link = dto.Down_link,
                     Device_ram_gb = dto.Device_ram_gb,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
-                    Token = user_token
+                    Client_Time_Parsed = dto.Client_Time_Parsed
                 });
 
                 await Users_Repository.Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
@@ -311,18 +305,35 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Pixel_depth = dto.Pixel_depth,
                     Connection_type = dto.Connection_type,
                     Down_link = dto.Down_link,
-                    Device_ram_gb = dto.Device_ram_gb,
-                    Token = user_token
+                    Device_ram_gb = dto.Device_ram_gb
                 });
+
+                string created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
+                {
+                    End_User_ID = user_data.id,
+                    User_groups = user_data.groups,
+                    User_roles = user_data.roles,
+                    Account_type = user_data.account_type,
+                    Email_address = user_data.email_address
+                }).Result;
+
+                CookieOptions cookie_options = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
+                };
+
+                HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(user_data));
+                Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
 
                 return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
                 {
-                    mpc_data = user_data
+                    user_data
                 }))));
-
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
         }
@@ -345,7 +356,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -593,7 +604,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -811,7 +822,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -1095,7 +1106,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -1352,42 +1363,65 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
                 }
 
-                return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new {
-                    mpc_data = Users_Repository.Create_Account_By_Email(new Complete_Email_RegistrationDTO
-                    {
-                        Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
-                        Code = dto.Code,
-                        Client_time = dto.Client_Time_Parsed,
-                        Location = dto.Location,
-                        Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
-                        Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                        Server_Port = HttpContext.Connection.LocalPort,
-                        Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
-                        Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
-                        User_agent = dto.Server_user_agent,
-                        Theme = byte.Parse(dto.Theme),
-                        Alignment = byte.Parse(dto.Alignment),
-                        Text_alignment = byte.Parse(dto.Text_alignment),
-                        Nav_lock = bool.Parse(dto.Nav_lock),
-                        Password = dto.Password,
-                        Grid_type = byte.Parse(dto.Grid_type),
-                        Name = dto.Name,
-                        Window_height = dto.Window_height,
-                        Window_width = dto.Window_width,
-                        Screen_height = dto.Screen_height,
-                        Screen_width = dto.Screen_width,
-                        RTT = dto.RTT,
-                        Orientation = dto.Orientation,
-                        Data_saver = dto.Data_saver,
-                        Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Connection_type = dto.Connection_type,
-                        Down_link = dto.Down_link,
-                        Device_ram_gb = dto.Device_ram_gb
-                    }).Result
+                Completed_Email_Account_CreationDTO account_creation_data = Users_Repository.Create_Account_By_Email(new Complete_Email_RegistrationDTO
+                {
+                    Email_Address = dto.Email_Address,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Code = dto.Code,
+                    Client_time = dto.Client_Time_Parsed,
+                    Location = dto.Location,
+                    Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                    Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Port = HttpContext.Connection.LocalPort,
+                    Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                    Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
+                    User_agent = dto.Server_user_agent,
+                    Theme = byte.Parse(dto.Theme),
+                    Alignment = byte.Parse(dto.Alignment),
+                    Text_alignment = byte.Parse(dto.Text_alignment),
+                    Nav_lock = bool.Parse(dto.Nav_lock),
+                    Password = dto.Password,
+                    Grid_type = byte.Parse(dto.Grid_type),
+                    Name = dto.Name,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb
+                }).Result;
+
+                string created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
+                {
+                    End_User_ID = account_creation_data.id,
+                    User_groups = account_creation_data.groups,
+                    User_roles = account_creation_data.roles,
+                    Account_type = account_creation_data.account_type,
+                    Email_address = account_creation_data.email_address
+                }).Result;
+
+                CookieOptions cookie_options = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
+                };
+
+                HttpContext.Session.SetString(account_creation_data.id.ToString(), JsonSerializer.Serialize(account_creation_data));
+                Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
+
+                return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize( new {
+                    account_creation_data
                 }))));
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");

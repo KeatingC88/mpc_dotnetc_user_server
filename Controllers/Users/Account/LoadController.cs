@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
+using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Profile;
-using mpc_dotnetc_user_server.Controllers.Interfaces;
-using mpc_dotnetc_user_server.Models.Interfaces;
+using System.Text.Json;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -59,11 +61,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = await JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token);
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
-    
+
                 dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
                 dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
                 dto.RTT = AES.Process_Decryption(dto.RTT);
@@ -98,7 +100,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     End_User_ID = dto.Client_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,
@@ -118,14 +119,38 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return dto.Login_type.ToUpper() switch
+                switch (dto.Login_type.ToUpper())
                 {
-                    "EMAIL" => await Users_Repository.Read_Email_User_Data_By_ID(dto.End_User_ID),
-                    _ => "Token Error"
-                };
-            }
-            catch (Exception e)
-            {
+                    case "EMAIL":
+                    case "TWITCH":
+                        User_Data_DTO user_data = await Users_Repository.Read_User_Data_By_ID(dto.End_User_ID);
+                        string created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
+                        {
+                            End_User_ID = user_data.id,
+                            User_groups = user_data.groups,
+                            User_roles = user_data.roles,
+                            Account_type = user_data.account_type,
+                            Email_address = user_data.email_address
+                        }).Result;
+
+                        CookieOptions cookie_options = new CookieOptions
+                        {
+                            HttpOnly = true,
+                            Secure = false,
+                            SameSite = SameSiteMode.Lax,
+                            Path = "/",
+                            Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
+                        };
+
+                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(user_data));
+                        Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
+
+                        return JsonSerializer.Serialize(user_data);
+
+                    default:
+                        return "Login_Type Selection Error";
+                }
+            } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
         }

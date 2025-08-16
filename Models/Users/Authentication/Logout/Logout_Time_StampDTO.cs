@@ -49,9 +49,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Logout
         public string Theme { get; set; } = string.Empty;
 
         [Required]
-        public string Token { get; set; } = string.Empty;
-
-        [Required]
         public string Online_status { get; set; } = string.Empty;
 
         [Required]

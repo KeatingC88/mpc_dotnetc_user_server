@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using mpc_dotnetc_user_server.Controllers.Services;
-using mpc_dotnetc_user_server.Controllers.Interfaces;
 using System.Security.Cryptography;
+using mpc_dotnetc_user_server.Interfaces;
 
 namespace mpc_dotnetc_user_server.tests.Controllers.Services
 {

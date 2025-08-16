@@ -23,10 +23,9 @@ using mpc_dotnetc_user_server.Models.Users.Account_Type;
 using mpc_dotnetc_user_server.Models.Users.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
-using mpc_dotnetc_user_server.Controllers.Interfaces;
-using mpc_dotnetc_user_server.Models.Interfaces;
 using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
+using mpc_dotnetc_user_server.Interfaces;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -57,7 +56,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             Password = password;
         }
 
-        public async Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto)
+        public async Task<Completed_Email_Account_CreationDTO> Create_Account_By_Email(Complete_Email_RegistrationDTO dto)
         {
             string character_set = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             string user_public_id = @$"{new string(Enumerable.Repeat("0123456789", 5).Select(s => s[random.Next(s.Length)]).ToArray())}";
@@ -287,8 +286,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Pixel_depth = dto.Pixel_depth,
                 Connection_type = dto.Connection_type,
                 Down_link = dto.Down_link,
-                Device_ram_gb = dto.Device_ram_gb,
-                Token = token
+                Device_ram_gb = dto.Device_ram_gb
             });
             await _UsersDBC.SaveChangesAsync();
 
@@ -316,14 +314,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Pixel_depth = dto.Pixel_depth,
                 Connection_type = dto.Connection_type,
                 Down_link = dto.Down_link,
-                Device_ram_gb = dto.Device_ram_gb,
-                Token = token
+                Device_ram_gb = dto.Device_ram_gb
             });
             await _UsersDBC.SaveChangesAsync();
 
             string time = clocked.ToString();
 
-            return JsonSerializer.Serialize(new {
+            return new Completed_Email_Account_CreationDTO
+            {
                 created_on = time,
                 login_on = time,
                 location = dto.Location,
@@ -331,7 +329,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 account_type = 1,
                 grid_type = dto.Grid_type.ToString(),
                 online_status = 2,
-                id = ID_Record.ID.ToString(),
+                id = ID_Record.ID,
                 name = $@"{dto.Name}#{user_public_id}",
                 email_address = dto.Email_Address,
                 language = dto.Language,
@@ -341,11 +339,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 text_alignment = dto.Text_alignment,
                 theme = dto.Theme,
                 roles = "User",
-                groups = "0",
-                token = token
-            });
+                groups = "0"
+            };
         }
-        public async Task<string> Create_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto)
+        public async Task<User_Data_DTO> Create_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto)
         {
             string character_set = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             string user_public_id = @$"{new string(Enumerable.Repeat("0123456789", 5).Select(s => s[random.Next(s.Length)]).ToArray())}";
@@ -516,8 +513,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Pixel_depth = dto.Pixel_depth,
                 Connection_type = dto.Connection_type,
                 Down_link = dto.Down_link,
-                Device_ram_gb = dto.Device_ram_gb,
-                Token = token
+                Device_ram_gb = dto.Device_ram_gb
             });
             await _UsersDBC.SaveChangesAsync();
 
@@ -545,34 +541,31 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Pixel_depth = dto.Pixel_depth,
                 Connection_type = dto.Connection_type,
                 Down_link = dto.Down_link,
-                Device_ram_gb = dto.Device_ram_gb,
-                Token = token
+                Device_ram_gb = dto.Device_ram_gb
             });
             await _UsersDBC.SaveChangesAsync();
 
-            string time = clocked.ToString();
-            
-            return JsonSerializer.Serialize(new {
-                id = ID_Record.ID.ToString(),
+            return new User_Data_DTO
+            {
+                id = ID_Record.ID,
                 name = $@"{dto.Name}#{user_public_id}",
                 email_address = dto.Email_Address,
                 language = dto.Language,
                 region = dto.Region,
-                alignment = $"{dto.Alignment}",
-                nav_lock = $"{dto.Nav_lock}",
-                text_alignment = $"{dto.Text_alignment}",
-                theme = $"{dto.Theme}",
+                alignment = dto.Alignment,
+                nav_lock = dto.Nav_lock,
+                text_alignment = dto.Text_alignment,
+                theme = dto.Theme,
                 roles = "User",
                 groups = "0",
-                account_type = "1",
-                grid_type = dto.Grid_type.ToString(),
-                online_status = "2",
-                created_on = time,
-                login_on = time,
+                account_type = 1,
+                grid_type = dto.Grid_type,
+                online_status = 2,
+                created_on = clocked,
+                login_on = clocked,
                 location = dto.Location,
                 login_type = "twitch",
-                token = token
-            });
+            };
         }
         public async Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto)
         {
@@ -764,7 +757,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 report_record_id = record.ID,
                 reported_user_id = record.Reported_ID,
                 created_on = record.Created_on,
-                read_reported_user = Read_Email_User_Data_By_ID(dto.Reported_ID).ToString(),
+                read_reported_user = Read_User_Data_By_ID(dto.Reported_ID).ToString(),
                 read_reported_profile = Read_User_Profile_By_ID(dto.Reported_ID).ToString(),
             });
         }
@@ -785,7 +778,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 target_user = dto.Target_User,
             });
         }
-        public async Task<string> Read_Email_User_Data_By_ID(ulong end_user_id)
+        public async Task<User_Data_DTO> Read_User_Data_By_ID(ulong end_user_id)
         {
             bool nav_lock = _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Locked).SingleOrDefault();
             byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Type).SingleOrDefault();
@@ -848,7 +841,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             string? button_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Button_Font).SingleOrDefault();
             string? button_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Button_Font_Color).SingleOrDefault();
 
-
             if (status_offline == 1)
                 status_type = 0;
             if (status_hidden == 1)
@@ -880,63 +872,55 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             if (right_text_aligned == 1)
                 text_alignment_type = 2;
 
-            return await Task.FromResult(JsonSerializer.Serialize(new {
-                id = AES.Process_Encryption($@"{end_user_id}"),
-                account_type = AES.Process_Encryption($@"{account_type}"),
-                email_address = AES.Process_Encryption($@"{email_address}"),
-                name = AES.Process_Encryption($@"{name}#{end_user_public_id}"),
-                login_on = AES.Process_Encryption($@"{login_timestamp}"),
-                logout_on = AES.Process_Encryption($@"{logout_timestamp}"),
-                current_language = AES.Process_Encryption($@"{language_code}-{region_code}"),
-                language = AES.Process_Encryption($@"{language_code}"),
-                region = AES.Process_Encryption($@"{region_code}"),
-                online_status = AES.Process_Encryption($@"{status_type}"),
-                custom_lbl = AES.Process_Encryption($@"{customLbl}"),
-                created_on = AES.Process_Encryption($@"{created_on}"),
-                avatar_url_path = AES.Process_Encryption($@"{avatar_url_path}"),
-                avatar_title = AES.Process_Encryption($@"{avatar_title}"),
-                theme = AES.Process_Encryption($@"{theme_type}"),
-                alignment = AES.Process_Encryption($@"{alignment_type}"),
-                text_alignment = AES.Process_Encryption($@"{text_alignment_type}"),
-                gender = AES.Process_Encryption($@"{gender}"),
-                birth_day = AES.Process_Encryption($@"{birth_day}"),
-                birth_month = AES.Process_Encryption($@"{birth_month}"),
-                birth_year = AES.Process_Encryption($@"{birth_year}"),
-                first_name = AES.Process_Encryption($@"{first_name}"),
-                last_name = AES.Process_Encryption($@"{last_name}"),
-                middle_name = AES.Process_Encryption($@"{middle_name}"),
-                maiden_name = AES.Process_Encryption($@"{maiden_name}"),
-                ethnicity = AES.Process_Encryption($@"{ethnicity}"),
-                groups = AES.Process_Encryption($@"{groups}"),
-                roles = AES.Process_Encryption($@"{roles}"),
-                grid_type = AES.Process_Encryption($@"{grid_type}"),
-                nav_lock = AES.Process_Encryption($@"{nav_lock}"),
-                login_type = AES.Process_Encryption("email"),
-                card_border_color = AES.Process_Encryption($@"{card_border_color}"),
-                card_header_font = AES.Process_Encryption($@"{card_header_font}"),
-                card_header_font_color = AES.Process_Encryption($@"{card_header_font_color}"),
-                card_header_background_color = AES.Process_Encryption($@"{card_header_background_color}"),
-                card_body_font = AES.Process_Encryption($@"{card_body_font}"),
-                card_body_background_color = AES.Process_Encryption($@"{card_body_background_color}"),
-                card_body_font_color = AES.Process_Encryption($@"{card_body_font_color}"),
-                card_footer_font_color = AES.Process_Encryption($@"{card_footer_font_color}"),
-                card_footer_font = AES.Process_Encryption($@"{card_footer_font}"),
-                card_footer_background_color = AES.Process_Encryption($@"{card_footer_background_color}"),
-                navigation_menu_background_color = AES.Process_Encryption($@"{navigation_menu_background_color}"),
-                navigation_menu_font_color = AES.Process_Encryption($@"{navigation_menu_font_color}"),
-                navigation_menu_font = AES.Process_Encryption($@"{navigation_menu_font}"),
-                button_background_color = AES.Process_Encryption($@"{button_background_color}"),
-                button_font = AES.Process_Encryption($@"{button_font}"),
-                button_font_color = AES.Process_Encryption($@"{button_font_color}"),
-                token = JWT.Create_Email_Account_Token(new JWT_DTO
-                {
-                    End_User_ID = end_user_id,
-                    User_groups = groups ?? "none",
-                    User_roles = roles ?? "none",
-                    Account_type = account_type,
-                    Email_address = email_address ?? "none"
-                }).Result
-            }));
+            return await Task.FromResult(new User_Data_DTO
+            {
+                id = end_user_id,
+                account_type = account_type,
+                email_address = email_address,
+                name = $@"{name}#{end_user_public_id}",
+                login_on = login_timestamp,
+                logout_on = logout_timestamp,
+                current_language = $@"{language_code}-{region_code}",
+                language = language_code,
+                region = region_code,
+                online_status = status_type,
+                custom_lbl = customLbl,
+                created_on = created_on,
+                avatar_url_path = avatar_url_path,
+                avatar_title = avatar_title,
+                theme = theme_type,
+                alignment = alignment_type,
+                text_alignment = text_alignment_type,
+                gender = gender,
+                birth_day = birth_day,
+                birth_month = birth_month,
+                birth_year = birth_year,
+                first_name = first_name,
+                last_name = last_name,
+                middle_name = middle_name,
+                maiden_name = maiden_name,
+                ethnicity = ethnicity,
+                groups = groups,
+                roles = roles,
+                grid_type = grid_type,
+                nav_lock = nav_lock,
+                card_border_color = card_border_color,
+                card_header_font = card_header_font,
+                card_header_font_color = card_header_font_color,
+                card_header_background_color = card_header_background_color,
+                card_body_font = card_body_font,
+                card_body_background_color = card_body_background_color,
+                card_body_font_color = card_body_font_color,
+                card_footer_font_color = card_footer_font_color,
+                card_footer_font = card_footer_font,
+                card_footer_background_color = card_footer_background_color,
+                navigation_menu_background_color = navigation_menu_background_color,
+                navigation_menu_font_color = navigation_menu_font_color,
+                navigation_menu_font = navigation_menu_font,
+                button_background_color = button_background_color,
+                button_font = button_font,
+                button_font_color = button_font_color
+            });
         }
         public async Task<string> Read_User_Profile_By_ID(ulong user_id)
         {
@@ -3417,8 +3401,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
                         Color_depth = dto.Color_depth,
-                        Pixel_depth = dto.Pixel_depth,
-                        Token = dto.Token
+                        Pixel_depth = dto.Pixel_depth
                     });
                 }
                 else
@@ -3434,8 +3417,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Server_Port, dto.Server_Port)
                     .SetProperty(col => col.Client_IP, dto.Client_IP)
                     .SetProperty(col => col.Client_Port, dto.Client_Port)
-                    .SetProperty(col => col.Updated_on, clocked)
-                    .SetProperty(col => col.Token, dto.Token));
+                    .SetProperty(col => col.Updated_on, clocked));
                     await _UsersDBC.SaveChangesAsync();
                 }
 
@@ -3481,8 +3463,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
                     Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth,
-                    Token = dto.Token
+                    Pixel_depth = dto.Pixel_depth
                 });
                 await _UsersDBC.SaveChangesAsync();
                 return await Task.FromResult(JsonSerializer.Serialize(new
@@ -3929,7 +3910,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 User_ID = dto.End_User_ID,
                 Logout_on = TimeStamp,
-                Token = dto.Token,
                 Updated_by = dto.End_User_ID,
                 Updated_on = TimeStamp,
                 Created_on = TimeStamp,
@@ -3987,7 +3967,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Screen_width, dto.Screen_width)
                     .SetProperty(col => col.Screen_height, dto.Screen_height)
                     .SetProperty(col => col.RTT, dto.RTT)
-                    .SetProperty(col => col.Token, dto.Token)
                     .SetProperty(col => col.Orientation, dto.Orientation)
                     .SetProperty(col => col.Data_saver, dto.Data_saver)
                     .SetProperty(col => col.Color_depth, dto.Color_depth)
@@ -3995,7 +3974,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Connection_type, dto.Connection_type)
                     .SetProperty(col => col.Down_link, dto.Down_link)
                     .SetProperty(col => col.Device_ram_gb, dto.Device_ram_gb)
-                    .SetProperty(col => col.Token, dto.Token)
                 );
                 await _UsersDBC.SaveChangesAsync();
             }
@@ -4005,7 +3983,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 {
                     User_ID = dto.End_User_ID,
                     Logout_on = TimeStamp,
-                    Token = dto.Token,
                     Updated_by = dto.End_User_ID,
                     Updated_on = TimeStamp,
                     Created_on = TimeStamp,
@@ -4066,7 +4043,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             return await Task.FromResult(_UsersDBC.Twitch_IDsTbl.Where(x => x.Twitch_ID == twitch_id).Select(x => x.User_ID).SingleOrDefault());
         }
-        public async Task<ulong> Read_User_ID_By_Twitch_Account_By_Email(string twitch_email)
+        public async Task<ulong> Read_User_ID_By_Twitch_Account_Email(string twitch_email)
         {
             return await Task.FromResult(_UsersDBC.Login_TwitchTbl.Where(x => x.Email_Address == twitch_email).Select(x => x.User_ID).SingleOrDefault());
         }

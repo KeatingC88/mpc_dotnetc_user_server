@@ -1,4 +1,4 @@
-﻿namespace mpc_dotnetc_user_server.Controllers.Interfaces
+﻿namespace mpc_dotnetc_user_server.Interfaces
 {
     public interface IValid
     {

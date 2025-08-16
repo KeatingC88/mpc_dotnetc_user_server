@@ -1,17 +1,17 @@
 ﻿
 using Microsoft.IdentityModel.Tokens;
-using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace mpc_dotnetc_user_server.Controllers.Services
+namespace mpc_dotnetc_user_server.Services
 {
     public class JWT : IJWT
     {
         private static readonly Constants Constants = new Constants();
-        private static readonly ushort token_expire_time = 16;
+        private static readonly ushort token_expire_time = Constants.JWT_EXPIRE_TIME;
         private readonly IAES AES;
 
         public JWT(IAES aes)

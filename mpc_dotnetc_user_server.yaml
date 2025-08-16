@@ -3,6 +3,8 @@ services:
   mpc_dotnetc_user_server:
     container_name: ${DOCKER_CONTAINER_NAME}
     image: ${DOCKER_CONTAINER_IMAGE_NAME}
+    network:
+	- mpc_dotnetc_user_server_link_mpc_redis_user_session_cache_database
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,3 +16,6 @@ services:
       - .env
 volumes:
   data:
+networks:
+  mpc_dotnetc_user_server_link_mpc_redis_user_session_cache_database:
+    external: true

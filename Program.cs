@@ -1,17 +1,15 @@
-using System.Runtime.InteropServices;
-using System.Net;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.IdentityModel.Tokens;
+using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Users.Index;
-using mpc_dotnetc_user_server.Controllers.Interfaces;
-using mpc_dotnetc_user_server.Controllers.Services;
-using mpc_dotnetc_user_server.Models.Interfaces;
+using mpc_dotnetc_user_server.Services;
+using System.Net;
+using System.Runtime.InteropServices;
 
 string sqlite3_users_database_path = "";
-//...
-
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +49,27 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(Environment.GetEnvironmentVariable("REMOTE_ORIGIN") ?? string.Empty).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
+});
+
+Console.WriteLine(Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME") ?? string.Empty);
+
+// Add Redis distributed cache
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = Environment.GetEnvironmentVariable("DOCKER_CONNECTION_STRING");
+    options.InstanceName = @$"{Environment.GetEnvironmentVariable("DOCKER_CONTAINER_NAME")}_session:";
+});
+
+builder.Services.AddDistributedMemoryCache();
+
+// Add Session middleware
+builder.Services.AddSession(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromMinutes(ushort.Parse(Environment.GetEnvironmentVariable("JWT_EXPIRE_TIME") ?? "0"));
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
 builder.Services.AddScoped<IUsers_Repository, Users_Repository>();
@@ -106,11 +125,26 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseCors(Environment.GetEnvironmentVariable("SERVER_ORIGIN") ?? string.Empty);
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
 app.Urls.Add(@$"http://{local_network_ip_address}:{Environment.GetEnvironmentVariable("SERVER_NETWORK_PORT_NUMBER")}");
+
+
+/*app.MapPost("/api/session/set", (HttpContext ctx) =>
+{
+    ctx.Session.SetString("username", "SSR_Test_User");
+
+});
+
+app.MapGet("/api/session/get", (HttpContext ctx) =>
+{
+    var username = ctx.Session.GetString("username");
+    return Results.Ok(new { username });
+
+});*/
 
 app.Run();
 
@@ -121,4 +155,5 @@ public class Constants
     public string JWT_CLIENT_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_CLIENT_KEY") ?? string.Empty;
     public string JWT_SECURITY_KEY { get; set; } = Environment.GetEnvironmentVariable("JWT_SIGN_KEY") ?? string.Empty;
     public string JWT_CLAIM_WEBPAGE { get; set; } = Environment.GetEnvironmentVariable("REMOTE_ORIGIN") ?? string.Empty;
+    public ushort JWT_EXPIRE_TIME { get; set; } = ushort.Parse(Environment.GetEnvironmentVariable("JWT_EXPIRE_TIME") ?? "0");
 }

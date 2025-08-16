@@ -1,6 +1,6 @@
 ﻿using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 
-namespace mpc_dotnetc_user_server.Controllers.Interfaces
+namespace mpc_dotnetc_user_server.Interfaces
 {
     public interface IJWT
     {

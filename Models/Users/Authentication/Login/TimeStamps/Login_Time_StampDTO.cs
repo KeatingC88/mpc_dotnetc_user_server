@@ -31,9 +31,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
         public string Down_link { get; set; } = string.Empty;
 
         [Required]
-        public string Token { get; set; } = string.Empty;
-
-        [Required]
         public string Connection_type { get; set; } = string.Empty;
 
         [Required]

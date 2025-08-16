@@ -4,14 +4,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using FluentAssertions;
-using mpc_dotnetc_user_server.Controllers.Interfaces;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Confirmation;
 using System.Threading.Tasks;
 using mpc_dotnetc_user_server.Controllers.Services;
 using System.Security.Cryptography;
 using System;
-using mpc_dotnetc_user_server.Models.Interfaces;
 using mpc_dotnetc_user_server.Controllers.Users.Account;
+using mpc_dotnetc_user_server.Interfaces;
 
 namespace mpc_dotnetc_user_server.tests.Controllers.Users.Register
 {

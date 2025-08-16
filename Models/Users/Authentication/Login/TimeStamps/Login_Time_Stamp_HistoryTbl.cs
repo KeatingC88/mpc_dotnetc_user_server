@@ -22,7 +22,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
         public int Client_Port { get; set; }
         public int Server_Port { get; set; }
         public int Remote_Port { get; set; }
-        public string Token { get; set; } = string.Empty;
         [Required]
         public string User_agent { get; set; } = string.Empty;
         [Required]

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Controllers.Interfaces;
-using mpc_dotnetc_user_server.Models.Interfaces;
+using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
@@ -68,7 +67,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -155,7 +154,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -238,7 +237,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -319,7 +318,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -403,7 +402,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -484,7 +483,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -567,7 +566,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -647,7 +646,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -731,7 +730,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                     dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                    dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                    dto.Server_user_agent = dto.Client_user_agent;
 
                     dto.Window_height = AES.Process_Decryption(dto.Window_height);
                     dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -833,7 +832,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -914,7 +913,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -998,7 +997,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -1081,7 +1080,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-                dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+                dto.Server_user_agent = dto.Client_user_agent;
 
                 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -1169,7 +1168,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -1252,7 +1251,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -1336,7 +1335,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -1420,7 +1419,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -1504,7 +1503,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -1587,7 +1586,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -1673,7 +1672,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -1759,7 +1758,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -1845,7 +1844,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -1931,7 +1930,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -2017,7 +2016,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -2103,7 +2102,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -2189,7 +2188,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
@@ -2272,7 +2271,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
 
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
             dto.Window_width = AES.Process_Decryption(dto.Window_width);
@@ -2347,7 +2346,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
             dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
             dto.Window_width = AES.Process_Decryption(dto.Window_width);
             dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
@@ -2422,7 +2421,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
             dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
             dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
-            dto.Server_user_agent = Request.Headers["User-Agent"].ToString() ?? "error";
+            dto.Server_user_agent = dto.Client_user_agent;
             dto.Window_height = AES.Process_Decryption(dto.Window_height);
             dto.Window_width = AES.Process_Decryption(dto.Window_width);
 

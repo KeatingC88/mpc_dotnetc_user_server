@@ -36,7 +36,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public string Client_time { get; set; } = string.Empty;          public ulong Client_Time_Parsed { get; set; } 
+        public string Client_time { get; set; } = string.Empty;          
+        public ulong Client_Time_Parsed { get; set; } 
 
         [Required]
         public string JWT_issuer_key { get;set; } = string.Empty;

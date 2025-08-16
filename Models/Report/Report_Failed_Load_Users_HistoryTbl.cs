@@ -21,7 +21,6 @@ namespace mpc_dotnetc_user_server.Models.Report
         public string Remote_IP { get; set; } = string.Empty;
         public int Remote_Port { get; set; }
         public string Language_Region { get; set; } = string.Empty;
-        public string Email_Address { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public string Reason { get; set; } = string.Empty;
         public string Client_user_agent { get; set; } = string.Empty;

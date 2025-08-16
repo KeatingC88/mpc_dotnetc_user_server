@@ -1,6 +1,6 @@
-﻿using mpc_dotnetc_user_server.Controllers.Interfaces;
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
+using mpc_dotnetc_user_server.Interfaces;
 
 namespace mpc_dotnetc_user_server.Controllers.Services
 {

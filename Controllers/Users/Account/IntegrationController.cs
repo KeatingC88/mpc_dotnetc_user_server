@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Interfaces;
+using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account

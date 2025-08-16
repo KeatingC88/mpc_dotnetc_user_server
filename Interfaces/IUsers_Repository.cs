@@ -1,25 +1,26 @@
-﻿using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
+﻿using Microsoft.AspNetCore.Mvc;
+using mpc_dotnetc_user_server.Models.Report;
+using mpc_dotnetc_user_server.Models.Users.Account_Groups;
+using mpc_dotnetc_user_server.Models.Users.Account_Roles;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
-using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
+using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
+using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
 using mpc_dotnetc_user_server.Models.Users.Selected.Name;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
+using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
-using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
 using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
-using mpc_dotnetc_user_server.Models.Report;
-using mpc_dotnetc_user_server.Models.Users.Account_Roles;
-using mpc_dotnetc_user_server.Models.Users.Account_Groups;
-using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
-using Microsoft.AspNetCore.Mvc;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
 
-namespace mpc_dotnetc_user_server.Models.Interfaces
+namespace mpc_dotnetc_user_server.Interfaces
 {
     public interface IUsers_Repository
     {
@@ -35,13 +36,13 @@ namespace mpc_dotnetc_user_server.Models.Interfaces
         Task<string> Update_End_User_Account_Groups(Account_GroupsDTO dto);
         Task<bool> Create_Contact_Us_Record(Contact_UsDTO dto);
         Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
-        Task<string> Create_Account_By_Email(Complete_Email_RegistrationDTO dto);
-        Task<string> Create_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto);
+        Task<Completed_Email_Account_CreationDTO> Create_Account_By_Email(Complete_Email_RegistrationDTO dto);
+        Task<User_Data_DTO> Create_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto);
         Task<string> Create_Reported_User_Profile_Record(Reported_ProfileDTO dto);
         Task<string> Delete_Account_By_User_id(Delete_UserDTO dto);
         Task<string> Insert_End_User_Login_Time_Stamp_History(Login_Time_Stamp_HistoryDTO dto);
         Task<string> Insert_Report_Email_RegistrationTbl(Report_Email_RegistrationDTO dto);
-        Task<string> Read_Email_User_Data_By_ID(ulong end_user_id);
+        Task<User_Data_DTO> Read_User_Data_By_ID(ulong end_user_id);
         Task<string> Read_User_Profile_By_ID(ulong end_user_id);
         Task<string> Read_WebSocket_Permission_Record_For_Both_End_Users(WebSocket_Chat_PermissionDTO dto);
         Task<string> Read_All_End_User_WebSocket_Sent_Chat_Requests(ulong end_user_id);
@@ -110,7 +111,7 @@ namespace mpc_dotnetc_user_server.Models.Interfaces
         Task<bool> Email_Exists_In_Login_Email_AddressTbl(string email_address);
         Task<bool> ID_Exists_In_Users_IDTbl(ulong id);
         Task<ulong> Read_User_ID_By_Twitch_Account_ID(ulong twitch_id);
-        Task<ulong> Read_User_ID_By_Twitch_Account_By_Email(string twitch_email);
+        Task<ulong> Read_User_ID_By_Twitch_Account_Email(string twitch_email);
         Task<bool> Email_Exists_In_Login_TwitchTbl(string email_address);
         Task<bool> ID_Exists_In_Twitch_IDsTbl(ulong twitch_id);
 

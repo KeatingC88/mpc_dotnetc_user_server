@@ -1,8 +1,8 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using mpc_dotnetc_user_server.Controllers.Interfaces;
+using mpc_dotnetc_user_server.Interfaces;
 
-namespace mpc_dotnetc_user_server.Controllers.Services
+namespace mpc_dotnetc_user_server.Services
 {
     public class AES : IAES
     {
