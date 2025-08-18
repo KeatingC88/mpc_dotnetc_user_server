@@ -201,8 +201,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                             mpc_data = mpc_member_data
                         })));
 
-                    }
-                    else {
+                    } else {
 
                         User_Data_DTO mpc_member_data = Users_Repository.Create_Account_By_Twitch(new Complete_Twitch_RegisterationDTO
                         {

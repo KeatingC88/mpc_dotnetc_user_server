@@ -480,15 +480,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             await _UsersDBC.SaveChangesAsync();
 
-            string token = JWT.Create_Email_Account_Token(new JWT_DTO
-            {
-                End_User_ID = ID_Record.ID,
-                User_groups = "0",
-                User_roles = "User",
-                Account_type = 1,
-                Email_address = dto.Email_Address
-            }).Result;
-
             await Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
             {
                 End_User_ID = ID_Record.ID,

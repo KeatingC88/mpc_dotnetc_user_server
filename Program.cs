@@ -51,8 +51,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-Console.WriteLine(Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME") ?? string.Empty);
-
 // Add Redis distributed cache
 builder.Services.AddStackExchangeRedisCache(options =>
 {
@@ -131,20 +129,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Urls.Add(@$"http://{local_network_ip_address}:{Environment.GetEnvironmentVariable("SERVER_NETWORK_PORT_NUMBER")}");
-
-
-/*app.MapPost("/api/session/set", (HttpContext ctx) =>
-{
-    ctx.Session.SetString("username", "SSR_Test_User");
-
-});
-
-app.MapGet("/api/session/get", (HttpContext ctx) =>
-{
-    var username = ctx.Session.GetString("username");
-    return Results.Ok(new { username });
-
-});*/
 
 app.Run();
 
