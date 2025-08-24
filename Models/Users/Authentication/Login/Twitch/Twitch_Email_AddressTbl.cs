@@ -1,6 +1,6 @@
 ﻿namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
 {
-    public class Login_TwitchTbl
+    public class Twitch_Email_AddressTbl
     {
         public ulong ID { get; set; }
         public ulong User_ID { get; set; }

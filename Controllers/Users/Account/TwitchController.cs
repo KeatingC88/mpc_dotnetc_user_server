@@ -4,8 +4,8 @@ using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Twitch;
 using mpc_dotnetc_user_server.Services;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -47,7 +47,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         }
 
         [HttpPost("Login")]
-        public async Task<ActionResult<string>> Validating_Twitch_ID_Exists_In_Twitch_IDTbl([FromBody] Validate_TwitchDTO dto) 
+        public async Task<ActionResult<string>> Validating_Twitch_Login([FromBody] Validate_TwitchDTO dto) 
         {
             try
             {
@@ -163,113 +163,114 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 {
                     return StatusCode(500, "Invalid Twitch Response 3.");
 
-                } else if (userData != null && userData.Data != null && userData.Data[0].Id != null && userData.Data[0].Email != null) {
-
-                    user_email = userData.Data[0].Email;
-
-                    if (Users_Repository.ID_Exists_In_Twitch_IDsTbl(ulong.Parse(userData.Data[0].Id)).Result &&
-                        Users_Repository.Email_Exists_In_Login_TwitchTbl(user_email).Result) {
-
-                        mpc_member_mpc_id = Users_Repository.Read_User_ID_By_Twitch_Account_Email(userData.Data[0].Email).Result;
-                        User_Data_DTO mpc_member_data = Users_Repository.Read_User_Data_By_ID(mpc_member_mpc_id).Result;
-                        created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
-                        {
-                            End_User_ID = mpc_member_data.id,
-                            User_groups = mpc_member_data.groups,
-                            User_roles = mpc_member_data.roles,
-                            Account_type = mpc_member_data.account_type,
-                            Email_address = mpc_member_data.email_address
-                        }).Result;
-
-                        mpc_member_data.login_type = "TWITCH";
-
-                        CookieOptions cookie_options = new CookieOptions
-                        {
-                            HttpOnly = true,
-                            Secure = false,
-                            SameSite = SameSiteMode.Lax,
-                            Path = "/",
-                            Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
-                        };
-
-                        HttpContext.Session.SetString(userData.Data[0].Id, JsonSerializer.Serialize(userData.Data[0]));
-                        Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
-
-                        return Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
-                        {
-                            twitch_data = userData.Data[0],
-                            mpc_data = mpc_member_data
-                        })));
-
-                    } else {
-
-                        User_Data_DTO mpc_member_data = Users_Repository.Create_Account_By_Twitch(new Complete_Twitch_RegisterationDTO
-                        {
-                            Twitch_Name = userData.Data[0].DisplayName,
-                            Twitch_ID = ulong.Parse(userData.Data[0].Id),
-                            Email_Address = user_email,
-                            Language = dto.Language,
-                            Region = dto.Region,
-                            Code = dto.Code,
-                            Client_time = dto.Client_Time_Parsed,
-                            Location = dto.Location,
-                            Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
-                            Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                            Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                            Server_Port = HttpContext.Connection.LocalPort,
-                            Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
-                            Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
-                            User_agent = dto.Server_user_agent,
-                            Theme = byte.Parse(dto.Theme),
-                            Alignment = byte.Parse(dto.Alignment),
-                            Text_alignment = byte.Parse(dto.Text_alignment),
-                            Nav_lock = bool.Parse(dto.Nav_lock),
-                            Grid_type = byte.Parse(dto.Grid_type),
-                            Window_height = dto.Window_height,
-                            Window_width = dto.Window_width,
-                            Screen_height = dto.Screen_height,
-                            Screen_width = dto.Screen_width,
-                            RTT = dto.RTT,
-                            Orientation = dto.Orientation,
-                            Data_saver = dto.Data_saver,
-                            Color_depth = dto.Color_depth,
-                            Pixel_depth = dto.Pixel_depth,
-                            Connection_type = dto.Connection_type,
-                            Down_link = dto.Down_link,
-                            Device_ram_gb = dto.Device_ram_gb
-                        }).Result;
-
-                        created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
-                        {
-                            End_User_ID = mpc_member_data.id,
-                            User_groups = mpc_member_data.groups,
-                            User_roles = mpc_member_data.roles,
-                            Account_type = mpc_member_data.account_type,
-                            Email_address = mpc_member_data.email_address
-                        }).Result;
-
-                        mpc_member_data.login_type = "TWITCH";
-
-                        CookieOptions cookie_options = new CookieOptions
-                        {
-                            HttpOnly = true,
-                            Secure = false,
-                            SameSite = SameSiteMode.Lax,
-                            Path = "/",
-                            Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
-                        };
-
-                        HttpContext.Session.SetString(mpc_member_data.id.ToString(), JsonSerializer.Serialize(mpc_member_data));
-                        Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
-
-                        return Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
-                        {
-                            twitch_data = userData.Data[0],
-                            mpc_data = mpc_member_data
-                        })));
-                    }
                 }
-                return StatusCode(500, "Invalid Twitch Response 6.");
+
+                user_email = userData.Data[0].Email;
+
+                bool user_id_exists = Users_Repository.ID_Exists_In_Twitch_IDsTbl(ulong.Parse(userData.Data[0].Id)).Result;
+                bool twitch_email_exists = Users_Repository.Email_Exists_In_Twitch_Email_AddressTbl(user_email).Result;
+
+                if (user_id_exists && twitch_email_exists) {
+
+                    mpc_member_mpc_id = Users_Repository.Read_User_ID_By_Twitch_Account_Email(userData.Data[0].Email).Result;
+                    User_Data_DTO mpc_member_data = Users_Repository.Read_User_Data_By_ID(mpc_member_mpc_id).Result;
+
+                    created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
+                    {
+                        End_User_ID = mpc_member_data.id,
+                        User_groups = mpc_member_data.groups,
+                        User_roles = mpc_member_data.roles,
+                        Account_type = mpc_member_data.account_type,
+                        Email_address = user_email
+                    }).Result;
+
+                    mpc_member_data.login_type = "TWITCH";
+
+                    CookieOptions cookie_options = new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = false,
+                        SameSite = SameSiteMode.Lax,
+                        Path = "/",
+                        Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
+                    };
+
+                    HttpContext.Session.SetString(userData.Data[0].Id, JsonSerializer.Serialize(userData.Data[0]));
+                    Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
+
+                    return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
+                    {
+                        twitch_data = userData.Data[0],
+                        mpc_data = mpc_member_data
+                    }))));
+
+                } else {
+
+                    User_Data_DTO mpc_member_data = Users_Repository.Create_Account_By_Twitch(new Complete_Twitch_RegisterationDTO
+                    {
+                        Twitch_Name = userData.Data[0].DisplayName,
+                        Twitch_ID = ulong.Parse(userData.Data[0].Id),
+                        Email_Address = user_email,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Code = dto.Code,
+                        Client_time = dto.Client_Time_Parsed,
+                        Location = dto.Location,
+                        Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                        Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Port = HttpContext.Connection.LocalPort,
+                        Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                        Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
+                        User_agent = dto.Server_user_agent,
+                        Theme = byte.Parse(dto.Theme),
+                        Alignment = byte.Parse(dto.Alignment),
+                        Text_alignment = byte.Parse(dto.Text_alignment),
+                        Nav_lock = bool.Parse(dto.Nav_lock),
+                        Grid_type = byte.Parse(dto.Grid_type),
+                        Window_height = dto.Window_height,
+                        Window_width = dto.Window_width,
+                        Screen_height = dto.Screen_height,
+                        Screen_width = dto.Screen_width,
+                        RTT = dto.RTT,
+                        Orientation = dto.Orientation,
+                        Data_saver = dto.Data_saver,
+                        Color_depth = dto.Color_depth,
+                        Pixel_depth = dto.Pixel_depth,
+                        Connection_type = dto.Connection_type,
+                        Down_link = dto.Down_link,
+                        Device_ram_gb = dto.Device_ram_gb
+                    }).Result;
+
+                    created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
+                    {
+                        End_User_ID = mpc_member_data.id,
+                        User_groups = mpc_member_data.groups,
+                        User_roles = mpc_member_data.roles,
+                        Account_type = mpc_member_data.account_type,
+                        Email_address = user_email
+                    }).Result;
+
+                    mpc_member_data.login_type = "TWITCH";
+
+                    CookieOptions cookie_options = new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = false,
+                        SameSite = SameSiteMode.Lax,
+                        Path = "/",
+                        Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
+                    };
+
+                    HttpContext.Session.SetString(mpc_member_data.id.ToString(), JsonSerializer.Serialize(mpc_member_data));
+                    Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
+
+                    return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
+                    {
+                        twitch_data = userData.Data[0],
+                        mpc_data = mpc_member_data
+                    }))));
+                }
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

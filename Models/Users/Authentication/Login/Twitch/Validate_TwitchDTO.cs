@@ -1,13 +1,23 @@
-﻿using mpc_dotnetc_user_server.Models.Users.Selection;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Twitch
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
 {
-    public class Twitch_Token_Response
+    public class Validate_TwitchDTO
     {
-        [Required]
-        public ulong Twitch_ID { get; set; }
+        [Required(ErrorMessage = "Theme is Missing.")]
+        public string Theme { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Alignment is Missing.")]
+        public string Alignment { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Text_alignment is Missing.")]
+        public string Text_alignment { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Nav_Lock is Missing.")]
+        public string Nav_lock { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Grid Type is Missing.")]
+        public string Grid_type { get; set; } = string.Empty;
 
         [Required]
         public string Language { get; set; } = string.Empty;
@@ -24,6 +34,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Twitch
         public string Client_time { get; set; } = string.Empty;
 
         public ulong Client_Time_Parsed { get; set; }
+
+        [Required]
+        public string Code { get; set; } = string.Empty;
+
 
         [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;
@@ -76,14 +90,5 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Twitch
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
-
-        [JsonPropertyName("access_token")]
-        public string? AccessToken { get; set; }
-
-        [JsonPropertyName("expires_in")]
-        public int ExpiresIn { get; set; }
-
-        [JsonPropertyName("token_type")]
-        public string? TokenType { get; set; }
     }
 }

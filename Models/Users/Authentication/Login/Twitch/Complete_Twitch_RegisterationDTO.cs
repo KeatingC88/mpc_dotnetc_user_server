@@ -1,7 +1,7 @@
 ﻿using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
 {
     public class Complete_Twitch_RegisterationDTO
     {

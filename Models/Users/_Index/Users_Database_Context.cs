@@ -1,25 +1,26 @@
 using Microsoft.EntityFrameworkCore;
-using mpc_dotnetc_user_server.Models.Users.Feedback;
-using mpc_dotnetc_user_server.Models.Users.Identity;
-using mpc_dotnetc_user_server.Models.Users.Selection;
+using mpc_dotnetc_user_server.Models.Report;
+using mpc_dotnetc_user_server.Models.Users.Account_Groups;
+using mpc_dotnetc_user_server.Models.Users.Account_Roles;
+using mpc_dotnetc_user_server.Models.Users.Account_Type;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Discord;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
+using mpc_dotnetc_user_server.Models.Users.Feedback;
+using mpc_dotnetc_user_server.Models.Users.Identity;
+using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
+using mpc_dotnetc_user_server.Models.Users.Profile;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
 using mpc_dotnetc_user_server.Models.Users.Selected.Name;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
-using mpc_dotnetc_user_server.Models.Users.Selected.Status;
-using mpc_dotnetc_user_server.Models.Users.Profile;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
+using mpc_dotnetc_user_server.Models.Users.Selected.Status;
+using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
-using mpc_dotnetc_user_server.Models.Report;
-using mpc_dotnetc_user_server.Models.Users.Account_Type;
-using mpc_dotnetc_user_server.Models.Users.Account_Roles;
-using mpc_dotnetc_user_server.Models.Users.Account_Groups;
-using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -72,8 +73,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Reported_WebSocketTbl> Reported_WebSocketTbl { get; set; } = null!;
         public DbSet<Reported_WebSocket_HistoryTbl> Reported_WebSocket_HistoryTbl { get; set; } = null!;
         public DbSet<WebSocket_Chat_PermissionTbl> WebSocket_Chat_PermissionTbl { get; set; } = null!;
-        public DbSet<Login_TwitchTbl> Login_TwitchTbl { get;set; } = null!;
+        public DbSet<Twitch_Email_AddressTbl> Twitch_Email_AddressTbl { get;set; } = null!;
         public DbSet<Twitch_IDsTbl> Twitch_IDsTbl { get;set; } = null!;
+        public DbSet<Discord_Email_AddressTbl> Discord_Email_AddressTbl { get; set; } = null!;
+        public DbSet<Discord_IDsTbl> Discord_IDsTbl { get; set; } = null!;
         public Users_Database_Context(DbContextOptions<Users_Database_Context> options, IConfiguration configuration) : base(options)
         {
             _configuration = configuration;

@@ -4,8 +4,10 @@ using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
+using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
@@ -112,8 +114,13 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<bool> ID_Exists_In_Users_IDTbl(ulong id);
         Task<ulong> Read_User_ID_By_Twitch_Account_ID(ulong twitch_id);
         Task<ulong> Read_User_ID_By_Twitch_Account_Email(string twitch_email);
-        Task<bool> Email_Exists_In_Login_TwitchTbl(string email_address);
+        Task<bool> Email_Exists_In_Twitch_Email_AddressTbl(string email_address);
         Task<bool> ID_Exists_In_Twitch_IDsTbl(ulong twitch_id);
+        Task<ulong> Read_User_ID_By_Discord_Account_ID(ulong discord_id);
+        Task<ulong> Read_User_ID_By_Discord_Account_Email(string discord_email);
+        Task<bool> Email_Exists_In_Discord_Email_AddressTbl(string email_address);
+        Task<bool> ID_Exists_In_Discord_IDsTbl(ulong discord_id);
+        Task<User_Token_Data_DTO> Read_Require_Token_Data_By_ID(ulong end_user_id);
 
     }
 }

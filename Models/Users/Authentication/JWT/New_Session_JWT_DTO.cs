@@ -1,15 +1,22 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.JWT
 {
-    public class Login_TwitchDTO
+    public class New_Session_JWT_DTO
     {
+        public string ID { get; set; } = string.Empty;
+        public string Twitch_ID { get; set; } = string.Empty;
         [Required]
-        public ulong Twitch_ID { get; set; }
-
+        public string Email_Address { get; set; } = string.Empty;
         [Required]
-        public string Password { get; set; } = string.Empty;
+        public string Account_type { get; set; } = string.Empty;
+        public ulong End_User_ID { get; set; }
+        [Required]
+        public string Account_roles { get; set; } = string.Empty;
+        [Required]
+        public string Account_groups { get; set; } = string.Empty;
+        [Required]
+        public string Login_type { get; set; } = string.Empty;
 
         [Required]
         public string Language { get; set; } = string.Empty;
@@ -18,37 +25,21 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
         public string Region { get; set; } = string.Empty;
 
         [Required]
-        public string Alignment { get; set; } = string.Empty;
-
-        [Required]
-        public string Text_alignment { get; set; } = string.Empty;
-
-        [Required]
-        public string Locked { get; set; } = string.Empty;
-
-        [Required]
-        public string Grid_type { get; set; } = string.Empty;
-
-        [Required]
-        public string Theme { get; set; } = string.Empty;
-
-        [Required]
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public string Client_time { get; set; } = string.Empty;          public ulong Client_Time_Parsed { get; set; } 
+        public string Client_time { get; set; } = string.Empty;          
+        public ulong Client_Time_Parsed { get; set; } 
 
         [Required]
-        public string JWT_issuer_key { get;set; } = string.Empty;
+        public string JWT_issuer_key { get; set; } = string.Empty;
 
         [Required]
-        public string JWT_client_key { get;set; } = string.Empty;
+        public string JWT_client_key { get; set; } = string.Empty;
 
         [Required]
         public string JWT_client_address { get; set; } = string.Empty;
-        public ulong Client_id { get; set; } 
-        public ulong JWT_id { get; set; } 
-
+        public ulong Client_id { get; set; }
         [Required]
         public string User_agent { get; set; } = string.Empty;
         public string Client_user_agent { get; set; } = string.Empty;

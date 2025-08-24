@@ -3,8 +3,12 @@
     public class User_Data_DTO
     {
         public ulong id { get; set; }
+        public ulong? twitch_id { get; set; }
+        public ulong? discord_id { get; set; }
         public byte account_type { get; set; }
-        public string email_address { get; set; } = string.Empty;
+        public string? email_address { get; set; } = string.Empty;
+        public string? twitch_email_address { get; set; } = string.Empty;
+        public string? discord_email_address { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
         public ulong login_on { get; set; }
         public ulong logout_on { get; set; }
@@ -50,5 +54,6 @@
         public string? button_background_color { get; set; } = string.Empty;
         public string? button_font { get; set; } = string.Empty;
         public string? button_font_color { get; set; } = string.Empty;
-    }   
+
+    }
 }

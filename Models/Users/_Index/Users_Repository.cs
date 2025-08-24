@@ -26,6 +26,7 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
 using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
 using mpc_dotnetc_user_server.Interfaces;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -393,9 +394,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             await _UsersDBC.SaveChangesAsync();
 
-            await _UsersDBC.Login_TwitchTbl.AddAsync(new Login_TwitchTbl
+            await _UsersDBC.Twitch_Email_AddressTbl.AddAsync(new Twitch_Email_AddressTbl
             {
-                ID = Convert.ToUInt64(_UsersDBC.Login_TwitchTbl.Count() + 1),
+                ID = Convert.ToUInt64(_UsersDBC.Twitch_Email_AddressTbl.Count() + 1),
                 User_ID = ID_Record.ID,
                 Email_Address = dto.Email_Address.ToUpper(),
                 Updated_on = clocked,
@@ -604,11 +605,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<bool> Email_Exists_In_Login_Email_AddressTbl(string email_address)
         {
-            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Any(x => x.Email_Address.ToUpper() == email_address));
+            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Any(x => x.Email_Address == email_address.ToUpper()));
         }
-        public async Task<bool> Email_Exists_In_Login_TwitchTbl(string email_address)
+        public async Task<bool> Email_Exists_In_Twitch_Email_AddressTbl(string email_address)
         {
-            return await Task.FromResult(_UsersDBC.Login_TwitchTbl.Any(x => x.Email_Address.ToUpper() == email_address));
+            return await Task.FromResult(_UsersDBC.Twitch_Email_AddressTbl.Any(x => x.Email_Address == email_address.ToUpper()));
+        }
+        public async Task<bool> Email_Exists_In_Discord_Email_AddressTbl(string email_address)
+        {
+            return await Task.FromResult(_UsersDBC.Discord_Email_AddressTbl.Any(x => x.Email_Address == email_address.ToUpper()));
         }
         public async Task<bool> Create_Contact_Us_Record(Contact_UsDTO dto)
         {
@@ -793,6 +798,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             byte center_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Center).SingleOrDefault();
             byte right_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Right).SingleOrDefault();
             byte text_alignment_type = 0;
+            //Third Party IDs
+            ulong? twitch_user_id = _UsersDBC.Twitch_IDsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Twitch_ID).SingleOrDefault();
+            ulong? discord_user_id = _UsersDBC.Discord_IDsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Discord_ID).SingleOrDefault();
             ulong login_timestamp = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Login_on).SingleOrDefault();
             ulong logout_timestamp = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Logout_on).SingleOrDefault();
             ulong created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Created_on).SingleOrDefault();
@@ -801,7 +809,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             byte? birth_month = _UsersDBC.Birth_DateTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Month).SingleOrDefault();
             ulong? birth_year = _UsersDBC.Birth_DateTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Year).SingleOrDefault();
             string? customLbl = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Custom_lbl).SingleOrDefault();
+            //Email Addresses
             string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? twitch_email_address = _UsersDBC.Twitch_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? discord_email_address = _UsersDBC.Discord_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+
             string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Region_code).SingleOrDefault();
             string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Language_code).SingleOrDefault();
             string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
@@ -868,6 +880,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 id = end_user_id,
                 account_type = account_type,
                 email_address = email_address,
+                twitch_id = twitch_user_id,
+                discord_id = discord_user_id,
+                twitch_email_address = twitch_email_address,
+                discord_email_address = discord_email_address,
                 name = $@"{name}#{end_user_public_id}",
                 login_on = login_timestamp,
                 logout_on = logout_timestamp,
@@ -913,6 +929,29 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 button_font_color = button_font_color
             });
         }
+
+        public async Task<User_Token_Data_DTO> Read_Require_Token_Data_By_ID(ulong end_user_id)
+        {
+            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? twitch_email_address = _UsersDBC.Twitch_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? discord_email_address = _UsersDBC.Discord_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+
+            string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Groups).SingleOrDefault();
+            string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Roles).SingleOrDefault();
+            byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Type).SingleOrDefault();
+
+            return await Task.FromResult(new User_Token_Data_DTO
+            {
+                id = end_user_id,
+                account_type = account_type,
+                email_address = email_address ?? "",
+                twitch_email_address = twitch_email_address ?? "",
+                discord_email_address= discord_email_address ?? "",
+                groups = groups ?? "",
+                roles = roles ?? ""
+            });
+        }
+
         public async Task<string> Read_User_Profile_By_ID(ulong user_id)
         {
             byte status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.User_ID == user_id).Select(x => x.Online).SingleOrDefault();
@@ -4012,7 +4051,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public Task<bool> ID_Exists_In_Twitch_IDsTbl(ulong user_id)
         {
-            return Task.FromResult(_UsersDBC.Twitch_IDsTbl.Any(x => x.ID == user_id && x.Deleted == 0));
+            return Task.FromResult(_UsersDBC.Twitch_IDsTbl.Any(x => x.Twitch_ID == user_id && x.Deleted == 0));
+        }
+        public Task<bool> ID_Exists_In_Discord_IDsTbl(ulong user_id)
+        {
+            return Task.FromResult(_UsersDBC.Discord_IDsTbl.Any(x => x.Discord_ID == user_id && x.Deleted == 0));
         }
         public async Task<bool> Email_Exists_In_Pending_Email_RegistrationTbl(string email_address)
         {
@@ -4036,7 +4079,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<ulong> Read_User_ID_By_Twitch_Account_Email(string twitch_email)
         {
-            return await Task.FromResult(_UsersDBC.Login_TwitchTbl.Where(x => x.Email_Address == twitch_email).Select(x => x.User_ID).SingleOrDefault());
+            return await Task.FromResult(_UsersDBC.Twitch_Email_AddressTbl.Where(x => x.Email_Address == twitch_email).Select(x => x.User_ID).SingleOrDefault());
+        }
+        public async Task<ulong> Read_User_ID_By_Discord_Account_ID(ulong discord_id)
+        {
+            return await Task.FromResult(_UsersDBC.Discord_IDsTbl.Where(x => x.Discord_ID == discord_id).Select(x => x.User_ID).SingleOrDefault());
+        }
+        public async Task<ulong> Read_User_ID_By_Discord_Account_Email(string discord_email)
+        {
+            return await Task.FromResult(_UsersDBC.Discord_Email_AddressTbl.Where(x => x.Email_Address == discord_email).Select(x => x.User_ID).SingleOrDefault());
         }
         public async Task<string> Create_Integration_Twitch_Record(Integration_TwitchDTO dto)
         {

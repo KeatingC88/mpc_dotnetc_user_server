@@ -2,12 +2,11 @@
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.JWT
 {
-    public class Renew_JWTDTO
+    public class Renew_Session_JWT_DTO
     {
         public string ID { get; set; } = string.Empty;
         [Required]
         public string Account_type { get; set; } = string.Empty;
-        [Required]
         public ulong End_User_ID { get; set; }
         [Required]
         public string Account_roles { get; set; } = string.Empty;

@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
-using mpc_dotnetc_user_server.Models.Users.Profile;
 using System.Text.Json;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -39,8 +36,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             Network = network;
         }
 
-        [HttpPost("Token")]
-        public async Task<ActionResult<string>> Renew_Token([FromBody] Renew_JWTDTO dto)
+        [HttpPost("Renewal/Session/Token")]
+        public async Task<ActionResult<string>> Renew_Session_Token([FromBody] Renew_Session_JWT_DTO dto)
         {
             try
             {
@@ -58,6 +55,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
                 dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+
                 dto.JWT_id = await JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token);
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -65,7 +63,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Window_height = AES.Process_Decryption(dto.Window_height);
                 dto.Window_width = AES.Process_Decryption(dto.Window_width);
-
                 dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
                 dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
                 dto.RTT = AES.Process_Decryption(dto.RTT);
@@ -111,19 +108,26 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Down_link = dto.Down_link,
                     Device_ram_gb = dto.Device_ram_gb,
                     Controller = "Load",
-                    Action = "Token"
+                    Action = "Renewal/Session/Token"
                 });
 
                 if (!validationResult)
                     return Conflict();
 
                 dto.End_User_ID = dto.JWT_id;
+                User_Token_Data_DTO user_data = await Users_Repository.Read_Require_Token_Data_By_ID(dto.End_User_ID);
+                CookieOptions cookie_options = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
+                };
 
                 switch (dto.Login_type.ToUpper())
                 {
                     case "EMAIL":
-                    case "TWITCH":
-                        User_Data_DTO user_data = await Users_Repository.Read_User_Data_By_ID(dto.End_User_ID);
                         string created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
                         {
                             End_User_ID = user_data.id,
@@ -133,23 +137,177 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                             Email_address = user_data.email_address
                         }).Result;
 
-                        CookieOptions cookie_options = new CookieOptions
-                        {
-                            HttpOnly = true,
-                            Secure = false,
-                            SameSite = SameSiteMode.Lax,
-                            Path = "/",
-                            Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
-                        };
-
-                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(user_data));
+                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(created_email_account_token));
                         Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
+                        break;
+                    case "TWITCH":
+                        string created_twitch_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
+                        {
+                            End_User_ID = user_data.id,
+                            User_groups = user_data.groups,
+                            User_roles = user_data.roles,
+                            Account_type = user_data.account_type,
+                            Email_address = user_data.twitch_email_address
+                        }).Result;
 
-                        return JsonSerializer.Serialize(user_data);
+                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(created_twitch_email_account_token));
+                        Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_twitch_email_account_token, cookie_options);
+                        break;
+                    case "DISCORD":
+                        string created_discord_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
+                        {
+                            End_User_ID = user_data.id,
+                            User_groups = user_data.groups,
+                            User_roles = user_data.roles,
+                            Account_type = user_data.account_type,
+                            Email_address = user_data.discord_email_address
+                        }).Result;
 
+                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(created_discord_account_token));
+                        Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_discord_account_token, cookie_options);
+                        break;
                     default:
                         return "Login_Type Selection Error";
                 }
+
+                return await Task.FromResult(Ok());
+            }
+            catch (Exception e) {
+                return StatusCode(500, $"{e.Message}");
+            }
+        }
+
+        [HttpPost("New/Session/Token")]
+        public async Task<ActionResult<string>> New_Session_Token([FromBody] New_Session_JWT_DTO dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest();
+
+                dto.JWT_client_address = AES.Process_Decryption(dto.JWT_client_address);
+                dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
+                dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
+
+                dto.Language = AES.Process_Decryption(dto.Language);
+                dto.Region = AES.Process_Decryption(dto.Region);
+                dto.Location = AES.Process_Decryption(dto.Location);
+                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Login_type = AES.Process_Decryption(dto.Login_type);
+
+                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+
+                dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
+                dto.Server_user_agent = dto.Client_user_agent;
+
+                dto.Window_height = AES.Process_Decryption(dto.Window_height);
+                dto.Window_width = AES.Process_Decryption(dto.Window_width);
+                dto.Screen_width = AES.Process_Decryption(dto.Screen_width);
+                dto.Screen_height = AES.Process_Decryption(dto.Screen_height);
+                dto.RTT = AES.Process_Decryption(dto.RTT);
+                dto.Orientation = AES.Process_Decryption(dto.Orientation);
+                dto.Data_saver = AES.Process_Decryption(dto.Data_saver);
+                dto.Color_depth = AES.Process_Decryption(dto.Color_depth);
+                dto.Pixel_depth = AES.Process_Decryption(dto.Pixel_depth);
+                dto.Connection_type = AES.Process_Decryption(dto.Connection_type);
+                dto.Down_link = AES.Process_Decryption(dto.Down_link);
+                dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
+                dto.End_User_ID = ulong.Parse(AES.Process_Decryption(dto.ID));
+
+                var validationResult = await Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                {
+                    Remote_IP = await Network.Get_Client_Remote_Internet_Protocol_Address(),
+                    Remote_Port = await Network.Get_Client_Remote_Internet_Protocol_Port(),
+                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_Port = HttpContext.Connection.LocalPort,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    Token = "N/A",
+                    Client_id = dto.Client_id,
+                    JWT_id = dto.End_User_ID,
+                    Language = dto.Language,
+                    Region = dto.Region,
+                    Location = dto.Location,
+                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Server_User_Agent = dto.Server_user_agent,
+                    Client_User_Agent = dto.Client_user_agent,
+                    End_User_ID = dto.Client_id,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Controller = "Load",
+                    Action = "New/Session/Token"
+                });
+
+                if (!validationResult)
+                    return Conflict();
+
+                User_Token_Data_DTO user_data = await Users_Repository.Read_Require_Token_Data_By_ID(dto.End_User_ID);
+                CookieOptions cookie_options = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
+                };
+
+                switch (dto.Login_type.ToUpper())
+                {
+                    case "EMAIL":
+                        string created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
+                        {
+                            End_User_ID = user_data.id,
+                            User_groups = user_data.groups,
+                            User_roles = user_data.roles,
+                            Account_type = user_data.account_type,
+                            Email_address = user_data.email_address
+                        }).Result;
+
+                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(created_email_account_token));
+                        Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
+                        break;
+                    case "TWITCH":
+                        string created_twitch_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
+                        {
+                            End_User_ID = user_data.id,
+                            User_groups = user_data.groups,
+                            User_roles = user_data.roles,
+                            Account_type = user_data.account_type,
+                            Email_address = user_data.twitch_email_address
+                        }).Result;
+
+                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(created_twitch_email_account_token));
+                        Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_twitch_email_account_token, cookie_options);
+                        break;
+                    case "DISCORD":
+                        string created_discord_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
+                        {
+                            End_User_ID = user_data.id,
+                            User_groups = user_data.groups,
+                            User_roles = user_data.roles,
+                            Account_type = user_data.account_type,
+                            Email_address = user_data.discord_email_address
+                        }).Result;
+
+                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(created_discord_account_token));
+                        Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_discord_account_token, cookie_options);
+                        break;
+                    default:
+                        return "Login_Type Selection Error";
+                }
+
+                return await Task.FromResult(Ok());
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }

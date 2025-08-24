@@ -314,7 +314,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     User_groups = user_data.groups,
                     User_roles = user_data.roles,
                     Account_type = user_data.account_type,
-                    Email_address = user_data.email_address
+                    Email_address = dto.Email_Address
                 }).Result;
 
                 CookieOptions cookie_options = new CookieOptions
@@ -761,7 +761,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }
 
                 if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address.ToUpper()).Result ||
-                    Users_Repository.Email_Exists_In_Login_TwitchTbl(dto.Email_Address.ToUpper()).Result)
+                    Users_Repository.Email_Exists_In_Twitch_Email_AddressTbl(dto.Email_Address.ToUpper()).Result)
                 {
                     ulong user_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
 

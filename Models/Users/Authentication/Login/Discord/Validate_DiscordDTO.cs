@@ -1,27 +1,43 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Twitch
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Discord
 {
-    public class Twitch_RegistrationDTO
+    public class Validate_DiscordDTO
     {
-        [Required(ErrorMessage = "Language_Code is Missing.")]
-        public string Language { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Theme is Missing.")]
+        public string Theme { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Region_Code is Missing.")]
-        public string Region { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Alignment is Missing.")]
+        public string Alignment { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Text_alignment is Missing.")]
+        public string Text_alignment { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Nav_Lock is Missing.")]
+        public string Nav_lock { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Grid Type is Missing.")]
+        public string Grid_type { get; set; } = string.Empty;
 
         [Required]
-        public string Code { get; set; } = string.Empty;
+        public string Language { get; set; } = string.Empty;
+
+        [Required]
+        public string Region { get; set; } = string.Empty;
 
         [Required]
         public string Location { get; set; } = string.Empty;
 
+        public string Login_type { get; set; } = string.Empty;
+
         [Required]
         public string Client_time { get; set; } = string.Empty;
 
-        [Required]
         public ulong Client_Time_Parsed { get; set; }
+
+        [Required]
+        public string Code { get; set; } = string.Empty;
+
 
         [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;
@@ -74,20 +90,5 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Twitch
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Theme is Missing.")]
-        public string Theme { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Alignment is Missing.")]
-        public string Alignment { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Text_alignment is Missing.")]
-        public string Text_alignment { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Nav_Lock is Missing.")]
-        public string Nav_lock { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Grid Type is Missing.")]
-        public string Grid_type { get; set; } = string.Empty;
     }
 }

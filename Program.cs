@@ -1,7 +1,6 @@
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
 using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Users.Index;

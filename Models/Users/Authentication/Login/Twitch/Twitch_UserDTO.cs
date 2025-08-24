@@ -1,8 +1,6 @@
-﻿using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Twitch
+namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
 {
     public class TwitchUser_DTO
     {
