@@ -14,8 +14,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.JWT
         public string Account_groups { get; set; } = string.Empty;
         [Required]
         public string Login_type { get; set; } = string.Empty;
-        [Required]
-        public string Token { get; set; } = string.Empty;
 
         [Required]
         public string Language { get; set; } = string.Empty;
