@@ -132,7 +132,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                             Email_address = user_data.email_address
                         }).Result;
 
-                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(created_email_account_token));
+                        HttpContext.Session.SetString($@"AUTH|MPC:{user_data.id.ToString()}|EMAIL_ADDRESS:{user_data.email_address}", JsonSerializer.Serialize(created_email_account_token));
                         Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
                         return await Task.FromResult(Ok());
                     case "TWITCH":
@@ -145,7 +145,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                             Email_address = user_data.twitch_email_address
                         }).Result;
 
-                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(created_twitch_email_account_token));
+                        HttpContext.Session.SetString($@"AUTH|MPC:{user_data.id}|TWITCH:{user_data.twitch_id}|EMAIL_ADDRESS:{user_data.twitch_email_address}", JsonSerializer.Serialize(created_twitch_email_account_token));
                         Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_twitch_email_account_token, cookie_options);
                         return await Task.FromResult(Ok());
                     case "DISCORD":
@@ -158,14 +158,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                             Email_address = user_data.discord_email_address
                         }).Result;
 
-                        HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(created_discord_account_token));
+                        HttpContext.Session.SetString($@"AUTH|MPC:{user_data.id}|DISCORD:{user_data.discord_id}|EMAIL_ADDRESS:{user_data.discord_email_address}", JsonSerializer.Serialize(created_discord_account_token));
                         Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_discord_account_token, cookie_options);
                         return await Task.FromResult(Ok());
                     default:
                         return "Login_Type Selection Error";
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
         }

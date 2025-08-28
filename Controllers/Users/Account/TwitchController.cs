@@ -47,12 +47,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         }
 
         [HttpPost("Login")]
-        public async Task<ActionResult<string>> Validating_Twitch_Login([FromBody] Validate_TwitchDTO dto) 
+        public async Task<ActionResult<string>> Validating_Twitch_Login([FromBody] Validate_TwitchDTO dto)
         {
             try
             {
                 if (!ModelState.IsValid)
-                    BadRequest();
+                    return BadRequest();
 
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
@@ -142,19 +142,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 twitch_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenResponse.AccessToken ?? "");
                 twitch_client.DefaultRequestHeaders.Add("Client-Id", Environment.GetEnvironmentVariable("TWITCH_CLIENT_ID") ?? string.Empty);
                 var twitch_response = await twitch_client.GetAsync("https://api.twitch.tv/helix/users");
-
+                
                 if (!twitch_response.IsSuccessStatusCode)
                 {
                     return StatusCode(500, "Invalid Twitch Response 2.");
                 }
 
                 var userJson = await twitch_response.Content.ReadAsStringAsync();
-
+                
                 var userData = JsonSerializer.Deserialize<Twitch_User_Response>(userJson, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
-
+                
                 string user_email = "";
                 string created_email_account_token = "";
                 ulong mpc_member_mpc_id = 0;
@@ -170,7 +170,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 bool user_id_exists = Users_Repository.ID_Exists_In_Twitch_IDsTbl(ulong.Parse(userData.Data[0].Id)).Result;
                 bool twitch_email_exists = Users_Repository.Email_Exists_In_Twitch_Email_AddressTbl(user_email).Result;
 
-                if (user_id_exists && twitch_email_exists) {
+                if (user_id_exists && twitch_email_exists)
+                {
 
                     mpc_member_mpc_id = Users_Repository.Read_User_ID_By_Twitch_Account_Email(userData.Data[0].Email).Result;
                     User_Data_DTO mpc_member_data = Users_Repository.Read_User_Data_By_ID(mpc_member_mpc_id).Result;
@@ -195,16 +196,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
                     };
 
-                    HttpContext.Session.SetString(userData.Data[0].Id, JsonSerializer.Serialize(userData.Data[0]));
+                    HttpContext.Session.SetString($@"AUTH|MPC:{mpc_member_data.id}|TWITCH:{mpc_member_data.twitch_id}|EMAIL_ADDRESS:{mpc_member_data.twitch_email_address}", JsonSerializer.Serialize(userData.Data[0]));
                     Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
 
                     return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
                     {
                         twitch_data = userData.Data[0],
-                        mpc_data = mpc_member_data
+                        mpc_data = mpc_member_data,
+                        app_token = tokenResponse.AccessToken
                     }))));
 
-                } else {
+                }
+                else
+                {
 
                     User_Data_DTO mpc_member_data = Users_Repository.Create_Account_By_Twitch(new Complete_Twitch_RegisterationDTO
                     {
@@ -262,16 +266,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
                     };
 
-                    HttpContext.Session.SetString(mpc_member_data.id.ToString(), JsonSerializer.Serialize(mpc_member_data));
+                    HttpContext.Session.SetString($@"AUTH|MPC:{mpc_member_data.id}|TWITCH:{mpc_member_data.twitch_id}|EMAIL_ADDRESS:{mpc_member_data.twitch_email_address}", JsonSerializer.Serialize(mpc_member_data));
                     Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
 
                     return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
                     {
                         twitch_data = userData.Data[0],
-                        mpc_data = mpc_member_data
+                        mpc_data = mpc_member_data,
+                        app_token = tokenResponse.AccessToken
                     }))));
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 return StatusCode(500, $"{e.Message}");
             }
         }

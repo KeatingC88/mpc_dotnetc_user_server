@@ -326,7 +326,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
                 };
 
-                HttpContext.Session.SetString(user_data.id.ToString(), JsonSerializer.Serialize(user_data));
+                HttpContext.Session.SetString($@"AUTH|MPC:{user_data.id.ToString()}|EMAIL_ADDRESS:{user_data.email_address}", JsonSerializer.Serialize(user_data));
                 Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
 
                 return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
@@ -1417,7 +1417,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
                 };
 
-                HttpContext.Session.SetString(account_creation_data.id.ToString(), JsonSerializer.Serialize(account_creation_data));
+                HttpContext.Session.SetString($@"AUTH|MPC:{account_creation_data.id.ToString()}|EMAIL_ADDRESS:{account_creation_data.email_address}", JsonSerializer.Serialize(account_creation_data));
                 Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
 
                 return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize( new {

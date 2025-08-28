@@ -935,7 +935,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
             string? twitch_email_address = _UsersDBC.Twitch_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
             string? discord_email_address = _UsersDBC.Discord_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
-
+            ulong? twitch_id = _UsersDBC.Twitch_IDsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.User_ID).SingleOrDefault();
+            ulong? discord_id = _UsersDBC.Discord_IDsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.User_ID).SingleOrDefault();
             string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Groups).SingleOrDefault();
             string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Roles).SingleOrDefault();
             byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Type).SingleOrDefault();
@@ -945,7 +946,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 id = end_user_id,
                 account_type = account_type,
                 email_address = email_address ?? "",
+                twitch_id = twitch_id,
                 twitch_email_address = twitch_email_address ?? "",
+                discord_id = discord_id,
                 discord_email_address= discord_email_address ?? "",
                 groups = groups ?? "",
                 roles = roles ?? ""
