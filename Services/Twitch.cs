@@ -15,11 +15,6 @@ namespace mpc_dotnetc_user_server.Services
         {
             using HttpClient http_client = new HttpClient();
 
-            Console.WriteLine($@"client {Environment.GetEnvironmentVariable("TWITCH_CLIENT_ID")} \n");
-            Console.WriteLine($@"secret {Environment.GetEnvironmentVariable("TWITCH_CLIENT_SECRET")} \n");
-            Console.WriteLine($@"code {code} \n");
-            Console.WriteLine($@"redirect {Environment.GetEnvironmentVariable("TWITCH_CLIENT_REDIRECT_URI")}  \n");
-
             var http_response = await http_client.PostAsync("https://id.twitch.tv/oauth2/token", new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     { "client_id", Environment.GetEnvironmentVariable("TWITCH_CLIENT_ID") ?? string.Empty },
@@ -28,8 +23,6 @@ namespace mpc_dotnetc_user_server.Services
                     { "grant_type", "authorization_code" },
                     { "redirect_uri", Environment.GetEnvironmentVariable("TWITCH_CLIENT_REDIRECT_URI") ?? string.Empty }
                 }));
-
-            Console.WriteLine($@"response: {http_response}");
 
             var content = await http_response.Content.ReadAsStringAsync();
 
