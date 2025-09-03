@@ -122,5 +122,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
         [Required]
         public int Client_Port { get; set; }
 
+        public ulong End_User_ID { get; set; }
+
     }
 }

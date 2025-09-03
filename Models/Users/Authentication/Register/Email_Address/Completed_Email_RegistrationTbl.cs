@@ -2,7 +2,7 @@
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address
 {
-    public class Completed_Twitch_RegistrationTbl
+    public class Completed_Email_RegistrationTbl
     {
         [Required]
         public ulong ID { get; set; }

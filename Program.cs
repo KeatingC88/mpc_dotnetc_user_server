@@ -77,6 +77,7 @@ builder.Services.AddSingleton<IValid, Valid>();
 builder.Services.AddSingleton<IAES, AES>();
 builder.Services.AddSingleton<IJWT, JWT>();
 builder.Services.AddSingleton<IPassword, Password>();
+builder.Services.AddSingleton<ITwitch, Twitch>();
 
 var tempProvider = builder.Services.BuildServiceProvider();
 var AES = tempProvider.GetRequiredService<IAES>();

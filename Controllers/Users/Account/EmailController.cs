@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
@@ -326,7 +327,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
                 };
 
-                HttpContext.Session.SetString($@"AUTH|MPC:{user_data.id.ToString()}|EMAIL_ADDRESS:{user_data.email_address}", JsonSerializer.Serialize(user_data));
+                HttpContext.Session.SetString($@"AUTH|MPC:{user_data.id.ToString()}|Login_Type:EMAIL", JsonSerializer.Serialize(created_email_account_token));
                 Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
 
                 return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
@@ -760,8 +761,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
                 }
 
-                if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address.ToUpper()).Result ||
-                    Users_Repository.Email_Exists_In_Twitch_Email_AddressTbl(dto.Email_Address.ToUpper()).Result)
+                if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address.ToUpper()).Result)
                 {
                     ulong user_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
 
@@ -1363,41 +1363,87 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
                 }
 
-                Completed_Email_Account_CreationDTO account_creation_data = Users_Repository.Create_Account_By_Email(new Complete_Email_RegistrationDTO
-                {
-                    Email_Address = dto.Email_Address,
-                    Language = dto.Language,
-                    Region = dto.Region,
-                    Code = dto.Code,
-                    Client_time = dto.Client_Time_Parsed,
-                    Location = dto.Location,
-                    Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
-                    Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
-                    Server_Port = HttpContext.Connection.LocalPort,
-                    Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
-                    Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
-                    User_agent = dto.Server_user_agent,
-                    Theme = byte.Parse(dto.Theme),
-                    Alignment = byte.Parse(dto.Alignment),
-                    Text_alignment = byte.Parse(dto.Text_alignment),
-                    Nav_lock = bool.Parse(dto.Nav_lock),
-                    Password = dto.Password,
-                    Grid_type = byte.Parse(dto.Grid_type),
-                    Name = dto.Name,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Screen_height = dto.Screen_height,
-                    Screen_width = dto.Screen_width,
-                    RTT = dto.RTT,
-                    Orientation = dto.Orientation,
-                    Data_saver = dto.Data_saver,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth,
-                    Connection_type = dto.Connection_type,
-                    Down_link = dto.Down_link,
-                    Device_ram_gb = dto.Device_ram_gb
-                }).Result;
+                User_Data_DTO account_creation_data = new User_Data_DTO { };
+
+                if (!dto.Token.IsNullOrEmpty()) {
+
+                    dto.End_User_ID = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
+                    account_creation_data = Users_Repository.Integrate_Account_By_Email(new Complete_Email_RegistrationDTO
+                    {
+                        End_User_ID = dto.End_User_ID,
+                        Email_Address = dto.Email_Address,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Code = dto.Code,
+                        Client_time = dto.Client_Time_Parsed,
+                        Location = dto.Location,
+                        Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                        Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Port = HttpContext.Connection.LocalPort,
+                        Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                        Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
+                        User_agent = dto.Server_user_agent,
+                        Theme = byte.Parse(dto.Theme),
+                        Alignment = byte.Parse(dto.Alignment),
+                        Text_alignment = byte.Parse(dto.Text_alignment),
+                        Nav_lock = bool.Parse(dto.Nav_lock),
+                        Password = dto.Password,
+                        Grid_type = byte.Parse(dto.Grid_type),
+                        Name = dto.Name,
+                        Window_height = dto.Window_height,
+                        Window_width = dto.Window_width,
+                        Screen_height = dto.Screen_height,
+                        Screen_width = dto.Screen_width,
+                        RTT = dto.RTT,
+                        Orientation = dto.Orientation,
+                        Data_saver = dto.Data_saver,
+                        Color_depth = dto.Color_depth,
+                        Pixel_depth = dto.Pixel_depth,
+                        Connection_type = dto.Connection_type,
+                        Down_link = dto.Down_link,
+                        Device_ram_gb = dto.Device_ram_gb
+                    }).Result;
+
+                } else {
+
+                    account_creation_data = Users_Repository.Create_Account_By_Email(new Complete_Email_RegistrationDTO
+                    {
+                        Email_Address = dto.Email_Address,
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Code = dto.Code,
+                        Client_time = dto.Client_Time_Parsed,
+                        Location = dto.Location,
+                        Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
+                        Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
+                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_Port = HttpContext.Connection.LocalPort,
+                        Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
+                        Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
+                        User_agent = dto.Server_user_agent,
+                        Theme = byte.Parse(dto.Theme),
+                        Alignment = byte.Parse(dto.Alignment),
+                        Text_alignment = byte.Parse(dto.Text_alignment),
+                        Nav_lock = bool.Parse(dto.Nav_lock),
+                        Password = dto.Password,
+                        Grid_type = byte.Parse(dto.Grid_type),
+                        Name = dto.Name,
+                        Window_height = dto.Window_height,
+                        Window_width = dto.Window_width,
+                        Screen_height = dto.Screen_height,
+                        Screen_width = dto.Screen_width,
+                        RTT = dto.RTT,
+                        Orientation = dto.Orientation,
+                        Data_saver = dto.Data_saver,
+                        Color_depth = dto.Color_depth,
+                        Pixel_depth = dto.Pixel_depth,
+                        Connection_type = dto.Connection_type,
+                        Down_link = dto.Down_link,
+                        Device_ram_gb = dto.Device_ram_gb
+                    }).Result;
+
+                }
 
                 string created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
                 {
@@ -1405,7 +1451,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     User_groups = account_creation_data.groups,
                     User_roles = account_creation_data.roles,
                     Account_type = account_creation_data.account_type,
-                    Email_address = account_creation_data.email_address
+                    Email_address = dto.Email_Address
                 }).Result;
 
                 CookieOptions cookie_options = new CookieOptions
@@ -1417,7 +1463,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
                 };
 
-                HttpContext.Session.SetString($@"AUTH|MPC:{account_creation_data.id.ToString()}|EMAIL_ADDRESS:{account_creation_data.email_address}", JsonSerializer.Serialize(account_creation_data));
+                HttpContext.Session.SetString($@"AUTH|MPC:{account_creation_data.id}|Login_Type:EMAIL", JsonSerializer.Serialize(created_email_account_token));
                 Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
 
                 return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize( new {

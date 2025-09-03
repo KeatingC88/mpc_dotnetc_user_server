@@ -7,9 +7,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
         public ulong End_User_ID { get; set; }
 
         [Required]
-        public ulong Login_on { get; set; }
-
-        [Required]
         public string Client_time { get; set; } = string.Empty;
 
         public ulong Client_Time_Parsed { get; set; }
@@ -23,6 +20,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
         public int Server_Port { get; set; }
         public string Client_IP { get; set; } = string.Empty;
         public int Client_Port { get; set; }
+
+        public ulong Login_on { get; set; }
 
         [Required]
         public string User_agent { get; set; } = string.Empty;

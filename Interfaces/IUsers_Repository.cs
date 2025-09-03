@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Account_Roles;
@@ -10,7 +10,6 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address
 using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
-using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
@@ -30,7 +29,6 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<bool> Create_Comment_Box_Record(Comment_BoxDTO dto);
         Task<bool> Create_Broken_Link_Record(Reported_Broken_LinkDTO dto);
         Task<bool> Create_Discord_Bot_Bug_Record(Reported_Discord_Bot_BugDTO dto);
-        Task<string> Create_Integration_Twitch_Record(Integration_TwitchDTO dto);
         Task<string> Create_WebSocket_Log_Record(WebSocket_Chat_PermissionDTO dto);
         Task<bool> Create_Website_Bug_Record(Reported_Website_BugDTO dto);
         Task<bool> Create_End_User_Status_Record(Selected_StatusDTO dto);
@@ -38,7 +36,9 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<string> Update_End_User_Account_Groups(Account_GroupsDTO dto);
         Task<bool> Create_Contact_Us_Record(Contact_UsDTO dto);
         Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
-        Task<Completed_Email_Account_CreationDTO> Create_Account_By_Email(Complete_Email_RegistrationDTO dto);
+        Task<User_Data_DTO> Create_Account_By_Email(Complete_Email_RegistrationDTO dto);
+        Task<User_Data_DTO> Integrate_Account_By_Email(Complete_Email_RegistrationDTO dto);
+        Task Integrate_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto);
         Task<User_Data_DTO> Create_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto);
         Task<string> Create_Reported_User_Profile_Record(Reported_ProfileDTO dto);
         Task<string> Delete_Account_By_User_id(Delete_UserDTO dto);

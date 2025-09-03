@@ -113,5 +113,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Add
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
+
+        public ulong End_User_ID { get; set; }
     }
 }

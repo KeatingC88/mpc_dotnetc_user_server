@@ -114,7 +114,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return Conflict();
 
                 return Conflict();
-            } catch (Exception e) {
+            } catch {
                 return Conflict();
             }
         }

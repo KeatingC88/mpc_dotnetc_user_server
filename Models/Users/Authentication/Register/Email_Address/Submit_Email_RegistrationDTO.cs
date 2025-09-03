@@ -28,7 +28,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Add
 
         [Required(ErrorMessage = "Client Time is Missing.")]
         public string Client_time { get; set; } = string.Empty;
-
         public ulong Client_Time_Parsed { get; set; }
 
         [Required(ErrorMessage = "Theme is Missing.")]
@@ -97,6 +96,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Add
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
-
+        public ulong End_User_ID { get; set; } 
+        public string Token { get; set; } = string.Empty;
     }
 }

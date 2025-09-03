@@ -23,7 +23,6 @@ using mpc_dotnetc_user_server.Models.Users.Account_Type;
 using mpc_dotnetc_user_server.Models.Users.Account_Roles;
 using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
-using mpc_dotnetc_user_server.Models.Users.Integration.Twitch;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
 using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch;
@@ -57,8 +56,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             Password = password;
         }
 
-        public async Task<Completed_Email_Account_CreationDTO> Create_Account_By_Email(Complete_Email_RegistrationDTO dto)
+        public async Task<User_Data_DTO> Create_Account_By_Email(Complete_Email_RegistrationDTO dto)
         {
+
             string character_set = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             string user_public_id = @$"{new string(Enumerable.Repeat("0123456789", 5).Select(s => s[random.Next(s.Length)]).ToArray())}";
             ulong clocked = TimeStamp;
@@ -83,7 +83,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             };
             await _UsersDBC.User_IDsTbl.AddAsync(ID_Record);
             await _UsersDBC.SaveChangesAsync();
-            
+
             await _UsersDBC.Pending_Email_RegistrationTbl.Where(x => x.Email_Address == dto.Email_Address).ExecuteUpdateAsync(s => s
                 .SetProperty(col => col.Deleted, 1)
                 .SetProperty(col => col.Deleted_on, clocked)
@@ -113,7 +113,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             );
             await _UsersDBC.SaveChangesAsync();
 
-            await _UsersDBC.Completed_Email_RegistrationTbl.AddAsync(new Completed_Twitch_RegistrationTbl
+            await _UsersDBC.Completed_Email_RegistrationTbl.AddAsync(new Completed_Email_RegistrationTbl
             {
                 Email_Address = dto.Email_Address.ToUpper(),
                 Updated_on = clocked,
@@ -145,7 +145,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             await _UsersDBC.SaveChangesAsync();
 
-            await _UsersDBC.Selected_NameTbl.AddAsync(new Selected_NameTbl {
+            await _UsersDBC.Selected_NameTbl.AddAsync(new Selected_NameTbl
+            {
                 ID = Convert.ToUInt64(_UsersDBC.Selected_NameTbl.Count() + 1),
                 Name = $@"{dto.Name}",
                 User_ID = ID_Record.ID,
@@ -155,7 +156,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Updated_by = ID_Record.ID
             });
             await _UsersDBC.SaveChangesAsync();
-            
+
             await _UsersDBC.Login_Email_AddressTbl.AddAsync(new Login_Email_AddressTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_Email_AddressTbl.Count() + 1),
@@ -167,7 +168,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Updated_by = ID_Record.ID
             });
             await _UsersDBC.SaveChangesAsync();
-            
+
             await _UsersDBC.Login_PasswordTbl.AddAsync(new Password_ChangeTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Login_PasswordTbl.Count() + 1),
@@ -191,7 +192,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Updated_by = ID_Record.ID,
             });
             await _UsersDBC.SaveChangesAsync();
-            
+
             await Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO
             {
                 End_User_ID = ID_Record.ID,
@@ -248,7 +249,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             await _UsersDBC.SaveChangesAsync();
 
-            await Update_End_User_Selected_Status(new Selected_StatusDTO {
+            await Update_End_User_Selected_Status(new Selected_StatusDTO
+            {
                 End_User_ID = ID_Record.ID,
                 Online_status = 2.ToString(),
             });
@@ -289,7 +291,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Down_link = dto.Down_link,
                 Device_ram_gb = dto.Device_ram_gb
             });
-            await _UsersDBC.SaveChangesAsync();
 
             await Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
             {
@@ -319,19 +320,129 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             });
             await _UsersDBC.SaveChangesAsync();
 
-            string time = clocked.ToString();
-
-            return new Completed_Email_Account_CreationDTO
+            return new User_Data_DTO
             {
-                created_on = time,
-                login_on = time,
+                created_on = clocked,
+                login_on = clocked,
                 location = dto.Location,
                 login_type = "email",
                 account_type = 1,
-                grid_type = dto.Grid_type.ToString(),
+                grid_type = dto.Grid_type,
                 online_status = 2,
                 id = ID_Record.ID,
                 name = $@"{dto.Name}#{user_public_id}",
+                email_address = dto.Email_Address,
+                language = dto.Language,
+                region = dto.Region,
+                alignment = dto.Alignment,
+                nav_lock = dto.Nav_lock,
+                text_alignment = dto.Text_alignment,
+                theme = dto.Theme,
+                roles = "User",
+                groups = "0"
+            };
+        }
+        public async Task<User_Data_DTO> Integrate_Account_By_Email(Complete_Email_RegistrationDTO dto)
+        {
+            ulong clocked = TimeStamp;
+
+            await _UsersDBC.Pending_Email_RegistrationTbl.Where(x => x.Email_Address == dto.Email_Address).ExecuteUpdateAsync(s => s
+                .SetProperty(col => col.Deleted, 1)
+                .SetProperty(col => col.Deleted_on, clocked)
+                .SetProperty(col => col.Updated_on, clocked)
+                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                .SetProperty(col => col.Deleted_by, dto.End_User_ID)
+                .SetProperty(col => col.Client_time, dto.Client_time)
+                .SetProperty(col => col.Server_Port, dto.Server_Port)
+                .SetProperty(col => col.Server_IP, dto.Server_IP_Address)
+                .SetProperty(col => col.Client_Port, dto.Client_Port)
+                .SetProperty(col => col.Client_IP, dto.Client_IP)
+                .SetProperty(col => col.Client_IP, dto.Remote_IP)
+                .SetProperty(col => col.Client_Port, dto.Remote_Port)
+                .SetProperty(col => col.User_agent, dto.User_agent)
+                .SetProperty(col => col.Window_width, dto.Window_width)
+                .SetProperty(col => col.Window_height, dto.Window_height)
+                .SetProperty(col => col.Screen_width, dto.Screen_width)
+                .SetProperty(col => col.Screen_height, dto.Screen_height)
+                .SetProperty(col => col.RTT, dto.RTT)
+                .SetProperty(col => col.Orientation, dto.Orientation)
+                .SetProperty(col => col.Data_saver, dto.Data_saver)
+                .SetProperty(col => col.Color_depth, dto.Color_depth)
+                .SetProperty(col => col.Pixel_depth, dto.Pixel_depth)
+                .SetProperty(col => col.Connection_type, dto.Connection_type)
+                .SetProperty(col => col.Down_link, dto.Down_link)
+                .SetProperty(col => col.Device_ram_gb, dto.Device_ram_gb)
+            );
+            await _UsersDBC.SaveChangesAsync();
+
+            await _UsersDBC.Completed_Email_RegistrationTbl.AddAsync(new Completed_Email_RegistrationTbl
+            {
+                Email_Address = dto.Email_Address.ToUpper(),
+                Updated_on = clocked,
+                Updated_by = (ulong)0,
+                Language_Region = @$"{dto.Language}-{dto.Region}",
+                Created_on = clocked,
+                Created_by = dto.End_User_ID,
+                Code = dto.Code,
+                Remote_IP = dto.Remote_IP,
+                Remote_Port = dto.Remote_Port,
+                Server_IP = dto.Server_IP_Address,
+                Server_Port = dto.Server_Port,
+                Client_IP = dto.Client_IP,
+                Client_Port = dto.Client_Port,
+                Client_time = dto.Client_time,
+                User_agent = dto.User_agent,
+                Window_height = dto.Window_height,
+                Window_width = dto.Window_width,
+                Screen_height = dto.Screen_height,
+                Screen_width = dto.Screen_width,
+                RTT = dto.RTT,
+                Orientation = dto.Orientation,
+                Data_saver = dto.Data_saver,
+                Color_depth = dto.Color_depth,
+                Pixel_depth = dto.Pixel_depth,
+                Connection_type = dto.Connection_type,
+                Down_link = dto.Down_link,
+                Device_ram_gb = dto.Device_ram_gb
+            });
+            await _UsersDBC.SaveChangesAsync();
+
+            await _UsersDBC.Login_Email_AddressTbl.AddAsync(new Login_Email_AddressTbl
+            {
+                ID = Convert.ToUInt64(_UsersDBC.Login_Email_AddressTbl.Count() + 1),
+                User_ID = dto.End_User_ID,
+                Email_Address = dto.Email_Address.ToUpper(),
+                Updated_on = clocked,
+                Created_on = clocked,
+                Created_by = dto.End_User_ID,
+                Updated_by = dto.End_User_ID
+            });
+            await _UsersDBC.SaveChangesAsync();
+
+            await _UsersDBC.Login_PasswordTbl.AddAsync(new Password_ChangeTbl
+            {
+                ID = Convert.ToUInt64(_UsersDBC.Login_PasswordTbl.Count() + 1),
+                User_ID = dto.End_User_ID,
+                Password = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result,
+                Updated_on = clocked,
+                Created_on = clocked,
+                Created_by = dto.End_User_ID,
+                Updated_by = dto.End_User_ID,
+            });
+            await _UsersDBC.SaveChangesAsync();
+
+            string time = clocked.ToString();
+
+            return new User_Data_DTO
+            {
+                created_on = clocked,
+                login_on = clocked,
+                location = dto.Location,
+                account_type = 1,
+                grid_type = dto.Grid_type,
+                online_status = 2,
+                id = dto.End_User_ID,
+                name = $@"{dto.Name}",
                 email_address = dto.Email_Address,
                 language = dto.Language,
                 region = dto.Region,
@@ -385,7 +496,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.Selected_NameTbl.AddAsync(new Selected_NameTbl
             {
                 ID = Convert.ToUInt64(_UsersDBC.Selected_NameTbl.Count() + 1),
-                Name = $@"{dto.Twitch_Name}#{user_public_id}",
+                Name = $@"{dto.Twitch_Name}",
                 User_ID = ID_Record.ID,
                 Updated_on = clocked,
                 Created_on = clocked,
@@ -559,6 +670,35 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 login_type = "twitch",
             };
         }
+        public async Task Integrate_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto)
+        {
+            ulong clocked = TimeStamp;
+
+            await _UsersDBC.Twitch_IDsTbl.AddAsync(new Twitch_IDsTbl
+            {
+                ID = Convert.ToUInt64(_UsersDBC.Twitch_IDsTbl.Count() + 1),
+                User_ID = dto.End_User_ID,
+                Twitch_ID = dto.Twitch_ID,
+                Updated_on = clocked,
+                Created_on = clocked,
+                Created_by = dto.End_User_ID,
+                Updated_by = dto.End_User_ID
+            });
+            await _UsersDBC.SaveChangesAsync();
+
+            await _UsersDBC.Twitch_Email_AddressTbl.AddAsync(new Twitch_Email_AddressTbl
+            {
+                ID = Convert.ToUInt64(_UsersDBC.Twitch_Email_AddressTbl.Count() + 1),
+                User_ID = dto.End_User_ID,
+                Email_Address = dto.Email_Address.ToUpper(),
+                Updated_on = clocked,
+                Created_on = clocked,
+                Created_by = dto.End_User_ID,
+                Updated_by = dto.End_User_ID
+            });
+            await _UsersDBC.SaveChangesAsync();
+        }
+
         public async Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto)
         {
             ulong clocked = TimeStamp;
@@ -3436,9 +3576,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Color_depth = dto.Color_depth,
                         Pixel_depth = dto.Pixel_depth
                     });
-                }
-                else
-                {
+                } else {
                     await _UsersDBC.Login_Time_StampTbl.Where(x => x.User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Updated_by, dto.End_User_ID)
                     .SetProperty(col => col.Login_on, clocked)
@@ -3451,9 +3589,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(col => col.Client_IP, dto.Client_IP)
                     .SetProperty(col => col.Client_Port, dto.Client_Port)
                     .SetProperty(col => col.Updated_on, clocked));
-                    await _UsersDBC.SaveChangesAsync();
                 }
 
+                await _UsersDBC.SaveChangesAsync();
                 return Task.FromResult(JsonSerializer.Serialize(new {
                     id = dto.End_User_ID,
                     login_on = clocked
@@ -3468,7 +3606,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 ulong clocked = TimeStamp;
 
-                await _UsersDBC.Login_Time_Stamp_HistoryTbl.AddAsync(new Login_Time_Stamp_HistoryTbl {
+                await _UsersDBC.Login_Time_Stamp_HistoryTbl.AddAsync(new Login_Time_Stamp_HistoryTbl
+                {
                     ID = Convert.ToUInt64(_UsersDBC.Login_Time_Stamp_HistoryTbl.Count() + 1),
                     User_ID = dto.End_User_ID,
                     Updated_on = clocked,
@@ -3498,6 +3637,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Color_depth = dto.Color_depth,
                     Pixel_depth = dto.Pixel_depth
                 });
+
                 await _UsersDBC.SaveChangesAsync();
                 return await Task.FromResult(JsonSerializer.Serialize(new
                 {
@@ -4082,7 +4222,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<ulong> Read_User_ID_By_Twitch_Account_Email(string twitch_email)
         {
-            return await Task.FromResult(_UsersDBC.Twitch_Email_AddressTbl.Where(x => x.Email_Address == twitch_email).Select(x => x.User_ID).SingleOrDefault());
+            return await Task.FromResult(_UsersDBC.Twitch_Email_AddressTbl.Where(x => x.Email_Address == twitch_email.ToUpper()).Select(x => x.User_ID).SingleOrDefault());
         }
         public async Task<ulong> Read_User_ID_By_Discord_Account_ID(ulong discord_id)
         {
@@ -4091,12 +4231,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public async Task<ulong> Read_User_ID_By_Discord_Account_Email(string discord_email)
         {
             return await Task.FromResult(_UsersDBC.Discord_Email_AddressTbl.Where(x => x.Email_Address == discord_email).Select(x => x.User_ID).SingleOrDefault());
-        }
-        public async Task<string> Create_Integration_Twitch_Record(Integration_TwitchDTO dto)
-        {
-            return await Task.FromResult(JsonSerializer.Serialize(new {
-                id = dto.End_User_ID
-            }));
         }
         public async Task Create_WebSocket_Permission_Record(WebSocket_Chat_PermissionDTO dto)
         {
@@ -4353,10 +4487,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 }
                 await _UsersDBC.SaveChangesAsync();
                 return JsonSerializer.Serialize(new { end_user_groups = dto.Groups });
-            } catch{
+            }
+            catch
+            {
                 return "Server Error: Update Account Groups Failed.";
             }
         }
+
         public async Task<string> Update_End_User_Account_Roles(Account_RolesDTO dto)
         {
             try
