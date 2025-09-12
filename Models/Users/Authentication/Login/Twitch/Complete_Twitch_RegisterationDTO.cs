@@ -1,5 +1,4 @@
-﻿using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
 {

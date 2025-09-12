@@ -2,7 +2,7 @@
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
 {
-    public class Validate_TwitchDTO
+    public class Validate_Twitch_LoginDTO
     {
         [Required(ErrorMessage = "Theme is Missing.")]
         public string Theme { get; set; } = string.Empty;

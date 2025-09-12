@@ -38,7 +38,7 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<string> Create_Pending_Email_Registration_Record(Pending_Email_RegistrationDTO dto);
         Task<User_Data_DTO> Create_Account_By_Email(Complete_Email_RegistrationDTO dto);
         Task<User_Data_DTO> Integrate_Account_By_Email(Complete_Email_RegistrationDTO dto);
-        Task Integrate_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto);
+        Task Integrate_Account_By_Twitch(Complete_Twitch_IntegrationDTO dto);
         Task<User_Data_DTO> Create_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto);
         Task<string> Create_Reported_User_Profile_Record(Reported_ProfileDTO dto);
         Task<string> Delete_Account_By_User_id(Delete_UserDTO dto);

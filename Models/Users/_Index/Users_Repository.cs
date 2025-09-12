@@ -670,7 +670,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 login_type = "twitch",
             };
         }
-        public async Task Integrate_Account_By_Twitch(Complete_Twitch_RegisterationDTO dto)
+        public async Task Integrate_Account_By_Twitch(Complete_Twitch_IntegrationDTO dto)
         {
             ulong clocked = TimeStamp;
 
