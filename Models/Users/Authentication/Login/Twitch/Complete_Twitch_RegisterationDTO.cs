@@ -28,6 +28,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
         [Required(ErrorMessage = "Twitch Name is Missing.")]
         public string Twitch_Name { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Twitch User Name is Missing.")]
+        public string Twitch_User_Name { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Client Time is Missing.")]
         public ulong Client_time { get; set; }
 

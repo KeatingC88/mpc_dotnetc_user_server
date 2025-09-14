@@ -124,7 +124,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 Twitch_User_Response? user_data = Twitch.Get_User_Data(twitch_access_token).Result;
 
                 string created_email_account_token = "";
-                ulong mpc_member_mpc_id = 0;
+                ulong mpc_id = 0;
                 User_Data_DTO mpc_member_data = new User_Data_DTO { };
 
                 if (user_data.Data.IsNullOrEmpty())
@@ -135,18 +135,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 string user_email = user_data.Data[0].Email;
                 string user_display_name = user_data.Data[0].DisplayName;
                 ulong user_twitch_id = ulong.Parse(user_data.Data[0].Id);
+                string user_twitch_login_name = user_data.Data[0].Login;
 
                 bool user_twitch_id_exists = Users_Repository.ID_Exists_In_Twitch_IDsTbl(user_twitch_id).Result;
                 bool twitch_email_exists = Users_Repository.Email_Exists_In_Twitch_Email_AddressTbl(user_email).Result;
 
                 if (user_twitch_id_exists && twitch_email_exists) {
 
-                    mpc_member_mpc_id = Users_Repository.Read_User_ID_By_Twitch_Account_Email(user_email).Result;
-                    mpc_member_data = Users_Repository.Read_User_Data_By_ID(mpc_member_mpc_id).Result;
+                    mpc_id = Users_Repository.Read_User_ID_By_Twitch_Account_Email(user_email).Result;
+                    mpc_member_data = Users_Repository.Read_User_Data_By_ID(mpc_id).Result;
 
                     await Users_Repository.Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
                     {
-                        End_User_ID = mpc_member_mpc_id,
+                        End_User_ID = mpc_id,
                         Client_Time_Parsed = dto.Client_Time_Parsed,
                         Location = dto.Location,
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
@@ -172,7 +173,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                     await Users_Repository.Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
                     {
-                        End_User_ID = mpc_member_mpc_id,
+                        End_User_ID = mpc_id,
                         Client_Time_Parsed = dto.Client_Time_Parsed,
                         Location = dto.Location,
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
@@ -201,6 +202,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     mpc_member_data = Users_Repository.Create_Account_By_Twitch(new Complete_Twitch_RegisterationDTO
                     {
                         Twitch_Name = user_display_name,
+                        Twitch_User_Name = user_twitch_login_name,
                         Twitch_ID = user_twitch_id,
                         Email_Address = user_email,
                         Language = dto.Language,
@@ -353,11 +355,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 string user_email = user_data.Data[0].Email;
                 string user_display_name = user_data.Data[0].DisplayName;
                 ulong user_twitch_id = ulong.Parse(user_data.Data[0].Id);
+                string user_twitch_login_name = user_data.Data[0].Login;
 
                 bool user_twitch_id_exists = Users_Repository.ID_Exists_In_Twitch_IDsTbl(user_twitch_id).Result;
                 bool twitch_email_exists = Users_Repository.Email_Exists_In_Twitch_Email_AddressTbl(user_email).Result;
 
-                if (user_twitch_id_exists || twitch_email_exists ) {
+                if (user_twitch_id_exists || twitch_email_exists || user_twitch_login_name.IsNullOrEmpty()) {
                     return BadRequest();
                 }
 
@@ -366,6 +369,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     End_User_ID = dto.End_User_ID,
                     Twitch_ID = user_twitch_id,
                     Email_Address = user_email,
+                    Twitch_User_Name = user_twitch_login_name,
                     Code = dto.Code
                 });
 

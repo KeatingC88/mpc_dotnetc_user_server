@@ -486,6 +486,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 ID = Convert.ToUInt64(_UsersDBC.Twitch_IDsTbl.Count() + 1),
                 User_ID = ID_Record.ID,
                 Twitch_ID = dto.Twitch_ID,
+                User_Name = dto.Twitch_User_Name,
                 Updated_on = clocked,
                 Created_on = clocked,
                 Created_by = ID_Record.ID,
@@ -679,6 +680,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 ID = Convert.ToUInt64(_UsersDBC.Twitch_IDsTbl.Count() + 1),
                 User_ID = dto.End_User_ID,
                 Twitch_ID = dto.Twitch_ID,
+                User_Name = dto.Twitch_User_Name,
                 Updated_on = clocked,
                 Created_on = clocked,
                 Created_by = dto.End_User_ID,
@@ -940,6 +942,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             byte text_alignment_type = 0;
             //Third Party IDs
             ulong? twitch_user_id = _UsersDBC.Twitch_IDsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Twitch_ID).SingleOrDefault();
+            string? twitch_user_name = _UsersDBC.Twitch_IDsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.User_Name).SingleOrDefault();
             ulong? discord_user_id = _UsersDBC.Discord_IDsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Discord_ID).SingleOrDefault();
             ulong login_timestamp = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Login_on).SingleOrDefault();
             ulong logout_timestamp = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Logout_on).SingleOrDefault();
@@ -1021,6 +1024,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 account_type = account_type,
                 email_address = email_address,
                 twitch_id = twitch_user_id,
+                twitch_user_name = twitch_user_name,
                 discord_id = discord_user_id,
                 twitch_email_address = twitch_email_address,
                 discord_email_address = discord_email_address,

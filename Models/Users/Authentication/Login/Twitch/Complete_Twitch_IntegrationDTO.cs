@@ -4,6 +4,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
 {
     public class Complete_Twitch_IntegrationDTO
     {
+        [Required(ErrorMessage = "Twitch_User_Name is Missing.")]
+        public string Twitch_User_Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email Address is Missing.")]
         public string Email_Address { get; set; } = string.Empty;

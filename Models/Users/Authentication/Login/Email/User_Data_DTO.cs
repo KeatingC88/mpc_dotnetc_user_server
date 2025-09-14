@@ -8,6 +8,7 @@
         public byte account_type { get; set; }
         public string? email_address { get; set; } = string.Empty;
         public string? twitch_email_address { get; set; } = string.Empty;
+        public string? twitch_user_name { get; set; } = string.Empty;
         public string? discord_email_address { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
         public ulong login_on { get; set; }

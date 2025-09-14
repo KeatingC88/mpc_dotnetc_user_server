@@ -18,6 +18,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public ulong Twitch_ID { get; set; }
 
         [Required]
+        public string User_Name { get; set; } = string.Empty;
+
+        [Required]
         [Range(1, ulong.MaxValue, ErrorMessage = "End User ID must be greater than 0.")]
         public ulong Created_by { get; set; }
 
