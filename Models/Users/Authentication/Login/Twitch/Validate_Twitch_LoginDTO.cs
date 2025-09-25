@@ -89,7 +89,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
-        public string Token { get;set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
         public ulong End_User_ID { get; set; }
     }
 }

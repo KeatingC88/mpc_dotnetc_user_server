@@ -863,7 +863,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_Time_Parsed = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,

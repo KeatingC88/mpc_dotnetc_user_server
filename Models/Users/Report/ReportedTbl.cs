@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.WebSocket_Chat
+namespace mpc_dotnetc_user_server.Models.Users.Report
 {
-    public class Reported_WebSocketTbl
+    public class ReportedTbl
     {
         public ulong Created_by { get; set; }
         public ulong Created_on { get; set; }

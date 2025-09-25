@@ -1,31 +1,34 @@
-﻿using System.Dynamic;
-using System.Text.Json;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using mpc_dotnetc_user_server.Models.Users.Identity;
-using mpc_dotnetc_user_server.Models.Users.Feedback;
-using mpc_dotnetc_user_server.Models.Users.Selection;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using mpc_dotnetc_user_server.Interfaces;
+using mpc_dotnetc_user_server.Models.Report;
+using mpc_dotnetc_user_server.Models.Users.Account_Groups;
+using mpc_dotnetc_user_server.Models.Users.Account_Roles;
+using mpc_dotnetc_user_server.Models.Users.Account_Type;
 using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
+using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
+using mpc_dotnetc_user_server.Models.Users.Feedback;
+using mpc_dotnetc_user_server.Models.Users.Friends;
+using mpc_dotnetc_user_server.Models.Users.Identity;
+using mpc_dotnetc_user_server.Models.Users.Report;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
+using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
 using mpc_dotnetc_user_server.Models.Users.Selected.Name;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
-using mpc_dotnetc_user_server.Models.Users.Selected.Status;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
-using Microsoft.IdentityModel.Tokens;
+using mpc_dotnetc_user_server.Models.Users.Selected.Status;
+using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
-using mpc_dotnetc_user_server.Models.Report;
-using mpc_dotnetc_user_server.Models.Users.Account_Type;
-using mpc_dotnetc_user_server.Models.Users.Account_Roles;
-using mpc_dotnetc_user_server.Models.Users.Account_Groups;
-using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
-using mpc_dotnetc_user_server.Interfaces;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch;
+using StackExchange.Redis;
+using System.Dynamic;
+using System.Text;
+using System.Text.Json;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -47,8 +50,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             IAES aes, 
             IJWT jwt,
             IPassword password
-        )
-        {
+        ){
             _UsersDBC = Users_Database_Context;
             _Constants = constants;
             AES = aes;
@@ -944,9 +946,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             ulong? twitch_user_id = _UsersDBC.Twitch_IDsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Twitch_ID).SingleOrDefault();
             string? twitch_user_name = _UsersDBC.Twitch_IDsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.User_Name).SingleOrDefault();
             ulong? discord_user_id = _UsersDBC.Discord_IDsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Discord_ID).SingleOrDefault();
+            //Time Stamps
             ulong login_timestamp = _UsersDBC.Login_Time_StampTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Login_on).SingleOrDefault();
             ulong logout_timestamp = _UsersDBC.Logout_Time_StampTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Logout_on).SingleOrDefault();
             ulong created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Created_on).SingleOrDefault();
+            //Profile Related
             byte? gender = _UsersDBC.IdentityTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Gender).SingleOrDefault();
             byte? birth_day = _UsersDBC.Birth_DateTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Day).SingleOrDefault();
             byte? birth_month = _UsersDBC.Birth_DateTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Month).SingleOrDefault();
@@ -970,6 +974,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             string? ethnicity = _UsersDBC.IdentityTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Ethnicity).SingleOrDefault();
             string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Groups).SingleOrDefault();
             string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Roles).SingleOrDefault();
+            //CSS Customization Data
             string? card_border_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Border_Color).SingleOrDefault();
             string? card_header_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Header_Font).SingleOrDefault();
             string? card_header_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Card_Header_Font_Color).SingleOrDefault();
@@ -1035,10 +1040,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 language = language_code,
                 region = region_code,
                 online_status = status_type,
-                custom_lbl = customLbl,
+                custom_lbl = customLbl ?? "",
                 created_on = created_on,
-                avatar_url_path = avatar_url_path,
-                avatar_title = avatar_title,
+                avatar_url_path = avatar_url_path ?? "",
+                avatar_title = avatar_title ?? "",
                 theme = theme_type,
                 alignment = alignment_type,
                 text_alignment = text_alignment_type,
@@ -1046,13 +1051,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 birth_day = birth_day,
                 birth_month = birth_month,
                 birth_year = birth_year,
-                first_name = first_name,
-                last_name = last_name,
-                middle_name = middle_name,
-                maiden_name = maiden_name,
-                ethnicity = ethnicity,
-                groups = groups,
-                roles = roles,
+                first_name = first_name ?? "",
+                last_name = last_name ?? "",
+                middle_name = middle_name ?? "",
+                maiden_name = maiden_name ?? "",
+                ethnicity = ethnicity ?? "",
+                groups = groups ?? "",
+                roles = roles ?? "",
                 grid_type = grid_type,
                 nav_lock = nav_lock,
                 card_border_color = card_border_color,
@@ -1073,7 +1078,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 button_font_color = button_font_color
             });
         }
-
         public async Task<User_Token_Data_DTO> Read_Require_Token_Data_By_ID(ulong end_user_id)
         {
             string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
@@ -1229,7 +1233,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 approved = 0,
             });
         }
-        public async Task<string> Read_All_End_User_WebSocket_Sent_Chat_Requests(ulong user_id)
+        public async Task<string> Read_End_User_WebSocket_Sent_Chat_Requests(ulong user_id)
         {
             if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.User_ID == user_id)) {
                 return "";
@@ -1239,7 +1243,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .ToList()));
             }
         }
-        public async Task<string> Read_All_End_User_WebSocket_Sent_Chat_Blocks(ulong user_id)
+        public async Task<string> Read_End_User_WebSocket_Sent_Chat_Blocks(ulong user_id)
         {
             if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.User_ID == user_id))
             {
@@ -1252,7 +1256,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .ToList()));
             }
         }
-        public async Task<string> Read_All_End_User_WebSocket_Sent_Chat_Approvals(ulong user_id)
+        public async Task<string> Read_End_User_WebSocket_Sent_Chat_Approvals(ulong user_id)
         {
             if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.User_ID == user_id))
             {
@@ -1265,7 +1269,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .ToList()));
             }
         }
-        public async Task<string> Read_All_End_User_WebSocket_Received_Chat_Requests(ulong user_id)
+        public async Task<string> Read_End_User_WebSocket_Received_Chat_Requests(ulong user_id)
         {
             if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
             {
@@ -1278,7 +1282,20 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .ToList()));
             }
         }
-        public async Task<string> Read_All_End_User_WebSocket_Received_Chat_Blocks(ulong user_id)
+        public async Task<string> Read_End_User_Received_Friend_Requests(ulong user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_WebSocket_Received_Chat_Blocks(ulong user_id)
         {
             if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
             {
@@ -1291,7 +1308,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .ToList()));
             }
         }
-        public async Task<string> Read_All_End_User_WebSocket_Received_Chat_Approvals(ulong user_id)
+        public async Task<string> Read_End_User_WebSocket_Received_Chat_Approvals(ulong user_id)
         {
             if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
             {
@@ -1301,6 +1318,84 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 return await Task.FromResult(JsonSerializer.Serialize(
                     _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Approved == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Sent_Requests(ulong user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.User_ID == user_id && x.Requested == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Sent_Blocks(ulong user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.User_ID == user_id && x.Blocked == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Sent_Approvals(ulong user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.User_ID == user_id && x.Approved == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Received_Requests(ulong user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Received_Blocks(ulong user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Blocked == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Received_Approvals(ulong user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Approved == 1)
                     .ToList()));
             }
         }
@@ -1327,14 +1422,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Status = 5;
             return await Task.FromResult(Status);
         }
-        public async Task<string> Create_Reported_WebSocket_Records(Reported_WebSocketDTO dto)
+        public async Task<string> Create_Reported_Record(ReportedDTO dto)
         {
             try
             {
                 switch (dto.Report_type.ToUpper())
                 {
                     case "THREAT":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1345,11 +1440,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Threat = 1,
                                 Updated_on = TimeStamp,
@@ -1360,8 +1455,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong threat_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Threat).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong threat_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Threat).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Threat, (threat_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1376,7 +1471,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             threat_record_created_on = TimeStamp,
                         });
                     case "SPAM":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1387,11 +1482,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Spam = 1,
                                 Updated_on = TimeStamp,
@@ -1402,8 +1497,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong spam_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Spam).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong spam_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Spam).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Spam, (spam_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1418,7 +1513,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             spam_record_created_on = TimeStamp,
                         });
                     case "BLOCK":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1429,11 +1524,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Block = 1,
                                 Updated_on = TimeStamp,
@@ -1444,8 +1539,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong block_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Block).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong block_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Block).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Block, (block_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1460,7 +1555,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             block_record_created_on = TimeStamp,
                         });
                     case "ABUSE":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1471,11 +1566,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Abuse = 1,
                                 Updated_on = TimeStamp,
@@ -1486,8 +1581,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong abuse_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Abuse).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong abuse_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Abuse).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Abuse, (abuse_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1502,7 +1597,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             abuse_record_created_on = TimeStamp,
                         });
                     case "MISINFORM":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1513,11 +1608,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Misinform = 1,
                                 Updated_on = TimeStamp,
@@ -1528,8 +1623,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong misinform_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Misinform).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong misinform_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Misinform).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Misinform, (misinform_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1544,7 +1639,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             misinform_record_created_on = TimeStamp,
                         });
                     case "HARASS":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1555,11 +1650,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Harass = 1,
                                 Updated_on = TimeStamp,
@@ -1570,8 +1665,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong harass_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Harass).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong harass_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Harass).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Harass, (harass_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1586,7 +1681,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             harass_record_created_on = TimeStamp,
                         });
                     case "FAKE":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1597,11 +1692,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Fake = 1,
                                 Updated_on = TimeStamp,
@@ -1612,8 +1707,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong fake_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Fake).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong fake_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Fake).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Fake, (fake_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1628,7 +1723,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             fake_account_record_created_on = TimeStamp,
                         });
                     case "HATE":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1639,11 +1734,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Hate = 1,
                                 Updated_on = TimeStamp,
@@ -1654,8 +1749,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong hate_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Nudity).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong hate_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Nudity).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Hate, (hate_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1670,7 +1765,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             hate_record_created_on = TimeStamp,
                         });
                     case "NUDITY":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1681,11 +1776,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Nudity = 1,
                                 Updated_on = TimeStamp,
@@ -1696,8 +1791,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong nudity_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Nudity).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong nudity_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Nudity).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Nudity, (nudity_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1712,7 +1807,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             nudity_record_created_on = TimeStamp,
                         });
                     case "VIOLENCE":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1723,11 +1818,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Violence = 1,
                                 Updated_on = TimeStamp,
@@ -1738,8 +1833,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong violence_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Violence).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong violence_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Violence).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Violence, (violence_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1754,7 +1849,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             violence_record_created_on = TimeStamp,
                         });
                     case "ILLEGAL":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1765,11 +1860,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Illegal = 1,
                                 Updated_on = TimeStamp,
@@ -1780,8 +1875,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong illegal_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Illegal).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong illegal_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Illegal).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Illegal, (illegal_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1796,7 +1891,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             illegal_record_created_on = TimeStamp,
                         });
                     case "SELF_HARM":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1807,11 +1902,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Self_harm = 1,
                                 Updated_on = TimeStamp,
@@ -1822,8 +1917,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong self_harm_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Self_harm).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong self_harm_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Self_harm).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Self_harm, (self_harm_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1838,7 +1933,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             self_harm_record_created_on = TimeStamp,
                         });
                     case "DISRUPTION":
-                        await _UsersDBC.Reported_WebSocket_HistoryTbl.AddAsync(new Reported_WebSocket_HistoryTbl
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
                             User_ID = dto.Participant_ID,
                             Participant_ID = dto.End_User_ID,
@@ -1849,11 +1944,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.Reported_WebSocketTbl.Any(x => x.User_ID == dto.Participant_ID))
+                        if (!_UsersDBC.ReportedTbl.Any(x => x.User_ID == dto.Participant_ID))
                         {
-                            await _UsersDBC.Reported_WebSocketTbl.AddAsync(new Reported_WebSocketTbl
+                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
                             {
-                                ID = Convert.ToUInt64(_UsersDBC.Reported_WebSocketTbl.Count() + 1),
+                                ID = Convert.ToUInt64(_UsersDBC.ReportedTbl.Count() + 1),
                                 User_ID = dto.Participant_ID,
                                 Disruption = 1,
                                 Updated_on = TimeStamp,
@@ -1864,8 +1959,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         }
                         else
                         {
-                            ulong disruption_count = _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Disruption).SingleOrDefault();
-                            await _UsersDBC.Reported_WebSocketTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            ulong disruption_count = _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).Select(x => x.Disruption).SingleOrDefault();
+                            await _UsersDBC.ReportedTbl.Where(x => x.User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                                 .SetProperty(col => col.Disruption, (disruption_count + 1))
                                 .SetProperty(col => col.Updated_on, TimeStamp)
                                 .SetProperty(col => col.Updated_by, dto.End_User_ID)
@@ -1883,7 +1978,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         return "Server Error: Report Record Selection Failed.";
                 }
             } catch {
-                return "Server Error: Report Record Creation Failed."; 
+                return "Server Error: Report Record Creation Failed.";
             }
         }
         public async Task<string> Update_Chat_Web_Socket_Permissions_Tbl(WebSocket_Chat_PermissionTbl dto)
@@ -1930,13 +2025,102 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 }
                 return "Server Error: Update Chat Permission Selection Failed.";
             }
-            catch {
-                return "Server Error: Update Chat Permissions Failed."; 
+            catch
+            {
+                return "Server Error: Update Chat Permissions Failed.";
             }
         }
-        public async Task<string> Delete_Chat_Web_Socket_Permissions_Tbl(WebSocket_Chat_PermissionTbl dto)
+        public async Task<string> Update_Friend_PermissionsTbl(Friends_PermissionTbl dto)
         {
-            try {
+            try
+            {
+                ulong clocked = TimeStamp;
+
+                if (_UsersDBC.Friends_PermissionTbl.Any((x) => x.User_ID == dto.User_ID && x.Participant_ID == dto.Participant_ID && x.Deleted == false))
+                {
+                    await _UsersDBC.Friends_PermissionTbl.Where(x => x.User_ID == dto.User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            .SetProperty(dto => dto.Requested, dto.Requested)
+                            .SetProperty(dto => dto.Blocked, dto.Blocked)
+                            .SetProperty(dto => dto.Approved, dto.Approved)
+                            .SetProperty(dto => dto.Updated_on, clocked)
+                            .SetProperty(dto => dto.Updated_by, dto.User_ID)
+                        );
+                    await _UsersDBC.SaveChangesAsync();
+                    return JsonSerializer.Serialize(new
+                    {
+                        id = dto.User_ID,
+                        participant_id = dto.Participant_ID,
+                        updated_on = clocked,
+                        updated_by = dto.User_ID
+                    });
+                } else if (_UsersDBC.Friends_PermissionTbl.Any((x) => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.User_ID && x.Deleted == false)) {
+                    await _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.User_ID).ExecuteUpdateAsync(s => s
+                            .SetProperty(dto => dto.Requested, dto.Requested)
+                            .SetProperty(dto => dto.Blocked, dto.Blocked)
+                            .SetProperty(dto => dto.Approved, dto.Approved)
+                            .SetProperty(dto => dto.Updated_on, clocked)
+                            .SetProperty(dto => dto.Updated_by, dto.User_ID)
+                        );
+                    await _UsersDBC.SaveChangesAsync();
+                    return JsonSerializer.Serialize(new
+                    {
+                        id = dto.User_ID,
+                        participant_id = dto.Participant_ID,
+                        updated_on = clocked,
+                        updated_by = dto.User_ID,
+                        requested = dto.Requested,
+                        blocked = dto.Blocked,
+                        approved = dto.Approved
+                    });
+                }
+                return "Server Error: Update Friend Permission Selection Failed.";
+            } catch {
+                return "Server Error: Update Friend Permissions Failed.";
+            }
+        }
+
+        public async Task<string> Insert_Friend_PermissionsTbl(Friends_PermissionDTO dto)
+        {
+            try
+            {
+                ulong clocked = TimeStamp;
+
+                var permission_record_exists_in_database = await _UsersDBC.Friends_PermissionTbl.Where(x =>
+                    (x.User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID) ||
+                    (x.User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID)
+                ).FirstOrDefaultAsync();
+
+                if (permission_record_exists_in_database == null)
+                {
+                    var newEntry = new Friends_PermissionTbl
+                    {
+                        // Let the DB generate the ID
+                        User_ID = dto.End_User_ID,
+                        Participant_ID = dto.Participant_ID,
+                        Updated_on = clocked,
+                        Created_on = clocked,
+                        Updated_by = dto.End_User_ID,
+                        Created_by = dto.End_User_ID,
+                        Requested = 1
+                    };
+
+                    await _UsersDBC.Friends_PermissionTbl.AddAsync(newEntry);
+                    await _UsersDBC.SaveChangesAsync();
+                }
+
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    participant_id = dto.Participant_ID
+                }));
+            } catch {
+                return Task.FromResult(JsonSerializer.Serialize("Login TS History Failed.")).Result;
+            }
+        }
+        public async Task<string> Delete_From_Web_Socket_Chat_Permissions_Tbl(WebSocket_Chat_PermissionTbl dto)
+        {
+            try
+            {
                 ulong clock = TimeStamp;
                 await _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.User_ID == dto.User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
                     .SetProperty(dto => dto.Requested, dto.Requested)
@@ -1949,7 +2133,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .SetProperty(dto => dto.Updated_by, dto.Participant_ID)
                 );
                 await _UsersDBC.SaveChangesAsync();
-                return JsonSerializer.Serialize(new { 
+                return JsonSerializer.Serialize(new
+                {
                     id = dto.User_ID,
                     participant_id = dto.Participant_ID,
                     deleted_on = clock
@@ -1958,6 +2143,62 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             catch
             {
                 return "Server Error: Delete Chat Permissions Failed.";
+            }
+        }
+        public async Task<string> Delete_From_Friend_PermissionsTbl(Friends_PermissionTbl dto)
+        {
+            try
+            {
+                ulong clocked = TimeStamp;
+
+                await Task.Run(async () =>
+                {
+                    if (_UsersDBC.Friends_PermissionTbl.Any(x => x.User_ID == dto.User_ID && x.Participant_ID == dto.Participant_ID && x.Deleted == false))
+                    {
+                        await _UsersDBC.Friends_PermissionTbl.Where(x => x.User_ID == dto.User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            .SetProperty(dto => dto.Requested, 0)
+                            .SetProperty(dto => dto.Blocked, 0)
+                            .SetProperty(dto => dto.Approved, 0)
+                            .SetProperty(dto => dto.Updated_on, clocked)
+                            .SetProperty(dto => dto.Deleted, true)
+                            .SetProperty(dto => dto.Updated_by, dto.User_ID)
+                        );
+                        await _UsersDBC.SaveChangesAsync();
+                    } else if (_UsersDBC.Friends_PermissionTbl.Any(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.User_ID && x.Deleted == false)) {
+                        await _UsersDBC.Friends_PermissionTbl.Where(x => x.User_ID == dto.Participant_ID && x.Participant_ID == dto.User_ID).ExecuteUpdateAsync(s => s
+                            .SetProperty(dto => dto.Requested, 0)
+                            .SetProperty(dto => dto.Blocked, 0)
+                            .SetProperty(dto => dto.Approved, 0)
+                            .SetProperty(dto => dto.Updated_on, clocked)
+                            .SetProperty(dto => dto.Deleted, true)
+                            .SetProperty(dto => dto.Updated_by, dto.User_ID)
+                        );
+                        await _UsersDBC.SaveChangesAsync();
+                    } else {
+                        await _UsersDBC.Friends_PermissionTbl.AddAsync(new Friends_PermissionTbl
+                        {
+                            ID = Convert.ToUInt64(_UsersDBC.Friends_PermissionTbl.Count() + 1),
+                            User_ID = dto.User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = clocked,
+                            Created_on = clocked,
+                            Updated_by = dto.User_ID,
+                            Created_by = dto.User_ID,
+                            Deleted = true
+                        });
+
+                        await _UsersDBC.SaveChangesAsync();
+                    }
+                });
+
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.User_ID,
+                    participant_id = dto.Participant_ID,
+                    deleted = true
+                }));
+            } catch {
+                return "Server Error: Delete Friend Permission.";
             }
         }
         public async Task<string> Insert_Pending_Email_Registration_History_Record(Pending_Email_Registration_HistoryDTO dto)

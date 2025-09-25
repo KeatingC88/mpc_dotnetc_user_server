@@ -11,6 +11,8 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address
 using mpc_dotnetc_user_server.Models.Users.Feedback;
 using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Profile;
+using mpc_dotnetc_user_server.Models.Users.Report;
+using mpc_dotnetc_user_server.Models.Users.Friends;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
@@ -68,9 +70,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Reported_Discord_Bot_BugTbl> Reported_Discord_Bot_BugTbl { get; set; } = null!;
         public DbSet<Reported_ProfileTbl> Reported_ProfileTbl { get; set; } = null!;
         public DbSet<Reported_Website_BugTbl> Reported_Website_BugTbl { get; set; } = null!;
-        public DbSet<Reported_WebSocketTbl> Reported_WebSocketTbl { get; set; } = null!;
-        public DbSet<Reported_WebSocket_HistoryTbl> Reported_WebSocket_HistoryTbl { get; set; } = null!;
+        public DbSet<ReportedTbl> ReportedTbl { get; set; } = null!;
+        public DbSet<Reported_HistoryTbl> Reported_HistoryTbl { get; set; } = null!;
         public DbSet<WebSocket_Chat_PermissionTbl> WebSocket_Chat_PermissionTbl { get; set; } = null!;
+        public DbSet<Friends_PermissionTbl> Friends_PermissionTbl { get; set; } = null!;
         public DbSet<Twitch_Email_AddressTbl> Twitch_Email_AddressTbl { get;set; } = null!;
         public DbSet<Twitch_IDsTbl> Twitch_IDsTbl { get;set; } = null!;
         public DbSet<Discord_Email_AddressTbl> Discord_Email_AddressTbl { get; set; } = null!;

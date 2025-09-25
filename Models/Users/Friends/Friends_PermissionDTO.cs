@@ -1,36 +1,32 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.WebSocket_Chat
+namespace mpc_dotnetc_user_server.Models.Users.Friends
 {
-    public class Reported_WebSocket_HistoryDTO
+    public class Friends_PermissionDTO
     {
+        public string ID { get; set; } = string.Empty;
         public ulong End_User_ID { get; set; }
         public string User { get; set; } = string.Empty;
+        public ulong Participant_ID { get; set; }
         public byte Approved { get; set; }
         public byte Requested { get; set; }
         public byte Blocked { get; set; }
-        [Required]
-        public string Report_type { get; set; } = string.Empty;
-        public ulong Block { get; set; }
-        public ulong Spam { get; set; }
-        public ulong Abuse { get; set; }
-        public ulong Fake { get; set; }
-        public ulong Nudity { get; set; }
-        public ulong Violence { get; set; }
-        public ulong Threat { get; set; }
-        public ulong Misinform { get; set; }
-        public ulong Harass { get; set; }
-        public ulong Illegal { get; set; }
-        public ulong Self_harm { get; set; }
-        public ulong Disruption { get; set; }
-        public ulong Hate { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public string Token { get; set; } = string.Empty;
-        public string ID { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Application Token is Missing.")]
+        public string Token { get; set; } = string.Empty;  
+
+        [Required(ErrorMessage = "Language is Missing.")]
         public string Language { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Region is Missing.")]
         public string Region { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Location is Missing.")]
         public string Location { get; set; } = string.Empty;
-        public string Client_time { get; set; } = string.Empty;          public ulong Client_Time_Parsed { get; set; } 
+
+        [Required(ErrorMessage = "Client Time is Missing.")]
+        public string Client_time { get; set; } = string.Empty;
+        public ulong Client_Time_Parsed { get; set; }
         public string Remote_IP { get; set; } = string.Empty;
         public int Remote_Port { get; set; }
         public string Server_IP_Address { get; set; } = string.Empty;
@@ -38,44 +34,62 @@ namespace mpc_dotnetc_user_server.Models.Users.WebSocket_Chat
         public string Action { get; set; } = string.Empty;
         public string Controller { get; set; } = string.Empty;
         public int Server_Port { get; set; }
+        [Required]
         public string Login_type { get; set; } = string.Empty;
-
         public ulong Client_id { get; set; }
-
         public ulong JWT_id { get; set; }
 
+        [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;
 
+        [Required]
         public string JWT_client_key { get; set; } = string.Empty;
 
+        [Required]
         public string JWT_client_address { get; set; } = string.Empty;
 
+        [Required]
         public string User_agent { get; set; } = string.Empty;
 
+        public string Client_user_agent { get; set; } = string.Empty;
+
+        public string Server_user_agent { get; set; } = string.Empty;
+        [Required]
+
         public string Down_link { get; set; } = string.Empty;
+        [Required]
 
         public string Connection_type { get; set; } = string.Empty;
+        [Required]
 
         public string RTT { get; set; } = string.Empty;
+        [Required]
 
         public string Data_saver { get; set; } = string.Empty;
+        [Required]
 
         public string Device_ram_gb { get; set; } = string.Empty;
+        [Required]
 
         public string Orientation { get; set; } = string.Empty;
+        [Required]
 
         public string Screen_width { get; set; } = string.Empty;
+        [Required]
 
         public string Screen_height { get; set; } = string.Empty;
 
+        [Required]
+
         public string Color_depth { get; set; } = string.Empty;
+        [Required]
 
         public string Pixel_depth { get; set; } = string.Empty;
+        [Required]
 
         public string Window_width { get; set; } = string.Empty;
+        [Required]
 
         public string Window_height { get; set; } = string.Empty;
-        public string Client_user_agent { get; set; } = string.Empty;
-        public string Server_user_agent { get; set; } = string.Empty;
     }
 }

@@ -1,15 +1,16 @@
-﻿
-using mpc_dotnetc_user_server.Models.Report;
+﻿using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Account_Groups;
 using mpc_dotnetc_user_server.Models.Users.Account_Roles;
+using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
-using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
+using mpc_dotnetc_user_server.Models.Users.Friends;
 using mpc_dotnetc_user_server.Models.Users.Identity;
+using mpc_dotnetc_user_server.Models.Users.Report;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
@@ -25,7 +26,7 @@ namespace mpc_dotnetc_user_server.Interfaces
 {
     public interface IUsers_Repository
     {
-        Task<string> Create_Reported_WebSocket_Records(Reported_WebSocketDTO dto);
+        Task<string> Create_Reported_Record(ReportedDTO dto);
         Task<bool> Create_Comment_Box_Record(Comment_BoxDTO dto);
         Task<bool> Create_Broken_Link_Record(Reported_Broken_LinkDTO dto);
         Task<bool> Create_Discord_Bot_Bug_Record(Reported_Discord_Bot_BugDTO dto);
@@ -47,12 +48,18 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<User_Data_DTO> Read_User_Data_By_ID(ulong end_user_id);
         Task<string> Read_User_Profile_By_ID(ulong end_user_id);
         Task<string> Read_WebSocket_Permission_Record_For_Both_End_Users(WebSocket_Chat_PermissionDTO dto);
-        Task<string> Read_All_End_User_WebSocket_Sent_Chat_Requests(ulong end_user_id);
-        Task<string> Read_All_End_User_WebSocket_Sent_Chat_Blocks(ulong end_user_id);
-        Task<string> Read_All_End_User_WebSocket_Sent_Chat_Approvals(ulong end_user_id);
-        Task<string> Read_All_End_User_WebSocket_Received_Chat_Requests(ulong end_user_id);
-        Task<string> Read_All_End_User_WebSocket_Received_Chat_Blocks(ulong end_user_id);
-        Task<string> Read_All_End_User_WebSocket_Received_Chat_Approvals(ulong end_user_id);
+        Task<string> Read_End_User_WebSocket_Sent_Chat_Requests(ulong end_user_id);
+        Task<string> Read_End_User_WebSocket_Sent_Chat_Blocks(ulong end_user_id);
+        Task<string> Read_End_User_WebSocket_Sent_Chat_Approvals(ulong end_user_id);
+        Task<string> Read_End_User_WebSocket_Received_Chat_Requests(ulong end_user_id);
+        Task<string> Read_End_User_WebSocket_Received_Chat_Blocks(ulong end_user_id);
+        Task<string> Read_End_User_WebSocket_Received_Chat_Approvals(ulong end_user_id);
+        Task<string> Read_End_User_Friend_Received_Approvals(ulong end_user_id);
+        Task<string> Read_End_User_Friend_Sent_Requests(ulong end_user_id);
+        Task<string> Read_End_User_Friend_Sent_Blocks(ulong end_user_id);
+        Task<string> Read_End_User_Friend_Sent_Approvals(ulong end_user_id);
+        Task<string> Read_End_User_Friend_Received_Requests(ulong end_user_id);
+        Task<string> Read_End_User_Friend_Received_Blocks(ulong end_user_id);
         Task<byte> Read_End_User_Selected_Status(Selected_StatusDTO dto);
         Task<byte[]?> Read_User_Password_Hash_By_ID(ulong id);
         Task<ulong> Read_User_ID_By_Email_Address(string email_address);
@@ -87,7 +94,10 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<string> Update_End_User_Gender(IdentityDTO dto);
         Task<string> Update_End_User_Password(Password_ChangeDTO dto);
         Task<string> Update_Chat_Web_Socket_Permissions_Tbl(WebSocket_Chat_PermissionTbl dto);
-        Task<string> Delete_Chat_Web_Socket_Permissions_Tbl(WebSocket_Chat_PermissionTbl dto);
+        Task<string> Insert_Friend_PermissionsTbl(Friends_PermissionDTO dto);
+        Task<string> Update_Friend_PermissionsTbl(Friends_PermissionTbl dto);
+        Task<string> Delete_From_Web_Socket_Chat_Permissions_Tbl(WebSocket_Chat_PermissionTbl dto);
+        Task<string> Delete_From_Friend_PermissionsTbl(Friends_PermissionTbl dto);
         Task<string> Update_End_User_Birth_Date(IdentityDTO dto);
         Task<string> Update_End_User_Card_Border_Color(Selected_App_Custom_DesignDTO dto);
         Task<string> Update_End_User_Card_Header_Font(Selected_App_Custom_DesignDTO dto);

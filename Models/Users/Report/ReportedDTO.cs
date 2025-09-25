@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace mpc_dotnetc_user_server.Models.Users.WebSocket_Chat
+namespace mpc_dotnetc_user_server.Models.Users.Report
 {
-    public class Reported_WebSocketDTO
+    public class ReportedDTO
     {
         public ulong End_User_ID { get; set; }
         public ulong Participant_ID { get; set; }
