@@ -18,7 +18,6 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
 using mpc_dotnetc_user_server.Models.Users.Selected.Name;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
-using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
@@ -48,7 +47,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Report_Failed_Pending_Email_Registration_HistoryTbl> Report_Failed_Pending_Email_Registration_HistoryTbl { get; set; } = null!;
         public DbSet<Contact_UsTbl> Contact_UsTbl { get; set; } = null!;
         public DbSet<Comment_BoxTbl> Comment_BoxTbl { get; set; } = null!;
-        public DbSet<Password_ChangeTbl> Login_PasswordTbl { get; set; } = null!;
+        public DbSet<Login_PasswordTbl> Login_PasswordTbl { get; set; } = null!;
         public DbSet<Login_Email_AddressTbl> Login_Email_AddressTbl { get; set; } = null!;
         public DbSet<Login_Time_StampTbl> Login_Time_StampTbl { get; set; } = null!;
         public DbSet<Login_Time_Stamp_HistoryTbl> Login_Time_Stamp_HistoryTbl { get; set; } = null!;

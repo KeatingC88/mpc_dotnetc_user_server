@@ -5,7 +5,7 @@ namespace mpc_dotnetc_user_server.Models.Report
     public class Report_Failed_Logout_HistoryDTO
     {
         [Required]
-        public ulong ID { get; set; }
+        public long ID { get; set; }
 
         [Required]
         public string Language { get; set; } = string.Empty;
@@ -17,18 +17,18 @@ namespace mpc_dotnetc_user_server.Models.Report
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public ulong Client_time { get; set; }
+        public long Client_time { get; set; }
 
         public string Remote_IP { get; set; } = string.Empty;
         public int Remote_Port { get; set; }
-        public string Server_IP_Address { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
         public string Client_IP { get; set; } = string.Empty;
         public string Controller { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
         public int Server_Port { get; set; }
         public int Client_Port { get; set; }
-        public ulong End_User_ID { get; set; }
+        public long End_User_ID { get; set; }
         public string Reason { get; set; } = string.Empty;
 
         [Required]

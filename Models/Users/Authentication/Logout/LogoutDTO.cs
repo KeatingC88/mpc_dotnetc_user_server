@@ -8,7 +8,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
         [Required]
         public string ID { get; set; } = string.Empty;
 
-        public ulong End_User_ID { get; set; } 
+        public long End_User_ID { get; set; } 
 
         [Required]
         public string Language { get; set; } = string.Empty;
@@ -38,7 +38,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public string Client_time { get; set; } = string.Empty;          public ulong Client_Time_Parsed { get; set; } 
+        public string Client_time { get; set; } = string.Empty;          public long Client_Time_Parsed { get; set; } 
 
         [Required]
         public string Online_status { get; set; } = string.Empty;
@@ -52,8 +52,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
         [Required]
         public string JWT_client_address { get; set; } = string.Empty;
 
-        public ulong Client_id { get; set; } 
-        public ulong JWT_id { get; set; } 
+        public long Client_id { get; set; } 
+        public long JWT_id { get; set; } 
 
         [Required]
         public string User_agent { get; set; } = string.Empty;

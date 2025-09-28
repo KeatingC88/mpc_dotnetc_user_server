@@ -20,7 +20,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
         public string Client_time { get; set; } = string.Empty;
 
         [Required]
-        public ulong Client_Time_Parsed { get; set; }
+        public long Client_Time_Parsed { get; set; }
 
         [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;

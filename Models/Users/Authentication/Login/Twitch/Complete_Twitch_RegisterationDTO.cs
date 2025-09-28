@@ -32,9 +32,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
         public string Twitch_User_Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Client Time is Missing.")]
-        public ulong Client_time { get; set; }
+        public long Client_time { get; set; }
 
-        public ulong Client_Time_Parsed { get; set; }
+        public long Client_Time_Parsed { get; set; }
 
         [Required(ErrorMessage ="Twitch ID is Missing.")]
         public ulong Twitch_ID { get; set; }
@@ -113,7 +113,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
         public int Remote_Port { get; set; }
 
         [Required]
-        public string Server_IP_Address { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
 
         [Required]
         public int Server_Port { get; set; }
@@ -124,7 +124,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
         [Required]
         public int Client_Port { get; set; }
 
-        public ulong End_User_ID { get; set; }
+        public long End_User_ID { get; set; }
 
     }
 }

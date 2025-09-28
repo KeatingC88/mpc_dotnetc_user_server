@@ -70,13 +70,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Add
         [Required]
         public string Window_height { get; set; } = string.Empty;
 
-        public ulong Client_Time_Parsed { get; set; }
+        public long Client_Time_Parsed { get; set; }
 
         public string Remote_IP { get; set; } = string.Empty;
 
         public int Remote_Port { get; set; }
 
-        public string Server_IP_Address { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
 
         public int Server_Port { get; set; }
 

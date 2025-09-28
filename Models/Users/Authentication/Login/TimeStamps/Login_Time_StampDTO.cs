@@ -4,7 +4,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
 {
     public class Login_Time_StampDTO
     {
-        public ulong End_User_ID { get; set; }
+        public long End_User_ID { get; set; }
 
         [Required(ErrorMessage = "Application Login Time is Missing.")]
         public ulong Login_on { get; set; }
@@ -12,14 +12,14 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
         [Required(ErrorMessage = "Application Client Time is Missing.")]
         public string Client_time { get; set; } = string.Empty;
 
-        public ulong Client_Time_Parsed { get; set; }
+        public long Client_Time_Parsed { get; set; }
 
         [Required(ErrorMessage = "Application Location is Missing.")]
         public string Location { get; set; } = string.Empty;
 
         public string Remote_IP { get; set; } = string.Empty;
         public int Remote_Port { get; set; }
-        public string Server_IP_Address { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
         public string Client_IP { get; set; } = string.Empty;
         public int Client_Port { get; set; }
         public int Server_Port { get; set; }

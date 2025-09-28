@@ -14,7 +14,7 @@ namespace mpc_dotnetc_user_server.Models.Report
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public ulong Client_time { get; set; }
+        public long Client_time { get; set; }
 
         [Required]
         public string Login_type { get; set; } = string.Empty;
@@ -25,7 +25,7 @@ namespace mpc_dotnetc_user_server.Models.Report
         public string Remote_IP { get; set; } = string.Empty;
         public int Remote_Port { get; set; }
 
-        public string Server_IP_Address { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
         public int Server_Port { get; set; }
 
         public string Client_IP { get; set; } = string.Empty;
@@ -37,7 +37,7 @@ namespace mpc_dotnetc_user_server.Models.Report
 
         public string Server_User_Agent { get; set; } = string.Empty;
         public string Client_User_Agent { get; set; } = string.Empty;
-        public ulong End_User_ID { get; set; }
+        public long End_User_ID { get; set; }
 
         [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;

@@ -72,9 +72,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
 
-                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.Client_id = long.Parse(AES.Process_Decryption(dto.End_User_ID.ToString()));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -94,11 +94,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     Token = dto.Token,
                     Client_id = dto.Client_id,
@@ -109,7 +109,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -132,58 +132,25 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                switch (int.Parse(dto.Online_status))
+                await Users_Repository.Update_End_User_Selected_Status(new Selected_Status
                 {
-                    case 1:
-                        await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
-                        {
-                            End_User_ID = dto.End_User_ID,
-                            Online_status = 10.ToString()
-                        });
-                        break;
-                    case 2:
-                        await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
-                        {
-                            End_User_ID = dto.End_User_ID,
-                            Online_status = 20.ToString()
-                        });
-                        break;
-                    case 3:
-                        await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
-                        {
-                            End_User_ID = dto.End_User_ID,
-                            Online_status = 30.ToString()
-                        });
-                        break;
-                    case 4:
-                        await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
-                        {
-                            End_User_ID = dto.End_User_ID,
-                            Online_status = 40.ToString()
-                        });
-                        break;
-                    case 5:
-                        await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
-                        {
-                            End_User_ID = dto.End_User_ID,
-                            Online_status = 50.ToString()
-                        });
-                        break;
-                }
+                    End_User_ID = dto.End_User_ID,
+                    Status = 0
+                });
 
                 HttpContext.Session.Remove(dto.End_User_ID.ToString());
                 Response.Cookies.Delete(Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME") ?? ".AspNetCore.Session");
 
-                await Users_Repository.Insert_End_User_Logout_HistoryTbl(new Logout_Time_StampDTO {
+                await Users_Repository.Insert_End_User_Logout_History(new Logout_Time_Stamp {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     User_agent = dto.Server_user_agent,
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     End_User_ID = dto.JWT_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
@@ -199,16 +166,16 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Device_ram_gb = dto.Device_ram_gb
                 });
 
-                await Users_Repository.Update_End_User_Logout(new Logout_Time_StampDTO {
+                await Users_Repository.Update_End_User_Logout(new Logout_Time_Stamp {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     User_agent = dto.Server_user_agent,
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     End_User_ID = dto.JWT_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,

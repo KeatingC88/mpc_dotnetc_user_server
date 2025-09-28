@@ -78,7 +78,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
 
                 dto.Client_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
                 dto.JWT_id = dto.Client_id;
@@ -100,11 +100,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_issuer_key = dto.JWT_issuer_key,
                     JWT_client_key = dto.JWT_client_key,
@@ -114,7 +114,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -135,20 +135,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                if (!Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
+                if (!Users_Repository.Email_Exists_In_Login_Email_Address(dto.Email_Address).Result)
                 {
-                    await Users_Repository.Insert_Report_Failed_Unregistered_Email_Login_HistoryTbl(new Report_Failed_Unregistered_Email_Login_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Unregistered_Email_Login_History(new Report_Failed_Unregistered_Email_Login_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Reason = "Unregistered Email",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
@@ -166,7 +165,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return NotFound();
                 }
 
-                ulong user_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
+                long user_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
 
                 byte[]? user_password_hash_in_the_database = Users_Repository.Read_User_Password_Hash_By_ID(user_id).Result;
                 byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result;
@@ -175,18 +174,17 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 {
                     if (Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash).Result)
                     {
-                        await Users_Repository.Insert_Report_Failed_Email_Login_HistoryTbl(new Report_Failed_Email_Login_HistoryDTO
+                        await Users_Repository.Insert_Report_Failed_Email_Login_History(new Report_Failed_Email_Login_History
                         {
                             Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                             Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                            Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                            Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                             Server_Port = HttpContext.Connection.LocalPort,
                             User_agent = dto.Server_user_agent,
                             Email_Address = dto.Email_Address,
-                            Language = dto.Language,
-                            Region = dto.Region,
+                            Language_Region = $@"{dto.Language}-{dto.Region}",
                             Location = dto.Location,
-                            Client_Time_Parsed = dto.Client_Time_Parsed,
+                            Client_time = dto.Client_Time_Parsed,
                             Reason = "Incorrect Password",
                             End_User_ID = user_id,
                             Window_height = dto.Window_height,
@@ -206,67 +204,52 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     }
                 }
 
-                byte end_user_selected_status = Users_Repository.Read_End_User_Selected_Status(new Selected_StatusDTO
-                {
-                    End_User_ID = user_id
-                }).Result;
-
-                if (end_user_selected_status == 0)
-                {//User does not have a Status Record and will be set to Online Status.
-                    await Users_Repository.Create_End_User_Status_Record(new Selected_StatusDTO
-                    {
-                        End_User_ID = user_id
-                    });
-                }
-
-                if (end_user_selected_status != 1 && end_user_selected_status != 0)
-                {//User has a Hidden Status Saved in the Database from Previous Login.
-                    await Users_Repository.Update_End_User_Selected_Status(new Selected_StatusDTO
-                    {
-                        End_User_ID = user_id,
-                        Online_status = 2.ToString()
-                    });
-                }
-
-                await Users_Repository.Update_End_User_Selected_Alignment(new Selected_App_AlignmentDTO
+                byte end_user_selected_status = Users_Repository.Read_End_User_Selected_Status(user_id).Result;
+                await Users_Repository.Update_End_User_Selected_Status(new Selected_Status
                 {
                     End_User_ID = user_id,
-                    Alignment = dto.Alignment
+                    Status = end_user_selected_status
                 });
 
-                await Users_Repository.Update_End_User_Selected_TextAlignment(new Selected_App_Text_AlignmentDTO
+                await Users_Repository.Update_End_User_Selected_Alignment(new Selected_App_Alignment
                 {
                     End_User_ID = user_id,
-                    Text_alignment = dto.Text_alignment
+                    Alignment = byte.Parse(dto.Alignment)
                 });
 
-                await Users_Repository.Update_End_User_Selected_Nav_Lock(new Selected_Navbar_LockDTO
+                await Users_Repository.Update_End_User_Selected_Text_Alignment(new Selected_App_Text_Alignment
                 {
                     End_User_ID = user_id,
-                    Locked = dto.Locked
+                    Text_alignment = byte.Parse(dto.Text_alignment)
                 });
 
-                await Users_Repository.Update_End_User_Selected_Language(new Selected_LanguageDTO
+                await Users_Repository.Update_End_User_Selected_Nav_Lock(new Selected_Navbar_Lock
+                {
+                    End_User_ID = user_id,
+                    Locked = bool.Parse(dto.Locked)
+                });
+
+                await Users_Repository.Update_End_User_Selected_Language(new Selected_Language
                 {
                     End_User_ID = user_id,
                     Language = dto.Language,
                     Region = dto.Region
                 });
 
-                await Users_Repository.Update_End_User_Selected_Theme(new Selected_ThemeDTO
+                await Users_Repository.Update_End_User_Selected_Theme(new Selected_Theme
                 {
                     End_User_ID = user_id,
-                    Theme = dto.Theme
+                    Theme = byte.Parse(dto.Theme)
                 });
 
                 User_Data_DTO user_data = await Task.FromResult(Users_Repository.Read_User_Data_By_ID(user_id)).Result;
 
-                await Users_Repository.Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
+                await Users_Repository.Update_End_User_Login_Time_Stamp(new Login_Time_Stamp
                 {
                     End_User_ID = user_id,
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     User_agent = dto.Server_user_agent,
                     Window_height = dto.Window_height,
@@ -282,19 +265,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Down_link = dto.Down_link,
                     Device_ram_gb = dto.Device_ram_gb,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed
+                    Client_time = dto.Client_Time_Parsed
                 });
 
-                await Users_Repository.Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
+                await Users_Repository.Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_History
                 {
                     End_User_ID = user_id,
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     User_agent = dto.Server_user_agent,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
                     Screen_height = dto.Screen_height,
@@ -350,7 +333,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Email_Address = AES.Process_Decryption(dto.Email_Address).ToUpper();
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Location = AES.Process_Decryption(dto.Location);
                 dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
                 dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
@@ -373,11 +356,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                     Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -387,7 +370,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,
@@ -409,20 +392,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Valid.Email(dto.Email_Address))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Controller = "Email",
                         Action = "Confirmation",
                         Reason = "Invalid Email Address",
@@ -444,20 +426,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Valid.Language_Code(dto.Language))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Controller = "Email",
                         Action = "Confirmation",
                         Reason = "Invalid Language Code",
@@ -479,20 +460,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Valid.Region_Code(dto.Region))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Controller = "Email",
                         Action = "Confirmation",
                         Reason = "Invalid Region Code",
@@ -512,22 +492,21 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
                 }
 
-                if (!Users_Repository.Email_Exists_In_Pending_Email_RegistrationTbl(dto.Email_Address).Result)
+                if (!Users_Repository.Email_Exists_In_Pending_Email_Registration(dto.Email_Address).Result)
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Reason = "JWT Mismatch",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
@@ -545,22 +524,21 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
                 }
 
-                if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
+                if (Users_Repository.Email_Exists_In_Login_Email_Address(dto.Email_Address).Result)
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Controller = "Email",
                         Action = "Confirmation",
                         Reason = "Email Already Registered",
@@ -598,7 +576,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Location = AES.Process_Decryption(dto.Location);
                 dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
                 dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
@@ -621,11 +599,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                     Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -636,7 +614,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Region = dto.Region,
                     Location = dto.Location,
                     Login_type = "Email",
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,
@@ -658,20 +636,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Valid.Email(dto.Email_Address))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Exists",
                         Controller = "Email",
                         Reason = "Invalid Email Address",
@@ -693,20 +670,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Valid.Language_Code(dto.Language))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Exists",
                         Controller = "Email",
                         Reason = "Invalid Language Code",
@@ -728,20 +704,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Valid.Region_Code(dto.Region))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Exists",
                         Controller = "Email",
                         Reason = "Invalid Region Code",
@@ -761,25 +736,24 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
                 }
 
-                if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address.ToUpper()).Result)
+                if (Users_Repository.Email_Exists_In_Login_Email_Address(dto.Email_Address.ToUpper()).Result)
                 {
-                    ulong user_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
+                    long user_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
 
-                    await Users_Repository.Insert_Report_Email_RegistrationTbl(new Report_Email_RegistrationDTO
+                    await Users_Repository.Insert_Report_Email_Registration(new Report_Email_Registration
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         End_User_ID = user_id,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Reason = "Email Already Registered",
                         Window_height = dto.Window_height,
                         Window_width = dto.Window_width,
@@ -815,7 +789,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Email_Address = AES.Process_Decryption(dto.Email_Address).ToUpper();
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time.ToString()));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time.ToString()));
                 dto.Location = AES.Process_Decryption(dto.Location);
                 dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
                 dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
@@ -838,11 +812,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                     Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -852,7 +826,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,
@@ -874,20 +848,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Valid.Email(dto.Email_Address))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Register",
                         Controller = "Email",
                         Reason = "Invalid Email Address",
@@ -909,20 +882,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Valid.Language_Code(dto.Language))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Register",
                         Controller = "Email",
                         Reason = "Invalid Language Code",
@@ -945,20 +917,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Valid.Region_Code(dto.Region))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Register",
                         Controller = "Email",
                         Reason = "Invalid Region Code",
@@ -978,22 +949,21 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
                 }
 
-                if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
+                if (Users_Repository.Email_Exists_In_Login_Email_Address(dto.Email_Address).Result)
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Server_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Register",
                         Controller = "Email",
                         Reason = "Email Already Registered",
@@ -1013,16 +983,15 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
                 }
 
-                await Users_Repository.Insert_Pending_Email_Registration_History_Record(new Pending_Email_Registration_HistoryDTO
+                await Users_Repository.Insert_Pending_Email_Registration_History_Record(new Pending_Email_Registration_History
                 {
                     Email_Address = dto.Email_Address,
-                    Language = dto.Language,
-                    Region = dto.Region,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Language_Region = $@"{dto.Language}-{dto.Region}",
+                    Client_time = dto.Client_Time_Parsed,
                     Location = dto.Location,
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                     Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -1042,21 +1011,26 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Device_ram_gb = dto.Device_ram_gb
                 });
 
-                if (Users_Repository.Email_Exists_In_Pending_Email_RegistrationTbl(dto.Email_Address).Result)
-                    return await Task.FromResult(Users_Repository.Update_Pending_Email_Registration_Record(dto)).Result;
+                if (Users_Repository.Email_Exists_In_Pending_Email_Registration(dto.Email_Address).Result)
+                    return await Task.FromResult(Users_Repository.Update_Pending_Email_Registration_Record(new Pending_Email_Registration { 
+                        Language = dto.Language,
+                        Region = dto.Region,
+                        Email_Address = dto.Email_Address,
+                        Code = dto.Code
+                    })).Result;
 
                 return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
                 {
-                    mpc_data = Users_Repository.Create_Pending_Email_Registration_Record(new Pending_Email_RegistrationDTO
+                    mpc_data = Users_Repository.Create_Pending_Email_Registration_Record(new Pending_Email_Registration
                     {
                         Email_Address = dto.Email_Address,
                         Language = dto.Language,
                         Region = dto.Region,
-                        Client_time = dto.Client_time,
+                        Client_time = long.Parse(dto.Client_time),
                         Location = dto.Location,
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -1094,7 +1068,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Password = AES.Process_Decryption(dto.Password);
                 dto.Region = AES.Process_Decryption(dto.Region);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Location = AES.Process_Decryption(dto.Location);
                 dto.Nav_lock = AES.Process_Decryption(dto.Nav_lock);
                 dto.Alignment = AES.Process_Decryption(dto.Alignment);
@@ -1122,11 +1096,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                     Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -1136,7 +1110,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,
@@ -1156,22 +1130,21 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                if (Users_Repository.Email_Exists_In_Login_Email_AddressTbl(dto.Email_Address).Result)
+                if (Users_Repository.Email_Exists_In_Login_Email_Address(dto.Email_Address).Result)
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Client_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Submit",
                         Controller = "Email",
                         Reason = "Email Already Registered in Login_Email_AddressTbl",
@@ -1191,22 +1164,21 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return BadRequest();
                 }
 
-                if (!Users_Repository.Email_Exists_In_Pending_Email_RegistrationTbl(dto.Email_Address).Result)
+                if (!Users_Repository.Email_Exists_In_Pending_Email_Registration(dto.Email_Address).Result)
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Client_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Submit",
                         Controller = "Email",
                         Reason = "Email Not Found in Pending_Email_RegistrationTbl",
@@ -1228,20 +1200,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Valid.Email(dto.Email_Address))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Client_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Submit",
                         Controller = "Email",
                         Reason = "Invalid Email Address",
@@ -1262,20 +1233,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }
                 if (!Valid.Password(dto.Password))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Client_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Submit",
                         Controller = "Email",
                         Reason = "Invalid Password",
@@ -1296,20 +1266,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }
                 if (!Valid.Language_Code(dto.Language))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Client_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Submit",
                         Controller = "Email",
                         Reason = "Invalid Language Code",
@@ -1330,20 +1299,19 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }
                 if (!Valid.Region_Code(dto.Region))
                 {
-                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_HistoryTbl(new Report_Failed_Pending_Email_Registration_HistoryDTO
+                    await Users_Repository.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
                         User_agent = dto.Client_user_agent,
                         Email_Address = dto.Email_Address,
-                        Language = dto.Language,
-                        Region = dto.Region,
+                        Language_Region = $@"{dto.Language}-{dto.Region}",
                         Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Action = "Submit",
                         Controller = "Email",
                         Reason = "Invalid Region Code",
@@ -1368,7 +1336,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 if (!dto.Token.IsNullOrEmpty()) {
 
                     dto.End_User_ID = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
-                    account_creation_data = Users_Repository.Integrate_Account_By_Email(new Complete_Email_RegistrationDTO
+                    account_creation_data = Users_Repository.Integrate_Account_By_Email(new Complete_Email_Registration
                     {
                         End_User_ID = dto.End_User_ID,
                         Email_Address = dto.Email_Address,
@@ -1379,7 +1347,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Location = dto.Location,
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -1407,7 +1375,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 } else {
 
-                    account_creation_data = Users_Repository.Create_Account_By_Email(new Complete_Email_RegistrationDTO
+                    account_creation_data = Users_Repository.Create_Account_By_Email(new Complete_Email_Registration
                     {
                         Email_Address = dto.Email_Address,
                         Language = dto.Language,
@@ -1417,7 +1385,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Location = dto.Location,
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,

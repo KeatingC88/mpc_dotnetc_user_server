@@ -46,10 +46,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
-                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.Client_id = long.Parse(AES.Process_Decryption(dto.End_User_ID.ToString()));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -71,11 +71,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.First_name = AES.Process_Decryption(dto.First_name);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -86,7 +86,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -110,7 +110,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(Users_Repository.Update_End_User_First_Name(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_First_Name(new Identities { 
+                    End_User_ID = dto.JWT_id,
+                    First_name = dto.First_name
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -131,10 +134,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
-                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.Client_id = long.Parse(AES.Process_Decryption(dto.End_User_ID.ToString()));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -156,11 +159,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Last_name = AES.Process_Decryption(dto.Last_name);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -171,7 +174,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -194,7 +197,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Last_Name(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Last_Name(new Identities
+                {
+                    End_User_ID = dto.JWT_id,
+                    Last_name = dto.Last_name
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -215,10 +222,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
-                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.Client_id = long.Parse(AES.Process_Decryption(dto.End_User_ID.ToString()));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -240,11 +247,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Middle_name = AES.Process_Decryption(dto.Middle_name);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -255,7 +262,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -278,7 +285,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Middle_Name(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Middle_Name(new Identities
+                {
+                    End_User_ID = dto.JWT_id,
+                    Middle_name = dto.Middle_name
+                })).Result;
             }
             catch (Exception e)
             {
@@ -301,10 +312,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
-                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.Client_id = long.Parse(AES.Process_Decryption(dto.End_User_ID.ToString()));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -326,11 +337,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Maiden_name = AES.Process_Decryption(dto.Maiden_name);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -341,7 +352,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -365,7 +376,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Maiden_Name(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Maiden_Name(new Identities
+                {
+                    End_User_ID = dto.JWT_id,
+                    Maiden_name = dto.Maiden_name
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -386,10 +401,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
-                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.Client_id = long.Parse(AES.Process_Decryption(dto.End_User_ID.ToString()));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -411,11 +426,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Gender = AES.Process_Decryption(dto.Gender);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -426,7 +441,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -449,7 +464,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Gender(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Gender(new Identities
+                {
+                    End_User_ID = dto.JWT_id,
+                    Gender = byte.Parse(dto.Gender)
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -470,10 +489,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
-                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.Client_id = long.Parse(AES.Process_Decryption(dto.End_User_ID.ToString()));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -495,11 +514,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Ethnicity = AES.Process_Decryption(dto.Ethnicity);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -510,7 +529,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -533,7 +552,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Ethnicity(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Ethnicity(new Identities
+                {
+                    End_User_ID = dto.JWT_id,
+                    Ethnicity = dto.Ethnicity
+                })).Result;
             } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
@@ -554,10 +577,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
-                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.Client_id = long.Parse(AES.Process_Decryption(dto.End_User_ID.ToString()));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -581,11 +604,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Month = AES.Process_Decryption(dto.Month);
                 dto.Year = AES.Process_Decryption(dto.Year);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -596,7 +619,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -619,7 +642,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Birth_Date(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Birth_Date(new Identities { 
+                    End_User_ID = dto.JWT_id,
+                    Month = byte.Parse(dto.Month),
+                    Day = byte.Parse(dto.Day),
+                    Year = long.Parse(dto.Year)
+                })).Result;
             }
             catch (Exception e)
             {
@@ -642,10 +670,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
-                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.Client_id = long.Parse(AES.Process_Decryption(dto.End_User_ID.ToString()));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -669,11 +697,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Month = "0";
                 dto.Year = "0";
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -684,7 +712,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -708,7 +736,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Birth_Date(dto)).Result;
+                return await Task.FromResult(Users_Repository.Update_End_User_Birth_Date(new Identities { 
+                    End_User_ID = dto.End_User_ID
+                })).Result;
             }
             catch (Exception e)
             {

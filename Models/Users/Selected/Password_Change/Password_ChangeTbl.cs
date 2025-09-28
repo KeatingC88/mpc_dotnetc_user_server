@@ -2,15 +2,15 @@
 {
     public class Password_ChangeTbl
     {
-        public ulong ID { get; set; }
-        public ulong User_ID { get; set; }
+        public long ID { get; set; }
+        public long User_ID { get; set; }
         public byte[]? Password { get; set; }
-        public ulong Created_by { get; set; }
-        public ulong Created_on { get; set; }
+        public long Created_by { get; set; }
+        public long Created_on { get; set; }
         public bool Deleted { get; set; }
-        public ulong Deleted_on { get; set; }
-        public ulong Deleted_by { get; set; }
-        public ulong Updated_on { get; set; }
-        public ulong Updated_by { get; set; }
+        public long Deleted_on { get; set; }
+        public long Deleted_by { get; set; }
+        public long Updated_on { get; set; }
+        public long Updated_by { get; set; }
     }
 }

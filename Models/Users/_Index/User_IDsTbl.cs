@@ -1,30 +1,34 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Xunit.Sdk;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
     public class User_IDsTbl
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long ID { get; set; }
+
         [Required]
-        [Range(1, ulong.MaxValue, ErrorMessage = "ID must be greater than 0.")]
-        public ulong ID { get; set; }
-        public string Public_id { get; set; } = string.Empty;
-        public string Secret_id { get; set; } = string.Empty;
+        public string Public_ID { get; set; } = string.Empty;
+
         [Required]
-        [Range(1, ulong.MaxValue, ErrorMessage = "End User ID must be greater than 0.")]
-        public ulong Created_by { get; set; }
-        [Range(0, 1, ErrorMessage = "Deleted column must be 0 or 1.")]
-        public byte Deleted { get; set; }
+        public string Secret_ID { get; set; } = string.Empty;
+
         [Required]
-        [Range(1, ulong.MaxValue, ErrorMessage = "End User ID must be greater than 0.")]
-        public ulong Deleted_by { get; set; }
+        public string Secret_Hash_ID { get; set; } = string.Empty;
+
         [Required]
-        public ulong Created_on { get; set; }
+        public long Updated_on { get; set; }
+
         [Required]
-        public ulong Updated_on { get; set; }
-        [Required]
-        public ulong Updated_by { get; set; }
-        [Required]
-        public ulong Deleted_on { get; set; }
+        public long Updated_by { get; set; }
+
+        public long Created_by { get; set; }
+        public bool Deleted { get; set; }
+        public long Deleted_by { get; set; }
+        public long Created_on { get; set; }
+        public long Deleted_on { get; set; }
     }
 }

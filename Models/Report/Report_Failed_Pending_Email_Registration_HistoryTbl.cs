@@ -5,26 +5,26 @@ namespace mpc_dotnetc_user_server.Models.Report
     public class Report_Failed_Pending_Email_Registration_HistoryTbl
     {
         [Required]
-        public ulong ID { get; set; }
+        public long ID { get; set; }
 
         public bool Deleted { get; set; }
 
         [Required]
-        public ulong Updated_by { get; set; }
+        public long Updated_by { get; set; }
 
-        public ulong Created_on { get; set; }
+        public long Created_on { get; set; }
 
-        public ulong Created_by { get; set; }
-
-        [Required]
-        public ulong Updated_on { get; set; }
-
-        public ulong Deleted_on { get; set; }
-
-        public ulong Deleted_by { get; set; }
+        public long Created_by { get; set; }
 
         [Required]
-        public ulong Client_time { get; set; }
+        public long Updated_on { get; set; }
+
+        public long Deleted_on { get; set; }
+
+        public long Deleted_by { get; set; }
+
+        [Required]
+        public long Client_time { get; set; }
 
         [Required]
         public string Client_IP { get; set; } = string.Empty;

@@ -5,7 +5,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Friends
 {
     public class Friends_PermissionTbl
     {
-        [Required]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long ID { get; set; }
@@ -28,13 +27,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Friends
         [Required]
         public long Updated_by { get; set; }
 
-        [Timestamp_Is_Today_Or_Later]
         public long Created_on { get; set; }
-
-        [Timestamp_Is_Today_Or_Later]
+        [Required]
         public long Updated_on { get; set; }
-
-        [Timestamp_Is_Today_Or_Later]
         public long Deleted_on { get; set; }
         public long Deleted_by { get; set; }
         public bool Deleted { get; set; }

@@ -18,10 +18,10 @@ namespace mpc_dotnetc_user_server.Models.Report
 
         [Required(ErrorMessage = "Client Time is Missing.")]
         public string Client_time { get; set; } = string.Empty;
-        public ulong Client_Time_Parsed { get; set; }
+        public long Client_Time_Parsed { get; set; }
         public string Remote_IP { get; set; } = string.Empty;
         public int Remote_Port { get; set; }
-        public string Server_IP_Address { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
         public string Client_IP { get; set; } = string.Empty;
         public string Reason { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;

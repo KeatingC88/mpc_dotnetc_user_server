@@ -1,22 +1,36 @@
-﻿namespace mpc_dotnetc_user_server.Models.Users.Selected.Status
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace mpc_dotnetc_user_server.Models.Users.Selected.Status
 {
     public class Selected_StatusTbl
     {
-        public bool Deleted { get; set; }
-        public byte Online { get; set; }
-        public byte Offline { get; set; }
-        public byte Hidden { get; set; }
-        public byte Away { get; set; }
-        public byte DND { get; set; }
-        public byte Custom { get; set; }
-        public ulong ID { get; set; }
-        public ulong User_ID { get; set; }
-        public ulong Created_by { get; set; }
-        public ulong Created_on { get; set; }
-        public ulong Updated_on { get; set; }
-        public ulong Updated_by { get; set; }
-        public ulong Deleted_on { get; set; }
-        public ulong Deleted_by { get; set; }
+        [Required]
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long ID { get; set; }
+        [Required]
+        public long End_User_ID { get; set; }
+        [Required]
+        public bool Online { get; set; }
+        [Required]
+        public bool Offline { get; set; }
+        [Required]
+        public bool Hidden { get; set; }
+        [Required]
+        public bool Away { get; set; }
+        [Required]
+        public bool DND { get; set; }
+        [Required]
+        public bool Custom { get; set; }
+        [Required]
         public string Custom_lbl { get; set; } = string.Empty;
+        public bool Deleted { get; set; }
+        public long Created_by { get; set; }
+        public long Created_on { get; set; }
+        public long Updated_on { get; set; }
+        public long Updated_by { get; set; }
+        public long Deleted_on { get; set; }
+        public long Deleted_by { get; set; }
     }
 }

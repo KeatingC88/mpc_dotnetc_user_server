@@ -16,7 +16,7 @@ namespace mpc_dotnetc_user_server.Models.Report
         [Required]
         public string Client_time { get; set; } = string.Empty;
 
-        public ulong Client_Time_Parsed { get; set; }
+        public long Client_Time_Parsed { get; set; }
 
         [Required]
         public string Login_type { get; set; } = string.Empty;
@@ -34,7 +34,7 @@ namespace mpc_dotnetc_user_server.Models.Report
 
         public int Remote_Port { get; set; }
 
-        public string Server_IP_Address { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
 
         public string Client_IP { get; set; } = string.Empty;
 
@@ -48,11 +48,11 @@ namespace mpc_dotnetc_user_server.Models.Report
 
         public int Client_Port { get; set; }
 
-        public ulong Client_id { get; set; }
+        public long Client_id { get; set; }
 
-        public ulong JWT_id { get; set; }
+        public long JWT_id { get; set; }
 
-        public ulong End_User_ID { get; set; }
+        public long End_User_ID { get; set; }
 
         public string Token { get; set; } = string.Empty;
 

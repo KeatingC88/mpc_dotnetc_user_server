@@ -45,7 +45,7 @@ namespace mpc_dotnetc_user_server.Services
             return await Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
         }
 
-        public async Task<ulong> Read_Email_Account_User_ID_By_JWToken(string jwt_token)
+        public async Task<long> Read_Email_Account_User_ID_By_JWToken(string jwt_token)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(jwt_token);
@@ -58,10 +58,10 @@ namespace mpc_dotnetc_user_server.Services
             if (tokenExpired)
                 return 0;
 
-            return await Task.FromResult(Convert.ToUInt64(AES.Process_Decryption($"{values[1].ToString()}")));
+            return await Task.FromResult(long.Parse(AES.Process_Decryption($"{values[1].ToString()}")));
         }
 
-        public async Task<ulong> Read_Email_Account_User_Role_By_JWToken(string jwt_token)
+        public async Task<long> Read_Email_Account_User_Role_By_JWToken(string jwt_token)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtSecurityToken = handler.ReadJwtToken(jwt_token);
@@ -74,7 +74,7 @@ namespace mpc_dotnetc_user_server.Services
             if (tokenExpired)
                 return 0;
 
-            return await Task.FromResult(Convert.ToUInt64(AES.Process_Decryption($"{values[1].ToString()}")));
+            return await Task.FromResult(long.Parse(AES.Process_Decryption($"{values[1].ToString()}")));
         }
     }
 }

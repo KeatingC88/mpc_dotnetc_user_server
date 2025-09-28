@@ -5,16 +5,16 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Add
 {
     public class Complete_Email_RegistrationDTO
     {
-        [Required(ErrorMessage = "Name is Missing.")]
+        [Required]
         public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Email Address is Missing.")]
+        [Required]
         public string Email_Address { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Language_Code is Missing.")]
+        [Required]
         public string Language { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Region_Code is Missing.")]
+        [Required]
         public string Region { get; set; } = string.Empty;
 
         [Required]
@@ -42,7 +42,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Add
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public ulong Client_time { get; set; }
+        public long Client_time { get; set; }
 
         [Required]
         public string Remote_IP { get; set; } = string.Empty;
@@ -51,7 +51,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Add
         public int Remote_Port { get; set; }
 
         [Required]
-        public string Server_IP_Address { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
 
         [Required]
         public int Server_Port { get; set; }
@@ -73,10 +73,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Add
 
         [Required]
         public string User_agent { get; set; } = string.Empty;
-
-        public string Client_user_agent { get; set; } = string.Empty;
-
-        public string Server_user_agent { get; set; } = string.Empty;
 
         [Required]
         public string Down_link { get; set; } = string.Empty;
@@ -114,6 +110,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Add
         [Required]
         public string Window_height { get; set; } = string.Empty;
 
-        public ulong End_User_ID { get; set; }
+        public long End_User_ID { get; set; }
+        public string Client_user_agent { get; set; } = string.Empty;
+        public string Server_user_agent { get; set; } = string.Empty;
     }
 }

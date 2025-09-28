@@ -2,23 +2,23 @@
 {
     public class User_Data_DTO
     {
-        public ulong id { get; set; }
-        public ulong? twitch_id { get; set; }
-        public ulong? discord_id { get; set; }
+        public long id { get; set; }
+        public long? twitch_id { get; set; }
+        public long? discord_id { get; set; }
         public byte account_type { get; set; }
         public string? email_address { get; set; } = string.Empty;
         public string? twitch_email_address { get; set; } = string.Empty;
         public string? twitch_user_name { get; set; } = string.Empty;
         public string? discord_email_address { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
-        public ulong login_on { get; set; }
-        public ulong logout_on { get; set; }
+        public long login_on { get; set; }
+        public long logout_on { get; set; }
         public string current_language { get; set; } = string.Empty;
         public string language { get; set; } = string.Empty;
         public string region { get; set; } = string.Empty;
         public byte online_status { get; set; }
         public string custom_lbl { get; set; } = string.Empty;
-        public ulong created_on { get; set; }
+        public long created_on { get; set; }
         public string avatar_url_path { get; set; } = string.Empty;
         public string avatar_title { get; set; } = string.Empty;
         public string login_type { get; set; } = string.Empty;
@@ -29,7 +29,7 @@
         public byte? gender { get; set; }
         public byte? birth_day { get; set; }
         public byte? birth_month { get; set; }
-        public ulong? birth_year { get; set; }
+        public long? birth_year { get; set; }
         public string first_name { get; set; } = string.Empty;
         public string last_name { get; set; } = string.Empty;
         public string middle_name { get; set; } = string.Empty;

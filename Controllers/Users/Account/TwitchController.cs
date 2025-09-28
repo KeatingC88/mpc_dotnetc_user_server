@@ -56,7 +56,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption($@"{dto.Client_time}"));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption($@"{dto.Client_time}"));
                 dto.Location = AES.Process_Decryption(dto.Location);
                 dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
                 dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
@@ -85,11 +85,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Theme = AES.Process_Decryption(dto.Theme);
                 dto.Grid_type = AES.Process_Decryption(dto.Grid_type);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                     Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -100,7 +100,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Region = dto.Region,
                     Location = dto.Location,
                     Login_type = "Twitch",
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,
@@ -124,7 +124,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 Twitch_User_Response? user_data = Twitch.Get_User_Data(twitch_access_token).Result;
 
                 string created_email_account_token = "";
-                ulong mpc_id = 0;
+                long mpc_id = 0;
                 User_Data_DTO mpc_member_data = new User_Data_DTO { };
 
                 if (user_data.Data.IsNullOrEmpty())
@@ -134,25 +134,25 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 string user_email = user_data.Data[0].Email;
                 string user_display_name = user_data.Data[0].DisplayName;
-                ulong user_twitch_id = ulong.Parse(user_data.Data[0].Id);
+                long user_twitch_id = long.Parse(user_data.Data[0].Id);
                 string user_twitch_login_name = user_data.Data[0].Login;
 
-                bool user_twitch_id_exists = Users_Repository.ID_Exists_In_Twitch_IDsTbl(user_twitch_id).Result;
-                bool twitch_email_exists = Users_Repository.Email_Exists_In_Twitch_Email_AddressTbl(user_email).Result;
+                bool user_twitch_id_exists = Users_Repository.ID_Exists_In_Twitch_IDs(user_twitch_id).Result;
+                bool twitch_email_exists = Users_Repository.Email_Exists_In_Twitch_Email_Address(user_email).Result;
 
                 if (user_twitch_id_exists && twitch_email_exists) {
 
                     mpc_id = Users_Repository.Read_User_ID_By_Twitch_Account_Email(user_email).Result;
                     mpc_member_data = Users_Repository.Read_User_Data_By_ID(mpc_id).Result;
 
-                    await Users_Repository.Update_End_User_Login_Time_Stamp(new Login_Time_StampDTO
+                    await Users_Repository.Update_End_User_Login_Time_Stamp(new Login_Time_Stamp
                     {
                         End_User_ID = mpc_id,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Location = dto.Location,
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -171,14 +171,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Device_ram_gb = dto.Device_ram_gb
                     });
 
-                    await Users_Repository.Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_HistoryDTO
+                    await Users_Repository.Insert_End_User_Login_Time_Stamp_History(new Login_Time_Stamp_History
                     {
                         End_User_ID = mpc_id,
-                        Client_Time_Parsed = dto.Client_Time_Parsed,
+                        Client_time = dto.Client_Time_Parsed,
                         Location = dto.Location,
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -199,7 +199,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 }  else {
 
-                    mpc_member_data = Users_Repository.Create_Account_By_Twitch(new Complete_Twitch_RegisterationDTO
+                    mpc_member_data = Users_Repository.Create_Account_By_Twitch(new Complete_Twitch_Registeration
                     {
                         Twitch_Name = user_display_name,
                         Twitch_User_Name = user_twitch_login_name,
@@ -212,7 +212,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Location = dto.Location,
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                        Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                        Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                         Server_Port = HttpContext.Connection.LocalPort,
                         Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                         Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -283,7 +283,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption($@"{dto.Client_time}"));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption($@"{dto.Client_time}"));
                 dto.Location = AES.Process_Decryption(dto.Location);
 
                 dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
@@ -309,11 +309,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                     Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -324,7 +324,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Region = dto.Region,
                     Location = dto.Location,
                     Login_type = dto.Login_type,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,
@@ -354,17 +354,17 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 string user_email = user_data.Data[0].Email;
                 string user_display_name = user_data.Data[0].DisplayName;
-                ulong user_twitch_id = ulong.Parse(user_data.Data[0].Id);
+                long user_twitch_id = long.Parse(user_data.Data[0].Id);
                 string user_twitch_login_name = user_data.Data[0].Login;
 
-                bool user_twitch_id_exists = Users_Repository.ID_Exists_In_Twitch_IDsTbl(user_twitch_id).Result;
-                bool twitch_email_exists = Users_Repository.Email_Exists_In_Twitch_Email_AddressTbl(user_email).Result;
+                bool user_twitch_id_exists = Users_Repository.ID_Exists_In_Twitch_IDs(user_twitch_id).Result;
+                bool twitch_email_exists = Users_Repository.Email_Exists_In_Twitch_Email_Address(user_email).Result;
 
                 if (user_twitch_id_exists || twitch_email_exists || user_twitch_login_name.IsNullOrEmpty()) {
                     return BadRequest();
                 }
 
-                await Users_Repository.Integrate_Account_By_Twitch(new Complete_Twitch_IntegrationDTO
+                await Users_Repository.Integrate_Account_By_Twitch(new Complete_Twitch_Integration
                 {
                     End_User_ID = dto.End_User_ID,
                     Twitch_ID = user_twitch_id,
@@ -394,7 +394,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption($@"{dto.Client_time}"));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption($@"{dto.Client_time}"));
                 dto.Location = AES.Process_Decryption(dto.Location);
 
                 dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
@@ -420,11 +420,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     Client_IP = Network.Get_Client_Internet_Protocol_Address().Result,
                     Client_Port = Network.Get_Client_Internet_Protocol_Port().Result,
@@ -435,7 +435,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Region = dto.Region,
                     Location = dto.Location,
                     Login_type = dto.Login_type,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     Window_height = dto.Window_height,

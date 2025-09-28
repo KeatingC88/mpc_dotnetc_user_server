@@ -2,9 +2,9 @@
 {
     public class User_Token_Data_DTO
     {
-        public ulong id { get; set; }
-        public ulong? twitch_id { get; set; }
-        public ulong? discord_id { get; set; }
+        public long id { get; set; }
+        public long? twitch_id { get; set; }
+        public long? discord_id { get; set; }
         public byte account_type { get; set; }
         public string email_address { get; set; } = string.Empty;
         public string twitch_email_address { get; set; } = string.Empty;

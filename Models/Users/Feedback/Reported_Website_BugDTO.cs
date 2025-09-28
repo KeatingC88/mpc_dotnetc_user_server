@@ -5,13 +5,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Feedback
     public class Reported_Website_BugDTO
     {
         public string ID { get; set; } = string.Empty;
-        public ulong End_User_ID { get; set; }
-        public ulong Created_on { get; set; }
-        public byte Deleted { get; set; }
-        public ulong Deleted_on { get; set; }
-        public ulong Deleted_by { get; set; }
-        public ulong Updated_on { get; set; }
-        public ulong Updated_by { get; set; }
+        public long End_User_ID { get; set; }
+        public long Created_on { get; set; }
+        public bool Deleted { get; set; }
+        public long Deleted_on { get; set; }
+        public long Deleted_by { get; set; }
+        public long Updated_on { get; set; }
+        public long Updated_by { get; set; }
         public string URL { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
         public string Detail { get; set; } = string.Empty;
@@ -25,10 +25,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Feedback
         public string Location { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Client Time is Missing.")]
-        public string Client_time { get; set; } = string.Empty;          public ulong Client_Time_Parsed { get; set; } 
+        public string Client_time { get; set; } = string.Empty;          public long Client_Time_Parsed { get; set; } 
         public string Remote_IP { get; set; } = string.Empty;
         public int Remote_Port { get; set; }
-        public string Server_IP_Address { get; set; } = string.Empty;
+        public string Server_IP { get; set; } = string.Empty;
         public string Reason { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;
         public string Controller { get; set; } = string.Empty;
@@ -38,10 +38,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Feedback
         public string Login_type { get; set; } = string.Empty;
         [Required]
 
-        public ulong Client_id { get; set; } 
+        public long Client_id { get; set; } 
         [Required]
 
-        public ulong JWT_id { get; set; }
+        public long JWT_id { get; set; }
 
         [Required]
         public string JWT_issuer_key { get; set; } = string.Empty;

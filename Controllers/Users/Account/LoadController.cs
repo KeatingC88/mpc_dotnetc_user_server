@@ -51,10 +51,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Login_type = AES.Process_Decryption(dto.Login_type);
 
-                dto.End_User_ID = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.End_User_ID = long.Parse(AES.Process_Decryption(dto.ID));
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
                 dto.Server_user_agent = dto.Client_user_agent;
@@ -72,11 +72,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                var validationResult = await Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                var validationResult = await Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = await Network.Get_Client_Remote_Internet_Protocol_Address(),
                     Remote_Port = await Network.Get_Client_Remote_Internet_Protocol_Port(),
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -86,7 +86,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,

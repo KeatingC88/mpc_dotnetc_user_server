@@ -58,9 +58,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
                 dto.Location = AES.Process_Decryption(dto.Location);
-                dto.Client_Time_Parsed = ulong.Parse(AES.Process_Decryption(dto.Client_time));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
 
-                dto.Client_id = ulong.Parse(AES.Process_Decryption(dto.ID));
+                dto.Client_id = long.Parse(AES.Process_Decryption(dto.End_User_ID));
                 dto.JWT_id = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
                 dto.Client_user_agent = AES.Process_Decryption(dto.User_agent);
@@ -81,11 +81,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.Password = AES.Process_Decryption(dto.Password);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_HistoryDTO
+                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
-                    Server_IP_Address = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
+                    Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
                     Server_Port = HttpContext.Connection.LocalPort,
                     JWT_client_address = dto.JWT_client_address,
                     JWT_client_key = dto.JWT_client_key,
@@ -96,7 +96,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Language = dto.Language,
                     Region = dto.Region,
                     Location = dto.Location,
-                    Client_Time_Parsed = dto.Client_Time_Parsed,
+                    Client_time = dto.Client_Time_Parsed,
                     Server_User_Agent = dto.Server_user_agent,
                     Client_User_Agent = dto.Client_user_agent,
                     End_User_ID = dto.Client_id,
@@ -125,7 +125,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     if (!Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(user_password_hash_from_database_storage, user_password_given_from_end_user_on_gui_client).Result)
                         return Unauthorized();
 
-                return await Task.FromResult(Users_Repository.Delete_Account_By_User_id(new Delete_UserDTO { 
+                return await Task.FromResult(Users_Repository.Delete_Account_By_User_id(new Delete_User { 
                     ID = dto.Client_id.ToString(),
                     Target_User = dto.Target_User
                 }).Result);

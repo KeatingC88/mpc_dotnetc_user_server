@@ -33,7 +33,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
         [Required]
         public string Client_time { get; set; } = string.Empty;
 
-        public ulong Client_Time_Parsed { get; set; }
+        public long Client_Time_Parsed { get; set; }
 
         [Required]
         public string Code { get; set; } = string.Empty;
@@ -90,6 +90,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Twitch
         [Required]
         public string Window_height { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
-        public ulong End_User_ID { get; set; }
+        public long End_User_ID { get; set; }
     }
 }
