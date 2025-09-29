@@ -23,13 +23,15 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
 using mpc_dotnetc_user_server.Models.Users.Selected.Name;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
-using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
+using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
 using StackExchange.Redis;
+using System.Data;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -369,110 +371,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 groups = "0"
             };
         }
-        public async Task<User_Data_DTO> Integrate_Account_By_Email(Complete_Email_Registration dto)
-        {
-            await _UsersDBC.Pending_Email_RegistrationTbl.Where(x => x.Email_Address == dto.Email_Address).ExecuteUpdateAsync(s => s
-                .SetProperty(col => col.Deleted, true)
-                .SetProperty(col => col.Deleted_on, TimeStamp())
-                .SetProperty(col => col.Updated_on, TimeStamp())
-                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                .SetProperty(col => col.Deleted_by, dto.End_User_ID)
-                .SetProperty(col => col.Client_time, dto.Client_time)
-                .SetProperty(col => col.Server_Port, dto.Server_Port)
-                .SetProperty(col => col.Server_IP, dto.Server_IP)
-                .SetProperty(col => col.Client_Port, dto.Client_Port)
-                .SetProperty(col => col.Client_IP, dto.Client_IP)
-                .SetProperty(col => col.Client_IP, dto.Remote_IP)
-                .SetProperty(col => col.Client_Port, dto.Remote_Port)
-                .SetProperty(col => col.User_agent, dto.User_agent)
-                .SetProperty(col => col.Window_width, dto.Window_width)
-                .SetProperty(col => col.Window_height, dto.Window_height)
-                .SetProperty(col => col.Screen_width, dto.Screen_width)
-                .SetProperty(col => col.Screen_height, dto.Screen_height)
-                .SetProperty(col => col.RTT, dto.RTT)
-                .SetProperty(col => col.Orientation, dto.Orientation)
-                .SetProperty(col => col.Data_saver, dto.Data_saver)
-                .SetProperty(col => col.Color_depth, dto.Color_depth)
-                .SetProperty(col => col.Pixel_depth, dto.Pixel_depth)
-                .SetProperty(col => col.Connection_type, dto.Connection_type)
-                .SetProperty(col => col.Down_link, dto.Down_link)
-                .SetProperty(col => col.Device_ram_gb, dto.Device_ram_gb)
-            );
-
-            await _UsersDBC.Completed_Email_RegistrationTbl.AddAsync(new Completed_Email_RegistrationTbl
-            {
-                Email_Address = dto.Email_Address.ToUpper(),
-                Updated_on = TimeStamp(),
-                Updated_by = 0,
-                Language_Region = @$"{dto.Language}-{dto.Region}",
-                Created_on = TimeStamp(),
-                Created_by = dto.End_User_ID,
-                Code = dto.Code,
-                Remote_IP = dto.Remote_IP,
-                Remote_Port = dto.Remote_Port,
-                Server_IP = dto.Server_IP,
-                Server_Port = dto.Server_Port,
-                Client_IP = dto.Client_IP,
-                Client_Port = dto.Client_Port,
-                Client_time = dto.Client_time,
-                User_agent = dto.User_agent,
-                Window_height = dto.Window_height,
-                Window_width = dto.Window_width,
-                Screen_height = dto.Screen_height,
-                Screen_width = dto.Screen_width,
-                RTT = dto.RTT,
-                Orientation = dto.Orientation,
-                Data_saver = dto.Data_saver,
-                Color_depth = dto.Color_depth,
-                Pixel_depth = dto.Pixel_depth,
-                Connection_type = dto.Connection_type,
-                Down_link = dto.Down_link,
-                Device_ram_gb = dto.Device_ram_gb
-            });
-
-            await _UsersDBC.Login_Email_AddressTbl.AddAsync(new Login_Email_AddressTbl
-            {
-                End_User_ID = dto.End_User_ID,
-                Email_Address = dto.Email_Address.ToUpper(),
-                Updated_on = TimeStamp(),
-                Created_on = TimeStamp(),
-                Created_by = dto.End_User_ID,
-                Updated_by = dto.End_User_ID
-            });
-
-            await _UsersDBC.Login_PasswordTbl.AddAsync(new Login_PasswordTbl
-            {
-                End_User_ID = dto.End_User_ID,
-                Password = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result,
-                Updated_on = TimeStamp(),
-                Created_on = TimeStamp(),
-                Created_by = dto.End_User_ID,
-                Updated_by = dto.End_User_ID,
-            });
-
-            await _UsersDBC.SaveChangesAsync();
-
-            return new User_Data_DTO
-            {
-                created_on = TimeStamp(),
-                login_on = TimeStamp(),
-                location = dto.Location,
-                account_type = 1,
-                grid_type = dto.Grid_type,
-                online_status = 2,
-                id = dto.End_User_ID,
-                name = $@"{dto.Name}",
-                email_address = dto.Email_Address,
-                language = dto.Language,
-                region = dto.Region,
-                alignment = dto.Alignment,
-                nav_lock = dto.Nav_lock,
-                text_alignment = dto.Text_alignment,
-                theme = dto.Theme,
-                roles = "User",
-                groups = "0"
-            };
-        }
         public async Task<User_Data_DTO> Create_Account_By_Twitch(Complete_Twitch_Registeration dto)
         {
             string user_public_id = await Generate_User_Public_ID();
@@ -666,30 +564,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 login_type = "TWITCH",
             };
         }
-        public async Task Integrate_Account_By_Twitch(Complete_Twitch_Integration dto)
-        {
-            await _UsersDBC.Twitch_IDsTbl.AddAsync(new Twitch_IDsTbl
-            {
-                End_User_ID = dto.End_User_ID,
-                Twitch_ID = dto.Twitch_ID,
-                User_Name = dto.Twitch_User_Name,
-                Updated_on = TimeStamp(),
-                Created_on = TimeStamp(),
-                Created_by = dto.End_User_ID,
-                Updated_by = dto.End_User_ID
-            });
-
-            await _UsersDBC.Twitch_Email_AddressTbl.AddAsync(new Twitch_Email_AddressTbl
-            {
-                End_User_ID = dto.End_User_ID,
-                Email_Address = dto.Email_Address.ToUpper(),
-                Updated_on = TimeStamp(),
-                Created_on = TimeStamp(),
-                Created_by = dto.End_User_ID,
-                Updated_by = dto.End_User_ID
-            });
-            await _UsersDBC.SaveChangesAsync();
-        }
         public async Task<string> Create_Pending_Email_Registration_Record(Pending_Email_Registration dto)
         {
             await _UsersDBC.Pending_Email_RegistrationTbl.AddAsync(new Pending_Email_RegistrationTbl
@@ -732,18 +606,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 region = dto.Region,
                 created_on = TimeStamp(),
             });
-        }
-        public async Task<bool> Email_Exists_In_Login_Email_Address(string email_address)
-        {
-            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Any(x => x.Email_Address == email_address.ToUpper()));
-        }
-        public async Task<bool> Email_Exists_In_Twitch_Email_Address(string email_address)
-        {
-            return await Task.FromResult(_UsersDBC.Twitch_Email_AddressTbl.Any(x => x.Email_Address == email_address.ToUpper()));
-        }
-        public async Task<bool> Email_Exists_In_Discord_Email_Address(string email_address)
-        {
-            return await Task.FromResult(_UsersDBC.Discord_Email_AddressTbl.Any(x => x.Email_Address == email_address.ToUpper()));
         }
         public async Task<bool> Create_Contact_Us_Record(Contact_Us dto)
         {
@@ -883,6 +745,25 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 read_reported_profile = Read_User_Profile_By_ID(dto.Reported_ID).ToString(),
             });
         }
+        public async Task<bool> Confirmation_Code_Exists_In_Pending_Email_Address_Registration(string Code)
+        {
+            return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Code == Code));
+        }
+        public async Task Create_WebSocket_Permission_Record(WebSocket_Chat_Permission dto)
+        {
+            await _UsersDBC.WebSocket_Chat_PermissionTbl.AddAsync(new WebSocket_Chat_PermissionTbl
+            {
+                End_User_ID = dto.End_User_ID,
+                Participant_ID = dto.Participant_ID,
+                Updated_on = TimeStamp(),
+                Created_on = TimeStamp(),
+                Updated_by = dto.End_User_ID,
+                Requested = 1,
+                Blocked = 0,
+                Approved = 0
+            });
+            await _UsersDBC.SaveChangesAsync();
+        }
         public async Task<string> Delete_Account_By_User_id(Delete_User dto)
         {
             await _UsersDBC.User_IDsTbl.Where(x => x.ID == long.Parse(dto.Target_User)).ExecuteUpdateAsync(s => s
@@ -900,510 +781,231 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 target_user = dto.Target_User,
             });
         }
-        public async Task<User_Data_DTO> Read_User_Data_By_ID(long end_user_id)
+        public async Task<string> Delete_From_Web_Socket_Chat_Permissions(WebSocket_Chat_Permission dto)
         {
-            bool nav_lock = _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Locked).SingleOrDefault();
-            byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Type).SingleOrDefault();
-            byte grid_type = _UsersDBC.Selected_App_Grid_TypeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Grid).SingleOrDefault();
-            bool status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Online).SingleOrDefault();
-            bool status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Offline).SingleOrDefault();
-            bool status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Hidden).SingleOrDefault();
-            bool status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Away).SingleOrDefault();
-            bool status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.DND).SingleOrDefault();
-            bool status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Custom).SingleOrDefault();
-            byte status_type = 0;
-            bool light = _UsersDBC.Selected_ThemeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Light).SingleOrDefault();
-            bool night = _UsersDBC.Selected_ThemeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Night).SingleOrDefault();
-            bool custom_theme = _UsersDBC.Selected_ThemeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Custom).SingleOrDefault();
-            byte theme_type = 0;
-            bool left_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Left).SingleOrDefault();
-            bool center_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Center).SingleOrDefault();
-            bool right_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Right).SingleOrDefault();
-            byte alignment_type = 0;
-            bool left_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Left).SingleOrDefault();
-            bool center_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Center).SingleOrDefault();
-            bool right_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Right).SingleOrDefault();
-            byte text_alignment_type = 0;
-            //Third Party IDs
-            long? twitch_user_id = _UsersDBC.Twitch_IDsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Twitch_ID).SingleOrDefault();
-            string? twitch_user_name = _UsersDBC.Twitch_IDsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.User_Name).SingleOrDefault();
-            long? discord_user_id = _UsersDBC.Discord_IDsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Discord_ID).SingleOrDefault();
-            //Time Stamps
-            long login_timestamp = _UsersDBC.Login_Time_StampTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Login_on).SingleOrDefault();
-            long logout_timestamp = _UsersDBC.Logout_Time_StampTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Logout_on).SingleOrDefault();
-            long created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Created_on).SingleOrDefault();
-            //Profile Related
-            byte? gender = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Gender).SingleOrDefault();
-            byte? birth_day = _UsersDBC.Birth_DateTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Day).SingleOrDefault();
-            byte? birth_month = _UsersDBC.Birth_DateTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Month).SingleOrDefault();
-            long? birth_year = _UsersDBC.Birth_DateTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Year).SingleOrDefault();
-            string? customLbl = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Custom_lbl).SingleOrDefault();
-            //Email Addresses
-            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
-            string? twitch_email_address = _UsersDBC.Twitch_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
-            string? discord_email_address = _UsersDBC.Discord_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
-
-            string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Region_code).SingleOrDefault();
-            string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Language_code).SingleOrDefault();
-            string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
-            string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Avatar_title).SingleOrDefault();
-            string? name = _UsersDBC.Selected_NameTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Name).SingleOrDefault();
-            string? end_user_public_id = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Public_ID).SingleOrDefault();
-            string? first_name = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.First_Name).SingleOrDefault();
-            string? last_name = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Last_Name).SingleOrDefault();
-            string? middle_name = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Middle_Name).SingleOrDefault();
-            string? maiden_name = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Maiden_Name).SingleOrDefault();
-            string? ethnicity = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Ethnicity).SingleOrDefault();
-            string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Groups).SingleOrDefault();
-            string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Roles).SingleOrDefault();
-            //CSS Customization Data
-            string? card_border_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Border_Color).SingleOrDefault();
-            string? card_header_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Header_Font).SingleOrDefault();
-            string? card_header_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Header_Font_Color).SingleOrDefault();
-            string? card_header_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Header_Background_Color).SingleOrDefault();
-            string? card_body_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Body_Font).SingleOrDefault();
-            string? card_body_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Body_Background_Color).SingleOrDefault();
-            string? card_body_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Body_Font_Color).SingleOrDefault();
-            string? card_footer_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Footer_Font_Color).SingleOrDefault();
-            string? card_footer_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Footer_Font).SingleOrDefault();
-            string? card_footer_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Footer_Background_Color).SingleOrDefault();
-            string? navigation_menu_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Navigation_Menu_Background_Color).SingleOrDefault();
-            string? navigation_menu_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Navigation_Menu_Font_Color).SingleOrDefault();
-            string? navigation_menu_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Navigation_Menu_Font).SingleOrDefault();
-            string? button_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Button_Background_Color).SingleOrDefault();
-            string? button_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Button_Font).SingleOrDefault();
-            string? button_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Button_Font_Color).SingleOrDefault();
-
-            if (status_offline)
-                status_type = 0;
-            if (status_hidden)
-                status_type = 1;
-            if (status_online)
-                status_type = 2;
-            if (status_away)
-                status_type = 3;
-            if (status_dnd)
-                status_type = 4;
-            if (status_custom)
-                status_type = 5;
-
-            if (light)
-                theme_type = 0;
-            if (night)
-                theme_type = 1;
-            if (custom_theme)
-                theme_type = 2;
-
-            if (left_aligned)
-                alignment_type = 0;
-            if (center_aligned)
-                alignment_type = 1;
-            if (right_aligned)
-                alignment_type = 2;
-            if (left_text_aligned)
-                text_alignment_type = 0;
-            if (center_text_aligned)
-                text_alignment_type = 1;
-            if (right_text_aligned)
-                text_alignment_type = 2;
-
-            return await Task.FromResult(new User_Data_DTO
+            try
             {
-                id = end_user_id,
-                account_type = account_type,
-                email_address = email_address,
-                twitch_id = twitch_user_id,
-                twitch_user_name = twitch_user_name,
-                discord_id = discord_user_id,
-                twitch_email_address = twitch_email_address,
-                discord_email_address = discord_email_address,
-                name = $@"{name}#{end_user_public_id}",
-                login_on = login_timestamp,
-                logout_on = logout_timestamp,
-                current_language = $@"{language_code}-{region_code}",
-                language = language_code,
-                region = region_code,
-                online_status = status_type,
-                custom_lbl = customLbl ?? "",
-                created_on = created_on,
-                avatar_url_path = avatar_url_path ?? "",
-                avatar_title = avatar_title ?? "",
-                theme = theme_type,
-                alignment = alignment_type,
-                text_alignment = text_alignment_type,
-                gender = gender,
-                birth_day = birth_day,
-                birth_month = birth_month,
-                birth_year = birth_year,
-                first_name = first_name ?? "",
-                last_name = last_name ?? "",
-                middle_name = middle_name ?? "",
-                maiden_name = maiden_name ?? "",
-                ethnicity = ethnicity ?? "",
-                groups = groups ?? "",
-                roles = roles ?? "",
-                grid_type = grid_type,
-                nav_lock = nav_lock,
-                card_border_color = card_border_color,
-                card_header_font = card_header_font,
-                card_header_font_color = card_header_font_color,
-                card_header_background_color = card_header_background_color,
-                card_body_font = card_body_font,
-                card_body_background_color = card_body_background_color,
-                card_body_font_color = card_body_font_color,
-                card_footer_font_color = card_footer_font_color,
-                card_footer_font = card_footer_font,
-                card_footer_background_color = card_footer_background_color,
-                navigation_menu_background_color = navigation_menu_background_color,
-                navigation_menu_font_color = navigation_menu_font_color,
-                navigation_menu_font = navigation_menu_font,
-                button_background_color = button_background_color,
-                button_font = button_font,
-                button_font_color = button_font_color
+                await _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                    .SetProperty(dto => dto.Requested, dto.Requested)
+                    .SetProperty(dto => dto.Blocked, dto.Blocked)
+                    .SetProperty(dto => dto.Approved, dto.Approved)
+                    .SetProperty(dto => dto.Deleted_on, TimeStamp())
+                    .SetProperty(dto => dto.Deleted_by, dto.Participant_ID)
+                    .SetProperty(dto => dto.Deleted, true)
+                    .SetProperty(dto => dto.Updated_on, TimeStamp())
+                    .SetProperty(dto => dto.Updated_by, dto.Participant_ID)
+                );
+                await _UsersDBC.SaveChangesAsync();
+                return JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    participant_id = dto.Participant_ID,
+                    deleted_on = TimeStamp()
+                });
+            }
+            catch
+            {
+                return "Server Error: Delete Chat Permissions Failed.";
+            }
+        }
+        public async Task<string> Delete_From_Friend_Permissions(Friends_Permission dto)
+        {
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    if (_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID && x.Deleted == false))
+                    {
+                        await _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
+                            .SetProperty(dto => dto.Requested, false)
+                            .SetProperty(dto => dto.Blocked, false)
+                            .SetProperty(dto => dto.Approved, false)
+                            .SetProperty(dto => dto.Updated_on, TimeStamp())
+                            .SetProperty(dto => dto.Deleted, true)
+                            .SetProperty(dto => dto.Updated_by, dto.End_User_ID)
+                        );
+                        await _UsersDBC.SaveChangesAsync();
+                    }
+                    else if (_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID && x.Deleted == false))
+                    {
+                        await _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
+                            .SetProperty(dto => dto.Requested, false)
+                            .SetProperty(dto => dto.Blocked, false)
+                            .SetProperty(dto => dto.Approved, false)
+                            .SetProperty(dto => dto.Updated_on, TimeStamp())
+                            .SetProperty(dto => dto.Deleted, true)
+                            .SetProperty(dto => dto.Updated_by, dto.End_User_ID)
+                        );
+                        await _UsersDBC.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        await _UsersDBC.Friends_PermissionTbl.AddAsync(new Friends_PermissionTbl
+                        {
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = TimeStamp(),
+                            Created_on = TimeStamp(),
+                            Updated_by = dto.End_User_ID,
+                            Created_by = dto.End_User_ID,
+                            Deleted = true
+                        });
+
+                        await _UsersDBC.SaveChangesAsync();
+                    }
+                });
+
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    participant_id = dto.Participant_ID,
+                    deleted = true
+                }));
+            }
+            catch
+            {
+                return "Server Error: Delete Friend Permission.";
+            }
+        }
+        public async Task<bool> Email_Exists_In_Login_Email_Address(string email_address)
+        {
+            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Any(x => x.Email_Address == email_address.ToUpper()));
+        }
+        public async Task<bool> Email_Exists_In_Twitch_Email_Address(string email_address)
+        {
+            return await Task.FromResult(_UsersDBC.Twitch_Email_AddressTbl.Any(x => x.Email_Address == email_address.ToUpper()));
+        }
+        public async Task<bool> Email_Exists_In_Discord_Email_Address(string email_address)
+        {
+            return await Task.FromResult(_UsersDBC.Discord_Email_AddressTbl.Any(x => x.Email_Address == email_address.ToUpper()));
+        }
+        public async Task<User_Data_DTO> Integrate_Account_By_Email(Complete_Email_Registration dto)
+        {
+            await _UsersDBC.Pending_Email_RegistrationTbl.Where(x => x.Email_Address == dto.Email_Address).ExecuteUpdateAsync(s => s
+                .SetProperty(col => col.Deleted, true)
+                .SetProperty(col => col.Deleted_on, TimeStamp())
+                .SetProperty(col => col.Updated_on, TimeStamp())
+                .SetProperty(col => col.Updated_by, dto.End_User_ID)
+                .SetProperty(col => col.Deleted_by, dto.End_User_ID)
+                .SetProperty(col => col.Client_time, dto.Client_time)
+                .SetProperty(col => col.Server_Port, dto.Server_Port)
+                .SetProperty(col => col.Server_IP, dto.Server_IP)
+                .SetProperty(col => col.Client_Port, dto.Client_Port)
+                .SetProperty(col => col.Client_IP, dto.Client_IP)
+                .SetProperty(col => col.Client_IP, dto.Remote_IP)
+                .SetProperty(col => col.Client_Port, dto.Remote_Port)
+                .SetProperty(col => col.User_agent, dto.User_agent)
+                .SetProperty(col => col.Window_width, dto.Window_width)
+                .SetProperty(col => col.Window_height, dto.Window_height)
+                .SetProperty(col => col.Screen_width, dto.Screen_width)
+                .SetProperty(col => col.Screen_height, dto.Screen_height)
+                .SetProperty(col => col.RTT, dto.RTT)
+                .SetProperty(col => col.Orientation, dto.Orientation)
+                .SetProperty(col => col.Data_saver, dto.Data_saver)
+                .SetProperty(col => col.Color_depth, dto.Color_depth)
+                .SetProperty(col => col.Pixel_depth, dto.Pixel_depth)
+                .SetProperty(col => col.Connection_type, dto.Connection_type)
+                .SetProperty(col => col.Down_link, dto.Down_link)
+                .SetProperty(col => col.Device_ram_gb, dto.Device_ram_gb)
+            );
+
+            await _UsersDBC.Completed_Email_RegistrationTbl.AddAsync(new Completed_Email_RegistrationTbl
+            {
+                Email_Address = dto.Email_Address.ToUpper(),
+                Updated_on = TimeStamp(),
+                Updated_by = 0,
+                Language_Region = @$"{dto.Language}-{dto.Region}",
+                Created_on = TimeStamp(),
+                Created_by = dto.End_User_ID,
+                Code = dto.Code,
+                Remote_IP = dto.Remote_IP,
+                Remote_Port = dto.Remote_Port,
+                Server_IP = dto.Server_IP,
+                Server_Port = dto.Server_Port,
+                Client_IP = dto.Client_IP,
+                Client_Port = dto.Client_Port,
+                Client_time = dto.Client_time,
+                User_agent = dto.User_agent,
+                Window_height = dto.Window_height,
+                Window_width = dto.Window_width,
+                Screen_height = dto.Screen_height,
+                Screen_width = dto.Screen_width,
+                RTT = dto.RTT,
+                Orientation = dto.Orientation,
+                Data_saver = dto.Data_saver,
+                Color_depth = dto.Color_depth,
+                Pixel_depth = dto.Pixel_depth,
+                Connection_type = dto.Connection_type,
+                Down_link = dto.Down_link,
+                Device_ram_gb = dto.Device_ram_gb
             });
-        }
-        public async Task<User_Token_Data_DTO> Read_Require_Token_Data_By_ID(long end_user_id)
-        {
-            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
-            string? twitch_email_address = _UsersDBC.Twitch_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
-            string? discord_email_address = _UsersDBC.Discord_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
-            long? twitch_id = _UsersDBC.Twitch_IDsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.End_User_ID).SingleOrDefault();
-            long? discord_id = _UsersDBC.Discord_IDsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.End_User_ID).SingleOrDefault();
-            string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Groups).SingleOrDefault();
-            string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Roles).SingleOrDefault();
-            byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Type).SingleOrDefault();
 
-            return await Task.FromResult(new User_Token_Data_DTO
+            await _UsersDBC.Login_Email_AddressTbl.AddAsync(new Login_Email_AddressTbl
             {
-                id = end_user_id,
-                account_type = account_type,
-                email_address = email_address ?? "",
-                twitch_id = twitch_id,
-                twitch_email_address = twitch_email_address ?? "",
-                discord_id = discord_id,
-                discord_email_address= discord_email_address ?? "",
-                groups = groups ?? "",
-                roles = roles ?? ""
+                End_User_ID = dto.End_User_ID,
+                Email_Address = dto.Email_Address.ToUpper(),
+                Updated_on = TimeStamp(),
+                Created_on = TimeStamp(),
+                Created_by = dto.End_User_ID,
+                Updated_by = dto.End_User_ID
             });
-        }
-        public async Task<string> Read_User_Profile_By_ID(long user_id)
-        {
-            bool status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Online).SingleOrDefault();
-            bool status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Offline).SingleOrDefault();
-            bool status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Hidden).SingleOrDefault();
-            bool status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Away).SingleOrDefault();
-            bool status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.DND).SingleOrDefault();
-            bool status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Custom).SingleOrDefault();
-            string? custom_label = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Custom_lbl).SingleOrDefault();
-            byte status_code = 0;
 
-            long LoginTS = _UsersDBC.Login_Time_StampTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Login_on).SingleOrDefault();
-            long LogoutTS = _UsersDBC.Logout_Time_StampTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Logout_on).SingleOrDefault();
-            long created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == user_id).Select(x => x.Created_on).SingleOrDefault();
-
-            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Email_Address).SingleOrDefault();
-            string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Region_code).SingleOrDefault();
-            string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Language_code).SingleOrDefault();
-            string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
-            string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Avatar_title).SingleOrDefault();
-            string? name = _UsersDBC.Selected_NameTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Name).SingleOrDefault();
-
-            if (status_offline)
-                status_code = 0;
-            if (status_hidden)
-                status_code = 1;
-            if (status_online)
-                status_code = 2;
-            if (status_away)
-                status_code = 3;
-            if (status_dnd)
-                status_code = 4;
-            if (status_custom)
-                status_code = 5;
-
-            return await Task.FromResult(JsonSerializer.Serialize(new {
-                id = user_id,
-                email_address = email_address,
-                name = name,
-                login_on = LoginTS,
-                logout_on = LogoutTS,
-                language = @$"{language_code}-{region_code}",
-                online_status = status_code,
-                custom_lbl = custom_label,
-                created_on = created_on,
-                avatar_url_path = avatar_url_path,
-                avatar_title = avatar_title,
-            }));
-        }
-        public async Task<string> Read_WebSocket_Permission_Record_For_Both_End_Users(WebSocket_Chat_Permission dto)
-        {
-            byte requested = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Requested).SingleOrDefault();
-            byte approved = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Approved).SingleOrDefault();
-            byte blocked = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Blocked).SingleOrDefault();
-            bool deleted = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Deleted).SingleOrDefault();
-
-            byte requested_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Requested).SingleOrDefault();
-            byte approved_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Approved).SingleOrDefault();
-            byte blocked_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Blocked).SingleOrDefault();
-            bool deleted_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Deleted).SingleOrDefault();
-
-
-            if (requested == 1 || requested_swap_ids == 1)
+            await _UsersDBC.Login_PasswordTbl.AddAsync(new Login_PasswordTbl
             {
-                return JsonSerializer.Serialize(new
-                {
-                    requested = 1,
-                    blocked = 0,
-                    approved = 0,
-                });
-            }
-
-            if (approved == 1 || approved_swap_ids == 1)
-            {
-                return JsonSerializer.Serialize(new
-                {
-                    requested = 0,
-                    blocked = 0,
-                    approved = 1,
-                });
-            }
-
-            if (blocked == 1 || blocked_swap_ids == 1)
-            {
-                return JsonSerializer.Serialize(new
-                {
-                    requested = 0,
-                    blocked = 1,
-                    approved = 0,
-                });
-            }
-
-            if (requested == 0 && approved == 0 && blocked == 0 && requested_swap_ids == 0 && approved_swap_ids == 0 && blocked_swap_ids == 0 && deleted == false && deleted_swap_ids == false)
-            {
-                await Create_WebSocket_Permission_Record(dto);
-                return JsonSerializer.Serialize(new
-                {
-                    requested = 1,
-                    blocked = 0,
-                    approved = 0,
-                });
-            }
-
-            if (requested == 0 && approved == 0 && blocked == 0 && requested_swap_ids == 0 && approved_swap_ids == 0 && blocked_swap_ids == 0 && (deleted == true || deleted_swap_ids == true))
-            {
-                await Update_Chat_Web_Socket_Permissions(new WebSocket_Chat_Permission
-                {
-                    End_User_ID = dto.End_User_ID,
-                    Participant_ID = dto.Participant_ID,
-                    Requested = 1,
-                    Blocked = 0,
-                    Approved = 0
-                });
-                return JsonSerializer.Serialize(new
-                {
-                    requested = 1,
-                    blocked = 0,
-                    approved = 0,
-                });
-            }
-
-            return JsonSerializer.Serialize(new
-            {
-                requested = 0,
-                blocked = 0,
-                approved = 0,
+                End_User_ID = dto.End_User_ID,
+                Password = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result,
+                Updated_on = TimeStamp(),
+                Created_on = TimeStamp(),
+                Created_by = dto.End_User_ID,
+                Updated_by = dto.End_User_ID,
             });
-        }
-        public async Task<string> Read_End_User_WebSocket_Sent_Chat_Requests(long user_id)
-        {
-            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.End_User_ID == user_id)) {
-                return "";
-            } else {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Requested == 1)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_WebSocket_Sent_Chat_Blocks(long user_id)
-        {
-            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.End_User_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Blocked == 1)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_WebSocket_Sent_Chat_Approvals(long user_id)
-        {
-            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.End_User_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Approved == 1)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_WebSocket_Received_Chat_Requests(long user_id)
-        {
-            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == 1)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Received_Friend_Requests(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_WebSocket_Received_Chat_Blocks(long user_id)
-        {
-            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Blocked == 1)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_WebSocket_Received_Chat_Approvals(long user_id)
-        {
-            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Approved == 1)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Sent_Requests(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Requested == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Sent_Blocks(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Blocked == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Sent_Approvals(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Approved == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Received_Requests(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Received_Blocks(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Blocked == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Received_Approvals(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Approved == true)
-                    .ToList()));
-            }
-        }
-        public async Task<byte> Read_End_User_Selected_Status(long user_id)
-        {
-            var status = await _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => new {
-                x.Online,
-                x.Offline,
-                x.Hidden,
-                x.Away,
-                x.DND,
-                x.Custom
-            }).SingleOrDefaultAsync();
 
-            if (status == null)
-                return 255;
+            await _UsersDBC.SaveChangesAsync();
 
-            return status switch
+            return new User_Data_DTO
             {
-                var record_is when record_is.Offline == true => 0,
-                var record_is when record_is.Hidden == true => 1,
-                var record_is when record_is.Online == true => 2,
-                var record_is when record_is.Away == true => 3,
-                var record_is when record_is.DND == true => 4,
-                var record_is when record_is.Custom == true => 5,
-                _ => 255
+                created_on = TimeStamp(),
+                login_on = TimeStamp(),
+                location = dto.Location,
+                account_type = 1,
+                grid_type = dto.Grid_type,
+                online_status = 2,
+                id = dto.End_User_ID,
+                name = $@"{dto.Name}",
+                email_address = dto.Email_Address,
+                language = dto.Language,
+                region = dto.Region,
+                alignment = dto.Alignment,
+                nav_lock = dto.Nav_lock,
+                text_alignment = dto.Text_alignment,
+                theme = dto.Theme,
+                roles = "User",
+                groups = "0"
             };
+        }
+        public async Task Integrate_Account_By_Twitch(Complete_Twitch_Integration dto)
+        {
+            await _UsersDBC.Twitch_IDsTbl.AddAsync(new Twitch_IDsTbl
+            {
+                End_User_ID = dto.End_User_ID,
+                Twitch_ID = dto.Twitch_ID,
+                User_Name = dto.Twitch_User_Name,
+                Updated_on = TimeStamp(),
+                Created_on = TimeStamp(),
+                Created_by = dto.End_User_ID,
+                Updated_by = dto.End_User_ID
+            });
+
+            await _UsersDBC.Twitch_Email_AddressTbl.AddAsync(new Twitch_Email_AddressTbl
+            {
+                End_User_ID = dto.End_User_ID,
+                Email_Address = dto.Email_Address.ToUpper(),
+                Updated_on = TimeStamp(),
+                Created_on = TimeStamp(),
+                Created_by = dto.End_User_ID,
+                Updated_by = dto.End_User_ID
+            });
+            await _UsersDBC.SaveChangesAsync();
         }
         public async Task<string> Create_Reported_Record(Reported dto)
         {
@@ -1947,9 +1549,1413 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     default:
                         return "Server Error: Report Record Selection Failed.";
                 }
-            } catch {
+            }
+            catch
+            {
                 return "Server Error: Report Record Creation Failed.";
             }
+        }
+        public async Task<bool> Email_Exists_In_Pending_Email_Registration(string email_address)
+        {
+            return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Email_Address.ToUpper() == email_address));
+        }
+        public Task<bool> ID_Exists_In_Users_ID(long user_id)
+        {
+            return Task.FromResult(_UsersDBC.User_IDsTbl.Any(x => x.ID == user_id && x.Deleted == false));
+        }
+        public Task<bool> ID_Exists_In_Twitch_IDs(long user_id)
+        {
+            return Task.FromResult(_UsersDBC.Twitch_IDsTbl.Any(x => x.Twitch_ID == user_id && x.Deleted == false));
+        }
+        public Task<bool> ID_Exists_In_Discord_IDs(long user_id)
+        {
+            return Task.FromResult(_UsersDBC.Discord_IDsTbl.Any(x => x.Discord_ID == user_id && x.Deleted == false));
+        }
+        public async Task<string> Insert_Friend_Permissions(Friends_Permission dto)
+        {
+            try
+            {
+                var permission_record_exists_in_database = await _UsersDBC.Friends_PermissionTbl.Where(x =>
+                    (x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID) ||
+                    (x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID)
+                ).FirstOrDefaultAsync();
+
+                if (permission_record_exists_in_database == null)
+                {
+                    var newEntry = new Friends_PermissionTbl
+                    {
+                        End_User_ID = dto.End_User_ID,
+                        Participant_ID = dto.Participant_ID,
+                        Updated_on = TimeStamp(),
+                        Created_on = TimeStamp(),
+                        Updated_by = dto.End_User_ID,
+                        Created_by = dto.End_User_ID,
+                        Requested = true
+                    };
+
+                    await _UsersDBC.Friends_PermissionTbl.AddAsync(newEntry);
+                    await _UsersDBC.SaveChangesAsync();
+                }
+
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    participant_id = dto.Participant_ID
+                }));
+            }
+            catch
+            {
+                return Task.FromResult(JsonSerializer.Serialize("Login TS History Failed.")).Result;
+            }
+        }
+        public async Task<string> Insert_End_User_Login_Time_Stamp_History(Login_Time_Stamp_History dto)
+        {
+            try
+            {
+                await _UsersDBC.Login_Time_Stamp_HistoryTbl.AddAsync(new Login_Time_Stamp_HistoryTbl
+                {
+                    End_User_ID = dto.End_User_ID,
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Updated_by = dto.End_User_ID,
+                    Created_by = dto.End_User_ID,
+                    Login_on = TimeStamp(),
+                    Location = dto.Location,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Client_time = dto.Client_time,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth
+                });
+
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    login_on = TimeStamp()
+                }));
+            }
+            catch
+            {
+                return Task.FromResult(JsonSerializer.Serialize("Login TS History Failed.")).Result;
+            }
+        }
+        public async Task<string> Insert_Report_Email_Registration(Report_Email_Registration dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Email_RegistrationTbl.AddAsync(new Report_Email_RegistrationTbl
+                {
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Updated_by = 0,
+                    Created_by = 0,
+                    Email_Address = dto.Email_Address,
+                    Location = dto.Location,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Client_time = dto.Client_time,
+                    Language_Region = dto.Language_Region,
+                    Reason = dto.Reason,
+                    User_agent = dto.User_agent,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    error = dto.Reason
+                }));
+            }
+            catch
+            {
+                return "Server Error: Reported Email Registration Failed.";
+            }
+        }
+        public async Task<string> Insert_Report_Failed_Pending_Email_Registration_History(Report_Failed_Pending_Email_Registration_History dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_Pending_Email_Registration_HistoryTbl.AddAsync(new Report_Failed_Pending_Email_Registration_HistoryTbl
+                {
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Updated_by = 0,
+                    Created_by = 0,
+                    Location = dto.Location,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Client_time = dto.Client_Time_Parsed,
+                    Language_Region = dto.Language_Region,
+                    Email_Address = dto.Email_Address,
+                    Reason = dto.Reason,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Action = dto.Action,
+                    Controller = dto.Controller,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.Email_Address,
+                    error = dto.Reason
+                }));
+            }
+            catch
+            {
+                return "Server Error: Report Pending Email Registration History Failed.";
+            }
+        }
+        public async Task<string> Insert_Report_Failed_User_Agent_History(Report_Failed_User_Agent_History dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_User_Agent_HistoryTbl.AddAsync(new Report_Failed_User_Agent_HistoryTbl
+                {
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Location = dto.Location,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Client_time = dto.Client_time,
+                    End_User_ID = dto.End_User_ID,
+                    Language_Region = $@"{dto.Language}-{dto.Region}",
+                    Reason = dto.Reason,
+                    Action = dto.Action,
+                    Controller = dto.Controller,
+                    Login_type = dto.Login_type,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    error = dto.Reason
+                }));
+            }
+            catch
+            {
+                return "Server Error: Report User Agent Failed.";
+            }
+        }
+        public async Task<string> Insert_Report_Failed_Selected_History(Report_Failed_Selected_History dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_Selected_HistoryTbl.AddAsync(new Report_Failed_Selected_HistoryTbl
+                {
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Location = dto.Location,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Client_time = dto.Client_time,
+                    Action = dto.Action,
+                    Controller = dto.Controller,
+                    Language_Region = dto.Language_Region,
+                    Reason = dto.Reason,
+                    End_User_ID = dto.End_User_ID,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Token = dto.Token
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    error = dto.Reason
+                }));
+            }
+            catch
+            {
+                return "Server Error: Report Selected History Failed.";
+            }
+        }
+        public async Task<string> Insert_Report_Failed_Logout_History(Report_Failed_Logout_History dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_Logout_HistoryTbl.AddAsync(new Report_Failed_Logout_HistoryTbl
+                {
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Location = dto.Location,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Client_time = dto.Client_time,
+                    Action = dto.Action,
+                    Controller = dto.Controller,
+                    Language_Region = dto.Language_Region,
+                    Reason = dto.Reason,
+                    End_User_ID = dto.End_User_ID,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Token = dto.Token
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    error = dto.Reason
+                }));
+            }
+            catch
+            {
+                return "Server Error: Report Pending Email Registration History Failed.";
+            }
+        }
+        public async Task<string> Insert_Report_Failed_JWT_History(Report_Failed_JWT_History dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_JWT_HistoryTbl.AddAsync(new Report_Failed_JWT_HistoryTbl
+                {
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Location = dto.Location,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Client_time = dto.Client_time,
+                    JWT_client_address = dto.JWT_client_address,
+                    JWT_client_key = dto.JWT_client_key,
+                    JWT_issuer_key = dto.JWT_issuer_key,
+                    JWT_id = dto.JWT_id,
+                    Client_id = dto.Client_id,
+                    Language_Region = dto.Language_Region,
+                    Reason = dto.Reason,
+                    Action = dto.Action,
+                    Controller = dto.Controller,
+                    End_User_ID = dto.End_User_ID,
+                    Login_type = dto.Login_type,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Token = dto.Token
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    error = dto.Reason
+                }));
+            }
+            catch
+            {
+                return "Server Error: Report Pending Email Registration History Failed.";
+            }
+        }
+        public async Task<string> Insert_Report_Failed_Client_ID_History(Report_Failed_Client_ID_History dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_Client_ID_HistoryTbl.AddAsync(new Report_Failed_Client_ID_HistoryTbl
+                {
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Location = dto.Location,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Client_time = dto.Client_time,
+                    Language_Region = dto.Language_Region,
+                    Reason = dto.Reason,
+                    Action = dto.Action,
+                    Controller = dto.Controller,
+                    End_User_ID = dto.End_User_ID,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Token = dto.Token
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    error = dto.Reason
+                }));
+            }
+            catch
+            {
+                return "Server Error: Report Pending Email Registration History Failed.";
+            }
+        }
+        public async Task<string> Insert_Report_Failed_Unregistered_Email_Login_History(Report_Failed_Unregistered_Email_Login_History dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_Unregistered_Email_Login_HistoryTbl.AddAsync(new Report_Failed_Unregistered_Email_Login_HistoryTbl
+                {
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Updated_by = 0,
+                    Created_by = 0,
+                    Location = dto.Location,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Client_time = dto.Client_time,
+                    Language_Region = dto.Language_Region,
+                    Email_Address = dto.Email_Address,
+                    Reason = dto.Reason,
+                    User_agent = dto.User_agent,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.Email_Address,
+                    error = dto.Reason
+                }));
+            }
+            catch
+            {
+                return "Server Error: Report Unregistered Email Login History Failed.";
+            }
+        }
+        public async Task<string> Insert_Report_Failed_Email_Login_History(Report_Failed_Email_Login_History dto)
+        {
+            try
+            {
+                await _UsersDBC.Report_Failed_Email_Login_HistoryTbl.AddAsync(new Report_Failed_Email_Login_HistoryTbl
+                {
+                    End_User_ID = dto.End_User_ID,
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Updated_by = 0,
+                    Created_by = 0,
+                    Location = dto.Location,
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Client_time = dto.Client_Time_Parsed,
+                    Reason = dto.Reason,
+                    Language_Region = dto.Language_Region,
+                    Email_Address = dto.Email_Address,
+                    User_agent = dto.User_agent,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Screen_height = dto.Screen_height,
+                    Screen_width = dto.Screen_width,
+                    RTT = dto.RTT,
+                    Orientation = dto.Orientation,
+                    Data_saver = dto.Data_saver,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth,
+                    Connection_type = dto.Connection_type,
+                    Down_link = dto.Down_link,
+                    Device_ram_gb = dto.Device_ram_gb
+
+                });
+
+                await _UsersDBC.SaveChangesAsync();
+
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    id = dto.End_User_ID,
+                    error = dto.Reason
+                }));
+            }
+            catch
+            {
+                return "Server Error: Report Email Login History Failed.";
+            }
+        }
+        public async Task<string> Insert_End_User_Logout_History(Logout_Time_Stamp dto)
+        {
+            await _UsersDBC.Logout_Time_Stamp_HistoryTbl.AddAsync(new Logout_Time_Stamp_HistoryTbl
+            {
+                End_User_ID = dto.End_User_ID,
+                Logout_on = TimeStamp(),
+                Updated_by = dto.End_User_ID,
+                Updated_on = TimeStamp(),
+                Created_on = TimeStamp(),
+                Location = dto.Location,
+                Remote_IP = dto.Remote_IP,
+                Remote_Port = dto.Remote_Port,
+                Server_IP = dto.Server_IP,
+                Server_Port = dto.Server_Port,
+                Client_IP = dto.Client_IP,
+                Client_Port = dto.Client_Port,
+                Client_time = dto.Client_Time_Parsed,
+                User_agent = dto.User_agent,
+                Window_height = dto.Window_height,
+                Window_width = dto.Window_width,
+                Screen_height = dto.Screen_height,
+                Screen_width = dto.Screen_width,
+                RTT = dto.RTT,
+                Orientation = dto.Orientation,
+                Data_saver = dto.Data_saver,
+                Color_depth = dto.Color_depth,
+                Pixel_depth = dto.Pixel_depth,
+                Connection_type = dto.Connection_type,
+                Down_link = dto.Down_link,
+                Device_ram_gb = dto.Device_ram_gb
+            });
+
+            await _UsersDBC.SaveChangesAsync();
+
+            return Task.FromResult(JsonSerializer.Serialize(new
+            {
+                id = dto.End_User_ID,
+                logout_on = TimeStamp()
+            })).Result;
+        }
+        public async Task<string> Insert_Pending_Email_Registration_History_Record(Pending_Email_Registration_History dto)
+        {
+            try
+            {
+                await _UsersDBC.Pending_Email_Registration_HistoryTbl.AddAsync(new Pending_Email_Registration_HistoryTbl
+                {
+                    Updated_on = TimeStamp(),
+                    Created_on = TimeStamp(),
+                    Remote_IP = dto.Remote_IP,
+                    Remote_Port = dto.Remote_Port,
+                    Server_IP = dto.Server_IP,
+                    Server_Port = dto.Server_Port,
+                    Client_IP = dto.Client_IP,
+                    Client_Port = dto.Client_Port,
+                    Language_Region = dto.Language_Region,
+                    Email_Address = dto.Email_Address,
+                    Location = dto.Location,
+                    Client_time = dto.Client_time,
+                    Code = dto.Code,
+                    User_agent = dto.User_agent,
+                    Down_link = dto.Down_link,
+                    Connection_type = dto.Connection_type,
+                    RTT = dto.RTT,
+                    Data_saver = dto.Data_saver,
+                    Device_ram_gb = dto.Device_ram_gb,
+                    Orientation = dto.Orientation,
+                    Screen_width = dto.Screen_width,
+                    Screen_height = dto.Screen_height,
+                    Window_height = dto.Window_height,
+                    Window_width = dto.Window_width,
+                    Color_depth = dto.Color_depth,
+                    Pixel_depth = dto.Pixel_depth
+                });
+                await _UsersDBC.SaveChangesAsync();
+                return JsonSerializer.Serialize(new
+                {
+                    email_address = dto.Email_Address,
+                    language = dto.Language_Region.Split("-")[0],
+                    region = dto.Language_Region.Split("-")[1],
+                    updated_on = TimeStamp(),
+                });
+            }
+            catch
+            {
+                return "Server Error: Email Address Registration Failed";
+            }
+        }
+        public async Task<long> Read_User_ID_By_Email_Address(string email_address)
+        {
+            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Where(x => x.Email_Address == email_address).Select(x => x.End_User_ID).SingleOrDefault());
+        }
+        public async Task<string?> Read_User_Email_By_ID(long id)
+        {
+            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Where(x => x.End_User_ID == id).Select(x => x.Email_Address).SingleOrDefault());
+        }
+        public async Task<long> Read_User_ID_By_Twitch_Account_ID(long twitch_id)
+        {
+            return await Task.FromResult(_UsersDBC.Twitch_IDsTbl.Where(x => x.Twitch_ID == twitch_id).Select(x => x.End_User_ID).SingleOrDefault());
+        }
+        public async Task<long> Read_User_ID_By_Twitch_Account_Email(string twitch_email)
+        {
+            return await Task.FromResult(_UsersDBC.Twitch_Email_AddressTbl.Where(x => x.Email_Address == twitch_email.ToUpper()).Select(x => x.End_User_ID).SingleOrDefault());
+        }
+        public async Task<long> Read_User_ID_By_Discord_Account_ID(long discord_id)
+        {
+            return await Task.FromResult(_UsersDBC.Discord_IDsTbl.Where(x => x.Discord_ID == discord_id).Select(x => x.End_User_ID).SingleOrDefault());
+        }
+        public async Task<long> Read_User_ID_By_Discord_Account_Email(string discord_email)
+        {
+            return await Task.FromResult(_UsersDBC.Discord_Email_AddressTbl.Where(x => x.Email_Address == discord_email).Select(x => x.End_User_ID).SingleOrDefault());
+        }
+        public async Task<User_Data_DTO> Read_User_Data_By_ID(long end_user_id)
+        {
+            bool nav_lock = _UsersDBC.Selected_Navbar_LockTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Locked).SingleOrDefault();
+            byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Type).SingleOrDefault();
+            byte grid_type = _UsersDBC.Selected_App_Grid_TypeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Grid).SingleOrDefault();
+            bool status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Online).SingleOrDefault();
+            bool status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Offline).SingleOrDefault();
+            bool status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Hidden).SingleOrDefault();
+            bool status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Away).SingleOrDefault();
+            bool status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.DND).SingleOrDefault();
+            bool status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Custom).SingleOrDefault();
+            byte status_type = 0;
+            bool light = _UsersDBC.Selected_ThemeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Light).SingleOrDefault();
+            bool night = _UsersDBC.Selected_ThemeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Night).SingleOrDefault();
+            bool custom_theme = _UsersDBC.Selected_ThemeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Custom).SingleOrDefault();
+            byte theme_type = 0;
+            bool left_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Left).SingleOrDefault();
+            bool center_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Center).SingleOrDefault();
+            bool right_aligned = _UsersDBC.Selected_App_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Right).SingleOrDefault();
+            byte alignment_type = 0;
+            bool left_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Left).SingleOrDefault();
+            bool center_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Center).SingleOrDefault();
+            bool right_text_aligned = _UsersDBC.Selected_App_Text_AlignmentTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Right).SingleOrDefault();
+            byte text_alignment_type = 0;
+
+            //Third Party IDs
+            long twitch_user_id = _UsersDBC.Twitch_IDsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Twitch_ID).SingleOrDefault();
+            string twitch_user_name = _UsersDBC.Twitch_IDsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.User_Name).SingleOrDefault();
+            long discord_user_id = _UsersDBC.Discord_IDsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Discord_ID).SingleOrDefault();
+
+            //Time Stamps
+            long login_timestamp = _UsersDBC.Login_Time_StampTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Login_on).SingleOrDefault();
+            long logout_timestamp = _UsersDBC.Logout_Time_StampTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Logout_on).SingleOrDefault();
+
+            long created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Created_on).SingleOrDefault();
+            //Profile Related
+            byte? gender = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Gender).SingleOrDefault();
+            byte? birth_day = _UsersDBC.Birth_DateTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Day).SingleOrDefault();
+            byte? birth_month = _UsersDBC.Birth_DateTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Month).SingleOrDefault();
+            long? birth_year = _UsersDBC.Birth_DateTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Year).SingleOrDefault();
+            string? customLbl = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Custom_lbl).SingleOrDefault();
+
+            //Email Addresses
+            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? twitch_email_address = _UsersDBC.Twitch_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? discord_email_address = _UsersDBC.Discord_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+
+            string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Region_code).SingleOrDefault();
+            string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Language_code).SingleOrDefault();
+            string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
+            string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Avatar_title).SingleOrDefault();
+            string? name = _UsersDBC.Selected_NameTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Name).SingleOrDefault();
+            string? end_user_public_id = _UsersDBC.User_IDsTbl.Where(x => x.ID == end_user_id).Select(x => x.Public_ID).SingleOrDefault();
+            string? first_name = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.First_Name).SingleOrDefault();
+            string? last_name = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Last_Name).SingleOrDefault();
+            string? middle_name = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Middle_Name).SingleOrDefault();
+            string? maiden_name = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Maiden_Name).SingleOrDefault();
+            string? ethnicity = _UsersDBC.IdentityTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Ethnicity).SingleOrDefault();
+            string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Groups).SingleOrDefault();
+            string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Roles).SingleOrDefault();
+
+            //CSS Customization Data
+            string? card_border_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Border_Color).SingleOrDefault();
+            string? card_header_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Header_Font).SingleOrDefault();
+            string? card_header_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Header_Font_Color).SingleOrDefault();
+            string? card_header_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Header_Background_Color).SingleOrDefault();
+            string? card_body_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Body_Font).SingleOrDefault();
+            string? card_body_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Body_Background_Color).SingleOrDefault();
+            string? card_body_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Body_Font_Color).SingleOrDefault();
+            string? card_footer_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Footer_Font_Color).SingleOrDefault();
+            string? card_footer_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Footer_Font).SingleOrDefault();
+            string? card_footer_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Card_Footer_Background_Color).SingleOrDefault();
+            string? navigation_menu_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Navigation_Menu_Background_Color).SingleOrDefault();
+            string? navigation_menu_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Navigation_Menu_Font_Color).SingleOrDefault();
+            string? navigation_menu_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Navigation_Menu_Font).SingleOrDefault();
+            string? button_background_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Button_Background_Color).SingleOrDefault();
+            string? button_font = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Button_Font).SingleOrDefault();
+            string? button_font_color = _UsersDBC.Selected_App_Custom_DesignTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Button_Font_Color).SingleOrDefault();
+
+            if (status_offline)
+                status_type = 0;
+            if (status_hidden)
+                status_type = 1;
+            if (status_online)
+                status_type = 2;
+            if (status_away)
+                status_type = 3;
+            if (status_dnd)
+                status_type = 4;
+            if (status_custom)
+                status_type = 5;
+
+            if (light)
+                theme_type = 0;
+            if (night)
+                theme_type = 1;
+            if (custom_theme)
+                theme_type = 2;
+
+            if (left_aligned)
+                alignment_type = 0;
+            if (center_aligned)
+                alignment_type = 1;
+            if (right_aligned)
+                alignment_type = 2;
+            if (left_text_aligned)
+                text_alignment_type = 0;
+            if (center_text_aligned)
+                text_alignment_type = 1;
+            if (right_text_aligned)
+                text_alignment_type = 2;
+
+            return await Task.FromResult(new User_Data_DTO
+            {
+                id = end_user_id,
+                account_type = account_type,
+                email_address = email_address,
+                twitch_id = twitch_user_id,
+                twitch_user_name = twitch_user_name ?? "",
+                discord_id = discord_user_id,
+                twitch_email_address = twitch_email_address ?? "",
+                discord_email_address = discord_email_address ?? "",
+                name = $@"{name}#{end_user_public_id}",
+                login_on = login_timestamp,
+                logout_on = logout_timestamp,
+                current_language = $@"{language_code}-{region_code}",
+                language = language_code ?? "en",
+                region = region_code ?? "US",
+                online_status = status_type,
+                custom_lbl = customLbl ?? "",
+                created_on = created_on,
+                avatar_url_path = avatar_url_path ?? "",
+                avatar_title = avatar_title ?? "",
+                theme = theme_type,
+                alignment = alignment_type,
+                text_alignment = text_alignment_type,
+                gender = gender ?? 2,
+                birth_day = birth_day ?? 0,
+                birth_month = birth_month ?? 0,
+                birth_year = birth_year ?? 0,
+                first_name = first_name ?? "",
+                last_name = last_name ?? "",
+                middle_name = middle_name ?? "",
+                maiden_name = maiden_name ?? "",
+                ethnicity = ethnicity ?? "",
+                groups = groups ?? "",
+                roles = roles ?? "",
+                grid_type = grid_type,
+                nav_lock = nav_lock,
+                card_border_color = card_border_color ?? "",
+                card_header_font = card_header_font ?? "",
+                card_header_font_color = card_header_font_color ?? "",
+                card_header_background_color = card_header_background_color ?? "",
+                card_body_font = card_body_font ?? "",
+                card_body_background_color = card_body_background_color ?? "",
+                card_body_font_color = card_body_font_color ?? "",
+                card_footer_font_color = card_footer_font_color ?? "",
+                card_footer_font = card_footer_font ?? "",
+                card_footer_background_color = card_footer_background_color ?? "",
+                navigation_menu_background_color = navigation_menu_background_color ?? "",
+                navigation_menu_font_color = navigation_menu_font_color ?? "",
+                navigation_menu_font = navigation_menu_font ?? "",
+                button_background_color = button_background_color ?? "",
+                button_font = button_font ?? "",
+                button_font_color = button_font_color ?? ""
+            });
+        }
+        /*public async Task<User_Data_DTO> Read_User_Data_By_ID(long end_user_id)
+        {
+            var user = (from end_user in _UsersDBC.User_IDsTbl
+
+                        join account_type_table in _UsersDBC.Account_TypeTbl
+                            on end_user.ID equals account_type_table.End_User_ID into resulting_account_type_table
+                        from account_type_table in resulting_account_type_table.DefaultIfEmpty()
+
+                        join twitch_id_table in _UsersDBC.Twitch_IDsTbl
+                            on end_user.ID equals twitch_id_table.End_User_ID into resulting_twitch_table
+                        from twitch_id_table in resulting_twitch_table.DefaultIfEmpty()
+
+                        join twitch_email_address_table in _UsersDBC.Twitch_Email_AddressTbl
+                            on end_user.ID equals twitch_email_address_table.End_User_ID into resulting_twitch_email_address_table
+                        from twitch_email_address_table in resulting_twitch_email_address_table.DefaultIfEmpty()
+
+                        join login_email_table in _UsersDBC.Login_Email_AddressTbl
+                            on end_user.ID equals login_email_table.End_User_ID into resulting_email_table
+                        from login_email_table in resulting_email_table.DefaultIfEmpty()
+
+                        join selected_name_table in _UsersDBC.Selected_NameTbl
+                            on end_user.ID equals selected_name_table.End_User_ID into resulting_name_table
+                        from selected_name_table in resulting_name_table.DefaultIfEmpty()
+
+                        join login_table in _UsersDBC.Login_Time_StampTbl
+                            on end_user.ID equals login_table.End_User_ID into resulting_login_table
+                        from login_table in resulting_login_table.DefaultIfEmpty()
+
+                        join logout_table in _UsersDBC.Logout_Time_StampTbl
+                            on end_user.ID equals logout_table.End_User_ID into resulting_logout_table
+                        from logout_table in resulting_logout_table.DefaultIfEmpty()
+
+                        join language_table in _UsersDBC.Selected_LanguageTbl
+                            on end_user.ID equals language_table.End_User_ID into resulting_language_table
+                        from language_table in resulting_language_table.DefaultIfEmpty()
+
+                        join region_table in _UsersDBC.Selected_LanguageTbl
+                            on end_user.ID equals region_table.End_User_ID into resulting_region_table
+                        from region_table in resulting_region_table.DefaultIfEmpty()
+
+                        join status_table in _UsersDBC.Selected_StatusTbl
+                            on end_user.ID equals status_table.End_User_ID into resulting_status_table
+                        from status_table in resulting_status_table.DefaultIfEmpty()
+
+                        join avatar_table in _UsersDBC.Selected_AvatarTbl
+                            on end_user.ID equals avatar_table.End_User_ID into resulting_avatar_table
+                        from avatar_table in resulting_avatar_table.DefaultIfEmpty()
+
+                        join theme_table in _UsersDBC.Selected_ThemeTbl
+                            on end_user.ID equals theme_table.End_User_ID into resulting_theme_table
+                        from theme_table in resulting_theme_table.DefaultIfEmpty()
+
+                        join alignment_table in _UsersDBC.Selected_App_AlignmentTbl
+                            on end_user.ID equals alignment_table.End_User_ID into resulting_alignment_table
+                        from alignment_table in resulting_alignment_table.DefaultIfEmpty()
+
+                        join text_alignment_table in _UsersDBC.Selected_App_Text_AlignmentTbl
+                            on end_user.ID equals text_alignment_table.End_User_ID into resulting_text_alignment_table
+                        from text_alignment_table in resulting_text_alignment_table.DefaultIfEmpty()
+
+                        join identity_table in _UsersDBC.IdentityTbl
+                            on end_user.ID equals identity_table.End_User_ID into resulting_identity_table
+                        from identity_table in resulting_identity_table.DefaultIfEmpty()
+
+                        join birth_date_table in _UsersDBC.Birth_DateTbl
+                            on end_user.ID equals birth_date_table.End_User_ID into resulting_birth_date_table
+                        from birth_date_table in resulting_birth_date_table.DefaultIfEmpty()
+
+                        join account_groups_table in _UsersDBC.Account_GroupsTbl
+                            on end_user.ID equals account_groups_table.End_User_ID into resulting_account_groups_table
+                        from account_groups_table in resulting_account_groups_table.DefaultIfEmpty()
+
+                        join account_roles_table in _UsersDBC.Account_RolesTbl
+                            on end_user.ID equals account_roles_table.End_User_ID into resulting_account_roles_table
+                        from account_roles_table in resulting_account_roles_table.DefaultIfEmpty()
+
+                        join selected_grid_table in _UsersDBC.Selected_App_Grid_TypeTbl
+                            on end_user.ID equals selected_grid_table.End_User_ID into resulting_selected_grid_table
+                        from selected_grid_table in resulting_selected_grid_table.DefaultIfEmpty()
+
+                        join selected_navbar_lock_table in _UsersDBC.Selected_Navbar_LockTbl
+                            on end_user.ID equals selected_navbar_lock_table.End_User_ID into resulting_selected_navbar_lock_table
+                        from selected_navbar_lock_table in resulting_selected_navbar_lock_table.DefaultIfEmpty()
+
+                        join selected_custom_design_table in _UsersDBC.Selected_App_Custom_DesignTbl
+                            on end_user.ID equals selected_custom_design_table.End_User_ID into resulting_selected_custom_design_table
+                        from selected_custom_design_table in resulting_selected_custom_design_table.DefaultIfEmpty()
+
+                        where end_user.ID == end_user_id
+
+                        select new
+                        {
+                            end_user_id = end_user.ID,
+                            account_type = account_type_table.Type,
+                            twitch_user_name = twitch_id_table.User_Name,
+                            twitch_user_id = twitch_id_table.Twitch_ID,
+                            email_address = login_email_table.Email_Address,
+                            name = selected_name_table.Name,
+                            public_id = end_user.Public_ID,
+                            login_on = login_table.Login_on,
+                            logout_on = logout_table.Logout_on,
+                            current_language = $@"{language_table.Language_code}-{region_table.Region_code}",
+                            language = language_table.Language_code,
+                            region = region_table.Region_code,
+                            online_status = status_table.Online,
+                            offline_status = status_table.Offline,
+                            hidden_status = status_table.Hidden,
+                            away_status = status_table.Away,
+                            dnd_status = status_table.DND,
+                            custom_status = status_table.Custom,
+                            custom_lbl = status_table.Custom_lbl,
+                            created_on = end_user.Created_on,
+                            avatar_url_path = avatar_table.Avatar_url_path,
+                            avatar_title = avatar_table.Avatar_title,
+                            light_theme = theme_table.Light,
+                            night_theme = theme_table.Night,
+                            custom_theme = theme_table.Custom,
+                            left_alignment = alignment_table.Left,
+                            center_alignment = alignment_table.Center,
+                            right_alignment = alignment_table.Right,
+                            left_text_alignment = text_alignment_table.Left,
+                            center_text_alignment = text_alignment_table.Center,
+                            right_text_alignment = text_alignment_table.Right,
+                            gender = identity_table.Gender,
+                            birth_day = birth_date_table.Day,
+                            birth_month = birth_date_table.Month,
+                            birth_year = birth_date_table.Year,
+                            first_name = identity_table.First_Name,
+                            last_name = identity_table.Last_Name,
+                            middle_name = identity_table.Middle_Name,
+                            maiden_name = identity_table.Maiden_Name,
+                            ethnicity = identity_table.Ethnicity,
+                            groups = account_groups_table.Groups,
+                            roles = account_roles_table.Roles,
+                            grid_type = selected_grid_table.Grid,
+                            nav_lock = selected_navbar_lock_table.Locked,
+                            card_border_color = selected_custom_design_table.Card_Border_Color,
+                            card_header_font = selected_custom_design_table.Card_Header_Font,
+                            card_header_font_color = selected_custom_design_table.Card_Header_Font_Color,
+                            card_header_background_color = selected_custom_design_table.Card_Header_Background_Color,
+                            card_body_font = selected_custom_design_table.Card_Body_Font,
+                            card_body_background_color = selected_custom_design_table.Card_Body_Background_Color,
+                            card_body_font_color = selected_custom_design_table.Card_Body_Font_Color,
+                            card_footer_font_color = selected_custom_design_table.Card_Footer_Font_Color,
+                            card_footer_font = selected_custom_design_table.Card_Footer_Font,
+                            card_footer_background_color = selected_custom_design_table.Card_Footer_Background_Color,
+                            navigation_menu_background_color = selected_custom_design_table.Navigation_Menu_Background_Color,
+                            navigation_menu_font_color = selected_custom_design_table.Navigation_Menu_Font_Color,
+                            navigation_menu_font = selected_custom_design_table.Navigation_Menu_Font,
+                            button_background_color = selected_custom_design_table.Button_Background_Color,
+                            button_font = selected_custom_design_table.Button_Font,
+                            button_font_color = selected_custom_design_table.Button_Font_Color
+                        }).FirstOrDefault();
+
+            if (user == null)
+                return await Task.FromResult(new User_Data_DTO { });
+
+            return await Task.FromResult(new User_Data_DTO
+            {
+                id = user.end_user_id,
+                account_type = user.account_type,
+                twitch_user_name = user.twitch_user_name,
+                twitch_id = user.twitch_user_id,
+                email_address = user.email_address,
+                name = $@"{user.name}#{user.public_id}",
+                login_on = user.login_on,
+                logout_on = user.logout_on,
+                current_language = user.current_language,
+                language = user.language,
+                region = user.region,
+
+                online_status =
+                    user.online_status ? (byte)2 :
+                    user.offline_status ? (byte)0 :
+                    user.hidden_status ? (byte)1 :
+                    user.away_status ? (byte)3 :
+                    user.dnd_status ? (byte)4 :
+                    user.custom_status ? (byte)5 : (byte)0,
+
+                custom_lbl = user.custom_lbl ?? "",
+                created_on = user.created_on,
+                avatar_url_path = user.avatar_url_path ?? "",
+                avatar_title = user.avatar_title ?? "",
+
+                theme =
+                    user.light_theme ? (byte)0 :
+                    user.night_theme ? (byte)1 :
+                    user.custom_theme ? (byte)2 : (byte)0,
+
+                alignment =
+                    user.left_alignment ? (byte)0 :
+                    user.center_alignment ? (byte)1 :
+                    user.right_alignment ? (byte)2 : (byte)0,
+
+                text_alignment =
+                    user.left_text_alignment ? (byte)0 :
+                    user.center_text_alignment ? (byte)1 :
+                    user.right_text_alignment ? (byte)2 : (byte)0,
+
+                gender = user.gender,
+                birth_day = user.birth_day,
+                birth_month = user.birth_month,
+                birth_year = user.birth_year,
+
+                first_name = user.first_name ?? "",
+                last_name = user.last_name ?? "",
+                middle_name = user.middle_name ?? "",
+                maiden_name = user.maiden_name ?? "",
+                ethnicity = user.ethnicity ?? "",
+
+                groups = user.groups ?? "",
+                roles = user.roles ?? "",
+
+                grid_type = user.grid_type,
+                nav_lock = user.nav_lock,
+
+                card_border_color = user.card_border_color,
+                card_header_font = user.card_header_font,
+                card_header_font_color = user.card_header_font_color,
+                card_header_background_color = user.card_header_background_color,
+                card_body_font = user.card_body_font,
+                card_body_background_color = user.card_body_background_color,
+                card_body_font_color = user.card_body_font_color,
+                card_footer_font_color = user.card_footer_font_color,
+                card_footer_font = user.card_footer_font,
+                card_footer_background_color = user.card_footer_background_color,
+                navigation_menu_background_color = user.navigation_menu_background_color,
+                navigation_menu_font_color = user.navigation_menu_font_color,
+                navigation_menu_font = user.navigation_menu_font,
+                button_background_color = user.button_background_color,
+                button_font = user.button_font,
+                button_font_color = user.button_font_color
+            });
+        }*/
+        public async Task<byte[]?> Read_User_Password_Hash_By_ID(long user_id)
+        {
+            return await Task.FromResult(_UsersDBC.Login_PasswordTbl.Where(user => user.End_User_ID == user_id).Select(user => user.Password).SingleOrDefault());
+        }
+        public async Task<User_Token_Data_DTO> Read_Require_Token_Data_By_ID(long end_user_id)
+        {
+            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? twitch_email_address = _UsersDBC.Twitch_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? discord_email_address = _UsersDBC.Discord_Email_AddressTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Email_Address).SingleOrDefault();
+            long? twitch_id = _UsersDBC.Twitch_IDsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.End_User_ID).SingleOrDefault();
+            long? discord_id = _UsersDBC.Discord_IDsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.End_User_ID).SingleOrDefault();
+            string? groups = _UsersDBC.Account_GroupsTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Groups).SingleOrDefault();
+            string? roles = _UsersDBC.Account_RolesTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Roles).SingleOrDefault();
+            byte account_type = _UsersDBC.Account_TypeTbl.Where(x => x.End_User_ID == end_user_id).Select(x => x.Type).SingleOrDefault();
+
+            return await Task.FromResult(new User_Token_Data_DTO
+            {
+                id = end_user_id,
+                account_type = account_type,
+                email_address = email_address ?? "",
+                twitch_id = twitch_id,
+                twitch_email_address = twitch_email_address ?? "",
+                discord_id = discord_id,
+                discord_email_address = discord_email_address ?? "",
+                groups = groups ?? "",
+                roles = roles ?? ""
+            });
+        }
+        public async Task<string> Read_User_Profile_By_ID(long user_id)
+        {
+            bool status_online = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Online).SingleOrDefault();
+            bool status_offline = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Offline).SingleOrDefault();
+            bool status_hidden = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Hidden).SingleOrDefault();
+            bool status_away = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Away).SingleOrDefault();
+            bool status_dnd = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.DND).SingleOrDefault();
+            bool status_custom = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Custom).SingleOrDefault();
+            string? custom_label = _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Custom_lbl).SingleOrDefault();
+            byte status_code = 0;
+
+            long LoginTS = _UsersDBC.Login_Time_StampTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Login_on).SingleOrDefault();
+            long LogoutTS = _UsersDBC.Logout_Time_StampTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Logout_on).SingleOrDefault();
+            long created_on = _UsersDBC.User_IDsTbl.Where(x => x.ID == user_id).Select(x => x.Created_on).SingleOrDefault();
+
+            string? email_address = _UsersDBC.Login_Email_AddressTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Email_Address).SingleOrDefault();
+            string? region_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Region_code).SingleOrDefault();
+            string? language_code = _UsersDBC.Selected_LanguageTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Language_code).SingleOrDefault();
+            string? avatar_url_path = _UsersDBC.Selected_AvatarTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Avatar_url_path).SingleOrDefault();
+            string? avatar_title = _UsersDBC.Selected_AvatarTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Avatar_title).SingleOrDefault();
+            string? name = _UsersDBC.Selected_NameTbl.Where(x => x.End_User_ID == user_id).Select(x => x.Name).SingleOrDefault();
+
+            if (status_offline)
+                status_code = 0;
+            if (status_hidden)
+                status_code = 1;
+            if (status_online)
+                status_code = 2;
+            if (status_away)
+                status_code = 3;
+            if (status_dnd)
+                status_code = 4;
+            if (status_custom)
+                status_code = 5;
+
+            return await Task.FromResult(JsonSerializer.Serialize(new
+            {
+                id = user_id,
+                email_address = email_address,
+                name = name,
+                login_on = LoginTS,
+                logout_on = LogoutTS,
+                language = @$"{language_code}-{region_code}",
+                online_status = status_code,
+                custom_lbl = custom_label,
+                created_on = created_on,
+                avatar_url_path = avatar_url_path,
+                avatar_title = avatar_title,
+            }));
+        }
+        public async Task<string> Read_WebSocket_Permission_Record_For_Both_End_Users(WebSocket_Chat_Permission dto)
+        {
+            byte requested = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Requested).SingleOrDefault();
+            byte approved = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Approved).SingleOrDefault();
+            byte blocked = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Blocked).SingleOrDefault();
+            bool deleted = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Deleted).SingleOrDefault();
+
+            byte requested_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Requested).SingleOrDefault();
+            byte approved_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Approved).SingleOrDefault();
+            byte blocked_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Blocked).SingleOrDefault();
+            bool deleted_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Deleted).SingleOrDefault();
+
+
+            if (requested == 1 || requested_swap_ids == 1)
+            {
+                return JsonSerializer.Serialize(new
+                {
+                    requested = 1,
+                    blocked = 0,
+                    approved = 0,
+                });
+            }
+
+            if (approved == 1 || approved_swap_ids == 1)
+            {
+                return JsonSerializer.Serialize(new
+                {
+                    requested = 0,
+                    blocked = 0,
+                    approved = 1,
+                });
+            }
+
+            if (blocked == 1 || blocked_swap_ids == 1)
+            {
+                return JsonSerializer.Serialize(new
+                {
+                    requested = 0,
+                    blocked = 1,
+                    approved = 0,
+                });
+            }
+
+            if (requested == 0 && approved == 0 && blocked == 0 && requested_swap_ids == 0 && approved_swap_ids == 0 && blocked_swap_ids == 0 && deleted == false && deleted_swap_ids == false)
+            {
+                await Create_WebSocket_Permission_Record(dto);
+                return JsonSerializer.Serialize(new
+                {
+                    requested = 1,
+                    blocked = 0,
+                    approved = 0,
+                });
+            }
+
+            if (requested == 0 && approved == 0 && blocked == 0 && requested_swap_ids == 0 && approved_swap_ids == 0 && blocked_swap_ids == 0 && (deleted == true || deleted_swap_ids == true))
+            {
+                await Update_Chat_Web_Socket_Permissions(new WebSocket_Chat_Permission
+                {
+                    End_User_ID = dto.End_User_ID,
+                    Participant_ID = dto.Participant_ID,
+                    Requested = 1,
+                    Blocked = 0,
+                    Approved = 0
+                });
+                return JsonSerializer.Serialize(new
+                {
+                    requested = 1,
+                    blocked = 0,
+                    approved = 0,
+                });
+            }
+
+            return JsonSerializer.Serialize(new
+            {
+                requested = 0,
+                blocked = 0,
+                approved = 0,
+            });
+        }
+        public async Task<string> Read_End_User_WebSocket_Sent_Chat_Requests(long user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.End_User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Requested == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_WebSocket_Sent_Chat_Blocks(long user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.End_User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Blocked == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_WebSocket_Sent_Chat_Approvals(long user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.End_User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Approved == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_WebSocket_Received_Chat_Requests(long user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Received_Friend_Requests(long user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == true)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_WebSocket_Received_Chat_Blocks(long user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Blocked == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_WebSocket_Received_Chat_Approvals(long user_id)
+        {
+            if (!_UsersDBC.WebSocket_Chat_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Approved == 1)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Sent_Requests(long user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Requested == true)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Sent_Blocks(long user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Blocked == true)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Sent_Approvals(long user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Approved == true)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Received_Requests(long user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == true)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Received_Blocks(long user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Blocked == true)
+                    .ToList()));
+            }
+        }
+        public async Task<string> Read_End_User_Friend_Received_Approvals(long user_id)
+        {
+            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
+            {
+                return "";
+            }
+            else
+            {
+                return await Task.FromResult(JsonSerializer.Serialize(
+                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Approved == true)
+                    .ToList()));
+            }
+        }
+        public async Task<byte> Read_End_User_Selected_Status(long user_id)
+        {
+            var status = await _UsersDBC.Selected_StatusTbl.Where(x => x.End_User_ID == user_id).Select(x => new {
+                x.Online,
+                x.Offline,
+                x.Hidden,
+                x.Away,
+                x.DND,
+                x.Custom
+            }).SingleOrDefaultAsync();
+
+            if (status == null)
+                return 255;
+
+            return status switch
+            {
+                var record_is when record_is.Offline == true => 0,
+                var record_is when record_is.Hidden == true => 1,
+                var record_is when record_is.Online == true => 2,
+                var record_is when record_is.Away == true => 3,
+                var record_is when record_is.DND == true => 4,
+                var record_is when record_is.Custom == true => 5,
+                _ => 255
+            };
         }
         public async Task<string> Update_Chat_Web_Socket_Permissions(WebSocket_Chat_Permission dto)
         {
@@ -2021,7 +3027,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         updated_on = TimeStamp(),
                         updated_by = dto.End_User_ID
                     });
-                } else if (_UsersDBC.Friends_PermissionTbl.Any((x) => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID && x.Deleted == false)) {
+                }
+                else if (_UsersDBC.Friends_PermissionTbl.Any((x) => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID && x.Deleted == false))
+                {
                     await _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
                             .SetProperty(dto => dto.Requested, dto.Requested)
                             .SetProperty(dto => dto.Blocked, dto.Blocked)
@@ -2042,166 +3050,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     });
                 }
                 return "Server Error: Update Friend Permission Selection Failed.";
-            } catch {
+            }
+            catch
+            {
                 return "Server Error: Update Friend Permissions Failed.";
-            }
-        }
-        public async Task<string> Insert_Friend_Permissions(Friends_Permission dto)
-        {
-            try
-            {
-                var permission_record_exists_in_database = await _UsersDBC.Friends_PermissionTbl.Where(x =>
-                    (x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID) ||
-                    (x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID)
-                ).FirstOrDefaultAsync();
-
-                if (permission_record_exists_in_database == null)
-                {
-                    var newEntry = new Friends_PermissionTbl
-                    {
-                        End_User_ID = dto.End_User_ID,
-                        Participant_ID = dto.Participant_ID,
-                        Updated_on = TimeStamp(),
-                        Created_on = TimeStamp(),
-                        Updated_by = dto.End_User_ID,
-                        Created_by = dto.End_User_ID,
-                        Requested = true
-                    };
-
-                    await _UsersDBC.Friends_PermissionTbl.AddAsync(newEntry);
-                    await _UsersDBC.SaveChangesAsync();
-                }
-
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    participant_id = dto.Participant_ID
-                }));
-            } catch {
-                return Task.FromResult(JsonSerializer.Serialize("Login TS History Failed.")).Result;
-            }
-        }
-        public async Task<string> Delete_From_Web_Socket_Chat_Permissions(WebSocket_Chat_Permission dto)
-        {
-            try
-            {
-                await _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                    .SetProperty(dto => dto.Requested, dto.Requested)
-                    .SetProperty(dto => dto.Blocked, dto.Blocked)
-                    .SetProperty(dto => dto.Approved, dto.Approved)
-                    .SetProperty(dto => dto.Deleted_on, TimeStamp())
-                    .SetProperty(dto => dto.Deleted_by, dto.Participant_ID)
-                    .SetProperty(dto => dto.Deleted, true)
-                    .SetProperty(dto => dto.Updated_on, TimeStamp())
-                    .SetProperty(dto => dto.Updated_by, dto.Participant_ID)
-                );
-                await _UsersDBC.SaveChangesAsync();
-                return JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    participant_id = dto.Participant_ID,
-                    deleted_on = TimeStamp()
-                });
-            } catch {
-                return "Server Error: Delete Chat Permissions Failed.";
-            }
-        }
-        public async Task<string> Delete_From_Friend_Permissions(Friends_Permission dto)
-        {
-            try
-            {
-                await Task.Run(async () =>
-                {
-                    if (_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID && x.Deleted == false))
-                    {
-                        await _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                            .SetProperty(dto => dto.Requested, false)
-                            .SetProperty(dto => dto.Blocked, false)
-                            .SetProperty(dto => dto.Approved, false)
-                            .SetProperty(dto => dto.Updated_on, TimeStamp())
-                            .SetProperty(dto => dto.Deleted, true)
-                            .SetProperty(dto => dto.Updated_by, dto.End_User_ID)
-                        );
-                        await _UsersDBC.SaveChangesAsync();
-                    } else if (_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID && x.Deleted == false)) {
-                        await _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
-                            .SetProperty(dto => dto.Requested, false)
-                            .SetProperty(dto => dto.Blocked, false)
-                            .SetProperty(dto => dto.Approved, false)
-                            .SetProperty(dto => dto.Updated_on, TimeStamp())
-                            .SetProperty(dto => dto.Deleted, true)
-                            .SetProperty(dto => dto.Updated_by, dto.End_User_ID)
-                        );
-                        await _UsersDBC.SaveChangesAsync();
-                    } else {
-                        await _UsersDBC.Friends_PermissionTbl.AddAsync(new Friends_PermissionTbl
-                        {
-                            End_User_ID = dto.End_User_ID,
-                            Participant_ID = dto.Participant_ID,
-                            Updated_on = TimeStamp(),
-                            Created_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Created_by = dto.End_User_ID,
-                            Deleted = true
-                        });
-
-                        await _UsersDBC.SaveChangesAsync();
-                    }
-                });
-
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    participant_id = dto.Participant_ID,
-                    deleted = true
-                }));
-            } catch {
-                return "Server Error: Delete Friend Permission.";
-            }
-        }
-        public async Task<string> Insert_Pending_Email_Registration_History_Record(Pending_Email_Registration_History dto)
-        {
-            try
-            {
-                await _UsersDBC.Pending_Email_Registration_HistoryTbl.AddAsync(new Pending_Email_Registration_HistoryTbl
-                {
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Language_Region = dto.Language_Region,
-                    Email_Address = dto.Email_Address,
-                    Location = dto.Location,
-                    Client_time = dto.Client_time,
-                    Code = dto.Code,
-                    User_agent = dto.User_agent,
-                    Down_link = dto.Down_link,
-                    Connection_type = dto.Connection_type,
-                    RTT = dto.RTT,
-                    Data_saver = dto.Data_saver,
-                    Device_ram_gb = dto.Device_ram_gb,
-                    Orientation = dto.Orientation,
-                    Screen_width = dto.Screen_width,
-                    Screen_height = dto.Screen_height,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth
-                });
-                await _UsersDBC.SaveChangesAsync();
-                return JsonSerializer.Serialize(new
-                {
-                    email_address = dto.Email_Address,
-                    language = dto.Language_Region.Split("-")[0],
-                    region = dto.Language_Region.Split("-")[1],
-                    updated_on = TimeStamp(),
-                });
-            } catch {
-                return "Server Error: Email Address Registration Failed"; 
             }
         }
         public async Task<string> Update_Pending_Email_Registration_Record(Pending_Email_Registration dto)
@@ -3429,511 +4281,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return "Server Error: Update Login Failed.";
             }
         }
-        public async Task<string> Insert_End_User_Login_Time_Stamp_History(Login_Time_Stamp_History dto)
-        {
-            try
-            {
-                await _UsersDBC.Login_Time_Stamp_HistoryTbl.AddAsync(new Login_Time_Stamp_HistoryTbl
-                {
-                    End_User_ID = dto.End_User_ID,
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Updated_by = dto.End_User_ID,
-                    Created_by = dto.End_User_ID,
-                    Login_on = TimeStamp(),
-                    Location = dto.Location,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_time,
-                    User_agent = dto.User_agent,
-                    Down_link = dto.Down_link,
-                    Connection_type = dto.Connection_type,
-                    RTT = dto.RTT,
-                    Data_saver = dto.Data_saver,
-                    Device_ram_gb = dto.Device_ram_gb,
-                    Orientation = dto.Orientation,
-                    Screen_width = dto.Screen_width,
-                    Screen_height = dto.Screen_height,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth
-                });
-
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    login_on = TimeStamp()
-                }));
-            } catch {
-                return Task.FromResult(JsonSerializer.Serialize("Login TS History Failed.")).Result;
-            }
-        }
-        public async Task<string> Insert_Report_Email_Registration(Report_Email_Registration dto)
-        {
-            try
-            {
-                await _UsersDBC.Report_Email_RegistrationTbl.AddAsync(new Report_Email_RegistrationTbl
-                {
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Updated_by = 0,
-                    Created_by = 0,
-                    Email_Address = dto.Email_Address,
-                    Location = dto.Location,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_time,
-                    Language_Region = dto.Language_Region,
-                    Reason = dto.Reason,
-                    User_agent = dto.User_agent,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Screen_height = dto.Screen_height,
-                    Screen_width = dto.Screen_width,
-                    RTT = dto.RTT,
-                    Orientation = dto.Orientation,
-                    Data_saver = dto.Data_saver,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth,
-                    Connection_type = dto.Connection_type,
-                    Down_link = dto.Down_link,
-                    Device_ram_gb = dto.Device_ram_gb
-                });
-                await _UsersDBC.SaveChangesAsync();
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    error = dto.Reason
-                }));
-            } catch {
-                return "Server Error: Reported Email Registration Failed.";
-            }
-        }
-        public async Task<string> Insert_Report_Failed_Pending_Email_Registration_History(Report_Failed_Pending_Email_Registration_History dto)
-        {
-            try
-            {
-                await _UsersDBC.Report_Failed_Pending_Email_Registration_HistoryTbl.AddAsync(new Report_Failed_Pending_Email_Registration_HistoryTbl
-                {
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Updated_by = 0,
-                    Created_by = 0,
-                    Location = dto.Location,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_Time_Parsed,
-                    Language_Region = dto.Language_Region,
-                    Email_Address = dto.Email_Address,
-                    Reason = dto.Reason,
-                    User_agent = dto.User_agent,
-                    Down_link = dto.Down_link,
-                    Connection_type = dto.Connection_type,
-                    RTT = dto.RTT,
-                    Data_saver = dto.Data_saver,
-                    Device_ram_gb = dto.Device_ram_gb,
-                    Orientation = dto.Orientation,
-                    Action = dto.Action,
-                    Controller = dto.Controller,
-                    Screen_width = dto.Screen_width,
-                    Screen_height = dto.Screen_height,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth
-                });
-                await _UsersDBC.SaveChangesAsync();
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.Email_Address,
-                    error = dto.Reason
-                }));
-            } catch {
-                return "Server Error: Report Pending Email Registration History Failed.";
-            }
-        }
-        public async Task<string> Insert_Report_Failed_User_Agent_History(Report_Failed_User_Agent_History dto) {
-            try
-            {
-                await _UsersDBC.Report_Failed_User_Agent_HistoryTbl.AddAsync(new Report_Failed_User_Agent_HistoryTbl
-                {
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Location = dto.Location,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_time,
-                    End_User_ID = dto.End_User_ID,
-                    Language_Region = $@"{dto.Language}-{dto.Region}",
-                    Reason = dto.Reason,
-                    Action = dto.Action,
-                    Controller = dto.Controller,
-                    Login_type = dto.Login_type,
-                    User_agent = dto.User_agent,
-                    Down_link = dto.Down_link,
-                    Connection_type = dto.Connection_type,
-                    RTT = dto.RTT,
-                    Data_saver = dto.Data_saver,
-                    Device_ram_gb = dto.Device_ram_gb,
-                    Orientation = dto.Orientation,
-                    Screen_width = dto.Screen_width,
-                    Screen_height = dto.Screen_height,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth
-                });
-                await _UsersDBC.SaveChangesAsync();
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    error = dto.Reason
-                }));
-            } catch {
-                return "Server Error: Report User Agent Failed.";
-            }
-        }
-        public async Task<string> Insert_Report_Failed_Selected_History(Report_Failed_Selected_History dto)
-        {
-            try
-            {
-                await _UsersDBC.Report_Failed_Selected_HistoryTbl.AddAsync(new Report_Failed_Selected_HistoryTbl
-                {
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Location = dto.Location,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_time,
-                    Action = dto.Action,
-                    Controller = dto.Controller,
-                    Language_Region = dto.Language_Region,
-                    Reason = dto.Reason,
-                    End_User_ID = dto.End_User_ID,
-                    User_agent = dto.User_agent,
-                    Down_link = dto.Down_link,
-                    Connection_type = dto.Connection_type,
-                    RTT = dto.RTT,
-                    Data_saver = dto.Data_saver,
-                    Device_ram_gb = dto.Device_ram_gb,
-                    Orientation = dto.Orientation,
-                    Screen_width = dto.Screen_width,
-                    Screen_height = dto.Screen_height,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth,
-                    Token = dto.Token
-                });
-                await _UsersDBC.SaveChangesAsync();
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    error = dto.Reason
-                }));
-            }
-            catch
-            {
-                return "Server Error: Report Selected History Failed.";
-            }
-        }
-        public async Task<string> Insert_Report_Failed_Logout_History(Report_Failed_Logout_History dto)
-        {
-            try
-            {
-                await _UsersDBC.Report_Failed_Logout_HistoryTbl.AddAsync(new Report_Failed_Logout_HistoryTbl
-                {
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Location = dto.Location,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_time,
-                    Action = dto.Action,
-                    Controller = dto.Controller,
-                    Language_Region = dto.Language_Region,
-                    Reason = dto.Reason,
-                    End_User_ID = dto.End_User_ID,
-                    User_agent = dto.User_agent,
-                    Down_link = dto.Down_link,
-                    Connection_type = dto.Connection_type,
-                    RTT = dto.RTT,
-                    Data_saver = dto.Data_saver,
-                    Device_ram_gb = dto.Device_ram_gb,
-                    Orientation = dto.Orientation,
-                    Screen_width = dto.Screen_width,
-                    Screen_height = dto.Screen_height,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth,
-                    Token = dto.Token
-                });
-                await _UsersDBC.SaveChangesAsync();
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    error = dto.Reason
-                }));
-            } catch {
-                return "Server Error: Report Pending Email Registration History Failed.";
-            }
-        }
-        public async Task<string> Insert_Report_Failed_JWT_History(Report_Failed_JWT_History dto)
-        {
-            try
-            {
-                await _UsersDBC.Report_Failed_JWT_HistoryTbl.AddAsync(new Report_Failed_JWT_HistoryTbl
-                {
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Location = dto.Location,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_time,
-                    JWT_client_address = dto.JWT_client_address,
-                    JWT_client_key = dto.JWT_client_key,
-                    JWT_issuer_key = dto.JWT_issuer_key,
-                    JWT_id = dto.JWT_id,
-                    Client_id = dto.Client_id,
-                    Language_Region = dto.Language_Region,
-                    Reason = dto.Reason,
-                    Action = dto.Action,
-                    Controller = dto.Controller,
-                    End_User_ID = dto.End_User_ID,
-                    Login_type = dto.Login_type,
-                    User_agent = dto.User_agent,
-                    Down_link = dto.Down_link,
-                    Connection_type = dto.Connection_type,
-                    RTT = dto.RTT,
-                    Data_saver = dto.Data_saver,
-                    Device_ram_gb = dto.Device_ram_gb,
-                    Orientation = dto.Orientation,
-                    Screen_width = dto.Screen_width,
-                    Screen_height = dto.Screen_height,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth,
-                    Token = dto.Token
-                });
-                await _UsersDBC.SaveChangesAsync();
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    error = dto.Reason
-                }));
-            } catch {
-                return "Server Error: Report Pending Email Registration History Failed.";
-            }
-        }
-        public async Task<string> Insert_Report_Failed_Client_ID_History(Report_Failed_Client_ID_History dto)
-        {
-            try
-            {
-                await _UsersDBC.Report_Failed_Client_ID_HistoryTbl.AddAsync(new Report_Failed_Client_ID_HistoryTbl
-                {
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Location = dto.Location,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_time,
-                    Language_Region = dto.Language_Region,
-                    Reason = dto.Reason,
-                    Action = dto.Action,
-                    Controller = dto.Controller,
-                    End_User_ID = dto.End_User_ID,
-                    User_agent = dto.User_agent,
-                    Down_link = dto.Down_link,
-                    Connection_type = dto.Connection_type,
-                    RTT = dto.RTT,
-                    Data_saver = dto.Data_saver,
-                    Device_ram_gb = dto.Device_ram_gb,
-                    Orientation = dto.Orientation,
-                    Screen_width = dto.Screen_width,
-                    Screen_height = dto.Screen_height,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth,
-                    Token = dto.Token
-                });
-                await _UsersDBC.SaveChangesAsync();
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    error = dto.Reason
-                }));
-            } catch {
-                return "Server Error: Report Pending Email Registration History Failed.";
-            }
-        }
-        public async Task<string> Insert_Report_Failed_Unregistered_Email_Login_History(Report_Failed_Unregistered_Email_Login_History dto)
-        {
-            try
-            {
-                await _UsersDBC.Report_Failed_Unregistered_Email_Login_HistoryTbl.AddAsync(new Report_Failed_Unregistered_Email_Login_HistoryTbl
-                {
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Updated_by = 0,
-                    Created_by = 0,
-                    Location = dto.Location,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_time,
-                    Language_Region = dto.Language_Region,
-                    Email_Address = dto.Email_Address,
-                    Reason = dto.Reason,
-                    User_agent = dto.User_agent,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Screen_height = dto.Screen_height,
-                    Screen_width = dto.Screen_width,
-                    RTT = dto.RTT,
-                    Orientation = dto.Orientation,
-                    Data_saver = dto.Data_saver,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth,
-                    Connection_type = dto.Connection_type,
-                    Down_link = dto.Down_link,
-                    Device_ram_gb = dto.Device_ram_gb
-                });
-                await _UsersDBC.SaveChangesAsync();
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.Email_Address,
-                    error = dto.Reason
-                }));
-            } catch {
-                return "Server Error: Report Unregistered Email Login History Failed.";
-            }
-        }
-        public async Task<string> Insert_Report_Failed_Email_Login_History(Report_Failed_Email_Login_History dto)
-        {
-            try
-            {
-                await _UsersDBC.Report_Failed_Email_Login_HistoryTbl.AddAsync(new Report_Failed_Email_Login_HistoryTbl
-                {
-                    End_User_ID = dto.End_User_ID,
-                    Updated_on = TimeStamp(),
-                    Created_on = TimeStamp(),
-                    Updated_by = 0,
-                    Created_by = 0,
-                    Location = dto.Location,
-                    Remote_IP = dto.Remote_IP,
-                    Remote_Port = dto.Remote_Port,
-                    Server_IP = dto.Server_IP,
-                    Server_Port = dto.Server_Port,
-                    Client_IP = dto.Client_IP,
-                    Client_Port = dto.Client_Port,
-                    Client_time = dto.Client_Time_Parsed,
-                    Reason = dto.Reason,
-                    Language_Region = dto.Language_Region,
-                    Email_Address = dto.Email_Address,
-                    User_agent = dto.User_agent,
-                    Window_height = dto.Window_height,
-                    Window_width = dto.Window_width,
-                    Screen_height = dto.Screen_height,
-                    Screen_width = dto.Screen_width,
-                    RTT = dto.RTT,
-                    Orientation = dto.Orientation,
-                    Data_saver = dto.Data_saver,
-                    Color_depth = dto.Color_depth,
-                    Pixel_depth = dto.Pixel_depth,
-                    Connection_type = dto.Connection_type,
-                    Down_link = dto.Down_link,
-                    Device_ram_gb = dto.Device_ram_gb
-
-                });
-
-                await _UsersDBC.SaveChangesAsync();
-
-                return await Task.FromResult(JsonSerializer.Serialize(new { 
-                    id = dto.End_User_ID,
-                    error = dto.Reason
-                }));
-            } catch {
-                return "Server Error: Report Email Login History Failed.";
-            }
-        }
-        public async Task<string> Insert_End_User_Logout_History(Logout_Time_Stamp dto)
-        {
-            await _UsersDBC.Logout_Time_Stamp_HistoryTbl.AddAsync(new Logout_Time_Stamp_HistoryTbl
-            {
-                End_User_ID = dto.End_User_ID,
-                Logout_on = TimeStamp(),
-                Updated_by = dto.End_User_ID,
-                Updated_on = TimeStamp(),
-                Created_on = TimeStamp(),
-                Location = dto.Location,
-                Remote_IP = dto.Remote_IP,
-                Remote_Port = dto.Remote_Port,
-                Server_IP = dto.Server_IP,
-                Server_Port = dto.Server_Port,
-                Client_IP = dto.Client_IP,
-                Client_Port = dto.Client_Port,
-                Client_time = dto.Client_Time_Parsed,
-                User_agent = dto.User_agent,
-                Window_height = dto.Window_height,
-                Window_width = dto.Window_width,
-                Screen_height = dto.Screen_height,
-                Screen_width = dto.Screen_width,
-                RTT = dto.RTT,
-                Orientation = dto.Orientation,
-                Data_saver = dto.Data_saver,
-                Color_depth = dto.Color_depth,
-                Pixel_depth = dto.Pixel_depth,
-                Connection_type = dto.Connection_type,
-                Down_link = dto.Down_link,
-                Device_ram_gb = dto.Device_ram_gb
-            });
-
-            await _UsersDBC.SaveChangesAsync();
-
-            return Task.FromResult(JsonSerializer.Serialize(new {
-                id = dto.End_User_ID,
-                logout_on = TimeStamp()
-            })).Result;
-        }
         public async Task<string> Update_End_User_Logout(Logout_Time_Stamp dto)
         {
             var logout_time_stamp_record = await _UsersDBC.Logout_Time_StampTbl.FirstOrDefaultAsync(x => x.End_User_ID == dto.End_User_ID);
@@ -4003,68 +4350,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 End_User_ID = dto.End_User_ID,
                 logout_on = TimeStamp()
             })).Result;
-        }
-        public Task<bool> ID_Exists_In_Users_ID(long user_id) {
-            return Task.FromResult(_UsersDBC.User_IDsTbl.Any(x => x.ID == user_id && x.Deleted == false));
-        }
-        public Task<bool> ID_Exists_In_Twitch_IDs(long user_id)
-        {
-            return Task.FromResult(_UsersDBC.Twitch_IDsTbl.Any(x => x.Twitch_ID == user_id && x.Deleted == false));
-        }
-        public Task<bool> ID_Exists_In_Discord_IDs(long user_id)
-        {
-            return Task.FromResult(_UsersDBC.Discord_IDsTbl.Any(x => x.Discord_ID == user_id && x.Deleted == false));
-        }
-        public async Task<bool> Email_Exists_In_Pending_Email_Registration(string email_address)
-        {
-            return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Email_Address.ToUpper() == email_address));
-        }
-        public async Task<bool> Confirmation_Code_Exists_In_Pending_Email_Address_Registration(string Code)
-        {
-            return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Code == Code));
-        }
-        public async Task<long> Read_User_ID_By_Email_Address(string email_address)
-        {
-            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Where(x => x.Email_Address == email_address).Select(x => x.End_User_ID).SingleOrDefault());
-        }
-        public async Task<string?> Read_User_Email_By_ID(long id)
-        {
-            return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Where(x => x.End_User_ID == id).Select(x => x.Email_Address).SingleOrDefault());
-        }
-        public async Task<long> Read_User_ID_By_Twitch_Account_ID(long twitch_id)
-        {
-            return await Task.FromResult(_UsersDBC.Twitch_IDsTbl.Where(x => x.Twitch_ID == twitch_id).Select(x => x.End_User_ID).SingleOrDefault());
-        }
-        public async Task<long> Read_User_ID_By_Twitch_Account_Email(string twitch_email)
-        {
-            return await Task.FromResult(_UsersDBC.Twitch_Email_AddressTbl.Where(x => x.Email_Address == twitch_email.ToUpper()).Select(x => x.End_User_ID).SingleOrDefault());
-        }
-        public async Task<long> Read_User_ID_By_Discord_Account_ID(long discord_id)
-        {
-            return await Task.FromResult(_UsersDBC.Discord_IDsTbl.Where(x => x.Discord_ID == discord_id).Select(x => x.End_User_ID).SingleOrDefault());
-        }
-        public async Task<long> Read_User_ID_By_Discord_Account_Email(string discord_email)
-        {
-            return await Task.FromResult(_UsersDBC.Discord_Email_AddressTbl.Where(x => x.Email_Address == discord_email).Select(x => x.End_User_ID).SingleOrDefault());
-        }
-        public async Task Create_WebSocket_Permission_Record(WebSocket_Chat_Permission dto)
-        {
-            await _UsersDBC.WebSocket_Chat_PermissionTbl.AddAsync(new WebSocket_Chat_PermissionTbl
-            {
-                End_User_ID = dto.End_User_ID,
-                Participant_ID = dto.Participant_ID,
-                Updated_on = TimeStamp(),
-                Created_on = TimeStamp(),
-                Updated_by = dto.End_User_ID,
-                Requested = 1,
-                Blocked = 0,
-                Approved = 0
-            });
-            await _UsersDBC.SaveChangesAsync();
-        }
-        public async Task<byte[]?> Read_User_Password_Hash_By_ID(long user_id)
-        {
-            return await Task.FromResult(_UsersDBC.Login_PasswordTbl.Where(user => user.End_User_ID == user_id).Select(user => user.Password).SingleOrDefault());
         }
         public async Task<string> Update_End_User_First_Name(Identities dto)
         {

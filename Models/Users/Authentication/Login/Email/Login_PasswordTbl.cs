@@ -13,10 +13,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email
         [Required]
         public long End_User_ID { get; set; }
 
-        public string Email_address { get;set; } = string.Empty;
-
-        public string New_password { get; set; } = string.Empty;
-
         [Required]
         public byte[]? Password { get; set; }
 

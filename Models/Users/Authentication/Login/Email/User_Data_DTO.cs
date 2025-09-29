@@ -3,13 +3,13 @@
     public class User_Data_DTO
     {
         public long id { get; set; }
-        public long? twitch_id { get; set; }
-        public long? discord_id { get; set; }
+        public long twitch_id { get; set; }
+        public long discord_id { get; set; }
         public byte account_type { get; set; }
-        public string? email_address { get; set; } = string.Empty;
-        public string? twitch_email_address { get; set; } = string.Empty;
-        public string? twitch_user_name { get; set; } = string.Empty;
-        public string? discord_email_address { get; set; } = string.Empty;
+        public string email_address { get; set; } = string.Empty;
+        public string twitch_email_address { get; set; } = string.Empty;
+        public string twitch_user_name { get; set; } = string.Empty;
+        public string discord_email_address { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
         public long login_on { get; set; }
         public long logout_on { get; set; }
@@ -26,10 +26,10 @@
         public byte theme { get; set; }
         public byte alignment { get; set; }
         public byte text_alignment { get; set; }
-        public byte? gender { get; set; }
-        public byte? birth_day { get; set; }
-        public byte? birth_month { get; set; }
-        public long? birth_year { get; set; }
+        public byte gender { get; set; }
+        public byte birth_day { get; set; }
+        public byte birth_month { get; set; }
+        public long birth_year { get; set; }
         public string first_name { get; set; } = string.Empty;
         public string last_name { get; set; } = string.Empty;
         public string middle_name { get; set; } = string.Empty;
@@ -39,22 +39,22 @@
         public string roles { get; set; } = string.Empty;
         public byte grid_type { get; set; }
         public bool nav_lock { get; set; }
-        public string? card_border_color { get; set; } = string.Empty;
-        public string? card_header_font { get; set; } = string.Empty;
-        public string? card_header_font_color { get; set; } = string.Empty;
-        public string? card_header_background_color { get; set; } = string.Empty;
-        public string? card_body_font { get; set; } = string.Empty;
-        public string? card_body_background_color { get; set; } = string.Empty;
-        public string? card_body_font_color { get; set; } = string.Empty;
-        public string? card_footer_font_color { get; set; } = string.Empty;
-        public string? card_footer_font { get; set; } = string.Empty;
-        public string? card_footer_background_color { get; set; } = string.Empty;
-        public string? navigation_menu_background_color { get; set; } = string.Empty;
-        public string? navigation_menu_font_color { get; set; } = string.Empty;
-        public string? navigation_menu_font { get; set; } = string.Empty;
-        public string? button_background_color { get; set; } = string.Empty;
-        public string? button_font { get; set; } = string.Empty;
-        public string? button_font_color { get; set; } = string.Empty;
+        public string card_border_color { get; set; } = string.Empty;
+        public string card_header_font { get; set; } = string.Empty;
+        public string card_header_font_color { get; set; } = string.Empty;
+        public string card_header_background_color { get; set; } = string.Empty;
+        public string card_body_font { get; set; } = string.Empty;
+        public string card_body_background_color { get; set; } = string.Empty;
+        public string card_body_font_color { get; set; } = string.Empty;
+        public string card_footer_font_color { get; set; } = string.Empty;
+        public string card_footer_font { get; set; } = string.Empty;
+        public string card_footer_background_color { get; set; } = string.Empty;
+        public string navigation_menu_background_color { get; set; } = string.Empty;
+        public string navigation_menu_font_color { get; set; } = string.Empty;
+        public string navigation_menu_font { get; set; } = string.Empty;
+        public string button_background_color { get; set; } = string.Empty;
+        public string button_font { get; set; } = string.Empty;
+        public string button_font_color { get; set; } = string.Empty;
 
     }
 }

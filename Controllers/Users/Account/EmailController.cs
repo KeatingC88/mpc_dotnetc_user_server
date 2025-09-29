@@ -789,7 +789,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Email_Address = AES.Process_Decryption(dto.Email_Address).ToUpper();
                 dto.Language = AES.Process_Decryption(dto.Language);
                 dto.Region = AES.Process_Decryption(dto.Region);
-                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time.ToString()));
+                dto.Client_Time_Parsed = long.Parse(AES.Process_Decryption(dto.Client_time));
                 dto.Location = AES.Process_Decryption(dto.Location);
                 dto.JWT_issuer_key = AES.Process_Decryption(dto.JWT_issuer_key);
                 dto.JWT_client_key = AES.Process_Decryption(dto.JWT_client_key);
@@ -1026,7 +1026,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         Email_Address = dto.Email_Address,
                         Language = dto.Language,
                         Region = dto.Region,
-                        Client_time = long.Parse(dto.Client_time),
+                        Client_time = dto.Client_Time_Parsed,
                         Location = dto.Location,
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
