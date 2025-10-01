@@ -54,12 +54,7 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<string> Read_End_User_WebSocket_Received_Chat_Requests(long end_user_id);
         Task<string> Read_End_User_WebSocket_Received_Chat_Blocks(long end_user_id);
         Task<string> Read_End_User_WebSocket_Received_Chat_Approvals(long end_user_id);
-        Task<string> Read_End_User_Friend_Received_Approvals(long end_user_id);
-        Task<string> Read_End_User_Friend_Sent_Requests(long end_user_id);
-        Task<string> Read_End_User_Friend_Sent_Blocks(long end_user_id);
-        Task<string> Read_End_User_Friend_Sent_Approvals(long end_user_id);
-        Task<string> Read_End_User_Friend_Received_Requests(long end_user_id);
-        Task<string> Read_End_User_Friend_Received_Blocks(long end_user_id);
+        Task<string> Read_End_User_Friend_Data_By_ID(long end_user_id);
         Task<byte> Read_End_User_Selected_Status(long user_id);
         Task<byte[]?> Read_User_Password_Hash_By_ID(long id);
         Task<long> Read_User_ID_By_Email_Address(string email_address);

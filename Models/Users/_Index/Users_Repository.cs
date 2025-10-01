@@ -27,11 +27,9 @@ using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Users.WebSocket_Chat;
-using StackExchange.Redis;
 using System.Data;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace mpc_dotnetc_user_server.Models.Users.Index
 {
@@ -2751,83 +2749,35 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .ToList()));
             }
         }
-        public async Task<string> Read_End_User_Friend_Sent_Requests(long user_id)
+        public async Task<string> Read_End_User_Friend_Data_By_ID(long user_id)
         {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == user_id))
+            var user_sent_permissions = (from friend_permission in _UsersDBC.Friends_PermissionTbl
+                where friend_permission.End_User_ID == user_id
+                select new
+                {
+                    participant_id = friend_permission.Participant_ID,
+                    requests = friend_permission.Requested,
+                    blocks = friend_permission.Blocked,
+                    approves = friend_permission.Approved
+                }).ToList();
+
+            var user_received_permissions = (from friend_permission in _UsersDBC.Friends_PermissionTbl
+                where friend_permission.Participant_ID == user_id
+                select new
+                {
+                    end_user_id = friend_permission.End_User_ID,
+                    requests = friend_permission.Requested,
+                    blocks = friend_permission.Blocked,
+                    approves = friend_permission.Approved
+                }).ToList();
+
+            return await Task.FromResult(JsonSerializer.Serialize(new
             {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Requested == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Sent_Blocks(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Blocked == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Sent_Approvals(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Approved == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Received_Requests(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Received_Blocks(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Blocked == true)
-                    .ToList()));
-            }
-        }
-        public async Task<string> Read_End_User_Friend_Received_Approvals(long user_id)
-        {
-            if (!_UsersDBC.Friends_PermissionTbl.Any(x => x.Participant_ID == user_id))
-            {
-                return "";
-            }
-            else
-            {
-                return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.Friends_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Approved == true)
-                    .ToList()));
-            }
+                end_user_id = user_id,
+                sent_permissions = user_sent_permissions,
+                received_permissions = user_received_permissions,
+                time_stamped = TimeStamp()
+            }));
         }
         public async Task<byte> Read_End_User_Selected_Status(long user_id)
         {
