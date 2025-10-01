@@ -55,7 +55,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         }
 
         [HttpPut("Login")]
-        public async Task<ActionResult<string>> Login_Email_Address_And_Password([FromBody] Login_Twitchdto dto)
+        public async Task<ActionResult<string>> Login_Email_Address_And_Password([FromBody] Login_Email_PasswordDTO dto)
         {
             try
             {
@@ -242,8 +242,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Theme = byte.Parse(dto.Theme)
                 });
 
-                User_Data_DTO user_data = await Task.FromResult(Users_Repository.Read_User_Data_By_ID(user_id)).Result;
-
                 await Users_Repository.Update_End_User_Login_Time_Stamp(new Login_Time_Stamp
                 {
                     End_User_ID = user_id,
@@ -291,6 +289,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Down_link = dto.Down_link,
                     Device_ram_gb = dto.Device_ram_gb
                 });
+
+                User_Data_DTO user_data = await Task.FromResult(Users_Repository.Read_User_Data_By_ID(user_id)).Result;
 
                 string created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
                 {

@@ -5,7 +5,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps
 {
     public class Login_Time_Stamp_HistoryTbl
     {
-        [Required]
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long ID { get; set; }
