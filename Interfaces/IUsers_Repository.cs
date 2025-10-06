@@ -54,15 +54,15 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<string> Read_End_User_WebSocket_Received_Chat_Requests(long end_user_id);
         Task<string> Read_End_User_WebSocket_Received_Chat_Blocks(long end_user_id);
         Task<string> Read_End_User_WebSocket_Received_Chat_Approvals(long end_user_id);
-        Task<string> Read_End_User_Friend_Data_By_ID(long end_user_id);
+        Task<string> Read_End_User_Friend_Permissions_By_ID(long end_user_id);
         Task<byte> Read_End_User_Selected_Status(long user_id);
         Task<byte[]?> Read_User_Password_Hash_By_ID(long id);
         Task<long> Read_User_ID_By_Email_Address(string email_address);
         Task<string?> Read_User_Email_By_ID(long id);
         Task<string> Insert_Pending_Email_Registration_History_Record(Pending_Email_Registration_History dto);
-        Task<string> Insert_Report_Failed_Email_Login_History(Report_Failed_Email_Login_History dto);
+        Task<string> Insert_Report_Failed_Email_Login_History_Record(Report_Failed_Email_Login_History dto);
         Task<string> Insert_Report_Failed_Logout_History(Report_Failed_Logout_History dto);
-        Task<string> Insert_Report_Failed_Unregistered_Email_Login_History(Report_Failed_Unregistered_Email_Login_History dto);
+        Task<string> Insert_Report_Failed_Unregistered_Email_Login_History_Record(Report_Failed_Unregistered_Email_Login_History dto);
         Task<string> Insert_Report_Failed_Pending_Email_Registration_History(Report_Failed_Pending_Email_Registration_History dto);
         Task<string> Insert_Report_Failed_JWT_History(Report_Failed_JWT_History dto);
         Task<string> Insert_Report_Failed_User_Agent_History(Report_Failed_User_Agent_History dto);
@@ -72,7 +72,7 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<string> Update_End_User_Name(Selected_Name dto);
         Task<string> Update_End_User_Login_Time_Stamp(Login_Time_Stamp dto);
         Task<string> Update_End_User_Logout(Logout_Time_Stamp dto);
-        Task<string> Insert_End_User_Logout_History(Logout_Time_Stamp dto);
+        Task<string> Insert_End_User_Logout_History_Record(Logout_Time_Stamp dto);
         Task<string> Insert_Report_Failed_Selected_History(Report_Failed_Selected_History dto);
         Task<string> Update_End_User_Selected_Alignment(Selected_App_Alignment dto);
         Task<string> Update_End_User_Selected_Text_Alignment(Selected_App_Text_Alignment dto);
@@ -89,10 +89,8 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<string> Update_End_User_Gender(Identities dto);
         Task<string> Update_End_User_Password(Password_Change dto);
         Task<string> Update_Chat_Web_Socket_Permissions(WebSocket_Chat_Permission dto);
-        Task<string> Insert_Friend_Permissions(Friends_Permission dto);
         Task<string> Update_Friend_Permissions(Friends_Permission dto);
         Task<string> Delete_From_Web_Socket_Chat_Permissions(WebSocket_Chat_Permission dto);
-        Task<string> Delete_From_Friend_Permissions(Friends_Permission dto);
         Task<string> Update_End_User_Birth_Date(Identities dto);
         Task<string> Update_End_User_Card_Border_Color(Selected_App_Custom_Design dto);
         Task<string> Update_End_User_Card_Header_Font(Selected_App_Custom_Design dto);

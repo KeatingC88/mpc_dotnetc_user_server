@@ -9,8 +9,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Friends
 
         [Required]
         public string Participant_ID { get; set; } = string.Empty;
-        [Required]
-        public string Report_type { get; set; } = string.Empty;
 
         [Required]
         public string Language { get; set; } = string.Empty;

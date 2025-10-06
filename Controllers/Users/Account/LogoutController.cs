@@ -141,7 +141,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 HttpContext.Session.Remove(dto.End_User_ID.ToString());
                 Response.Cookies.Delete(Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME") ?? ".AspNetCore.Session");
 
-                await Users_Repository.Insert_End_User_Logout_History(new Logout_Time_Stamp {
+                await Users_Repository.Insert_End_User_Logout_History_Record(new Logout_Time_Stamp {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
                     Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",

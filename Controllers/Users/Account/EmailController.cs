@@ -137,7 +137,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 if (!Users_Repository.Email_Exists_In_Login_Email_Address(dto.Email_Address).Result)
                 {
-                    await Users_Repository.Insert_Report_Failed_Unregistered_Email_Login_History(new Report_Failed_Unregistered_Email_Login_History
+                    await Users_Repository.Insert_Report_Failed_Unregistered_Email_Login_History_Record(new Report_Failed_Unregistered_Email_Login_History
                     {
                         Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                         Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -174,7 +174,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 {
                     if (Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash).Result)
                     {
-                        await Users_Repository.Insert_Report_Failed_Email_Login_History(new Report_Failed_Email_Login_History
+                        await Users_Repository.Insert_Report_Failed_Email_Login_History_Record(new Report_Failed_Email_Login_History
                         {
                             Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                             Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,

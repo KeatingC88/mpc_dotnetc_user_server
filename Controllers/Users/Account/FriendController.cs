@@ -69,6 +69,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
+            dto.End_User_ID_Parsed = dto.JWT_id;
+
             if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
@@ -107,7 +109,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             }).Result)
                 return Conflict();
 
-            return await Task.FromResult(Users_Repository.Read_End_User_Friend_Data_By_ID(dto.End_User_ID_Parsed).Result);
+            return await Task.FromResult(Users_Repository.Read_End_User_Friend_Permissions_By_ID(dto.End_User_ID_Parsed).Result);
         }
 
         [HttpPost("Approve")]
@@ -191,13 +193,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             {
                 End_User_ID = dto.End_User_ID_Parsed,
                 Participant_ID = dto.Participant_ID_Parsed,
-                Requested = false,
-                Approved = true,
-                Blocked = false
+                Approved = true
             }).Result);
         }
 
-        [HttpPost("Reject")]
+        [HttpPut("Reject")]
         public async Task<ActionResult<string>> Update_Friend_Reject_Permission(Friends_PermissionDTO dto)
         {
             if (!ModelState.IsValid)
@@ -274,10 +274,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             }).Result)
                 return Conflict();
 
-            return await Task.FromResult(Users_Repository.Delete_From_Friend_Permissions(new Friends_Permission
+            return await Task.FromResult(Users_Repository.Update_Friend_Permissions(new Friends_Permission
             {
                 End_User_ID = dto.End_User_ID_Parsed,
-                Participant_ID = dto.Participant_ID_Parsed
+                Participant_ID = dto.Participant_ID_Parsed,
+                Deleted = true
             }).Result);
         }
 
@@ -357,11 +358,12 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             }).Result)
                 return Conflict();
 
-            return await Task.FromResult(Users_Repository.Insert_Friend_Permissions(new Friends_Permission
+            return await Task.FromResult(AES.Process_Encryption(Users_Repository.Update_Friend_Permissions(new Friends_Permission
             {
                 End_User_ID = dto.End_User_ID_Parsed,
-                Participant_ID = dto.Participant_ID_Parsed
-            }).Result);
+                Participant_ID = dto.Participant_ID_Parsed,
+                Requested = true
+            }).Result));
         }
 
         [HttpPost("Block")]
@@ -446,8 +448,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 End_User_ID = dto.End_User_ID_Parsed,
                 Participant_ID = dto.Participant_ID_Parsed,
                 Updated_by = dto.End_User_ID_Parsed,
-                Requested = false,
-                Approved = false,
                 Blocked = true
             }).Result);
         }
@@ -541,9 +541,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             {
                 End_User_ID = dto.End_User_ID_Parsed,
                 Participant_ID = dto.Participant_ID_Parsed,
-                Updated_by = dto.End_User_ID_Parsed,
-                Requested = false,
-                Approved = false,
                 Blocked = true
             }).Result);
         }

@@ -830,65 +830,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return "Server Error: Delete Chat Permissions Failed.";
             }
         }
-        public async Task<string> Delete_From_Friend_Permissions(Friends_Permission dto)
-        {
-            try
-            {
-                await Task.Run(async () =>
-                {
-                    if (_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID && x.Deleted == false))
-                    {
-                        await _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                            .SetProperty(dto => dto.Requested, false)
-                            .SetProperty(dto => dto.Blocked, false)
-                            .SetProperty(dto => dto.Approved, false)
-                            .SetProperty(dto => dto.Updated_on, TimeStamp())
-                            .SetProperty(dto => dto.Deleted, true)
-                            .SetProperty(dto => dto.Updated_by, dto.End_User_ID)
-                        );
-                        await _UsersDBC.SaveChangesAsync();
-                    }
-                    else if (_UsersDBC.Friends_PermissionTbl.Any(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID && x.Deleted == false))
-                    {
-                        await _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
-                            .SetProperty(dto => dto.Requested, false)
-                            .SetProperty(dto => dto.Blocked, false)
-                            .SetProperty(dto => dto.Approved, false)
-                            .SetProperty(dto => dto.Updated_on, TimeStamp())
-                            .SetProperty(dto => dto.Deleted, true)
-                            .SetProperty(dto => dto.Updated_by, dto.End_User_ID)
-                        );
-                        await _UsersDBC.SaveChangesAsync();
-                    }
-                    else
-                    {
-                        await _UsersDBC.Friends_PermissionTbl.AddAsync(new Friends_PermissionTbl
-                        {
-                            End_User_ID = dto.End_User_ID,
-                            Participant_ID = dto.Participant_ID,
-                            Updated_on = TimeStamp(),
-                            Created_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Created_by = dto.End_User_ID,
-                            Deleted = true
-                        });
-
-                        await _UsersDBC.SaveChangesAsync();
-                    }
-                });
-
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    participant_id = dto.Participant_ID,
-                    deleted = true
-                }));
-            }
-            catch
-            {
-                return "Server Error: Delete Friend Permission.";
-            }
-        }
         public async Task<bool> Email_Exists_In_Login_Email_Address(string email_address)
         {
             return await Task.FromResult(_UsersDBC.Login_Email_AddressTbl.Any(x => x.Email_Address == email_address.ToUpper()));
@@ -1593,43 +1534,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             return Task.FromResult(_UsersDBC.Discord_IDsTbl.Any(x => x.Discord_ID == user_id && x.Deleted == false));
         }
-        public async Task<string> Insert_Friend_Permissions(Friends_Permission dto)
-        {
-            try
-            {
-                var permission_record_exists_in_database = await _UsersDBC.Friends_PermissionTbl.Where(x =>
-                    (x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID) ||
-                    (x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID)
-                ).FirstOrDefaultAsync();
-
-                if (permission_record_exists_in_database == null)
-                {
-                    var newEntry = new Friends_PermissionTbl
-                    {
-                        End_User_ID = dto.End_User_ID,
-                        Participant_ID = dto.Participant_ID,
-                        Updated_on = TimeStamp(),
-                        Created_on = TimeStamp(),
-                        Updated_by = dto.End_User_ID,
-                        Created_by = dto.End_User_ID,
-                        Requested = true
-                    };
-
-                    await _UsersDBC.Friends_PermissionTbl.AddAsync(newEntry);
-                    await _UsersDBC.SaveChangesAsync();
-                }
-
-                return await Task.FromResult(JsonSerializer.Serialize(new
-                {
-                    id = dto.End_User_ID,
-                    participant_id = dto.Participant_ID
-                }));
-            }
-            catch
-            {
-                return Task.FromResult(JsonSerializer.Serialize("Login TS History Failed.")).Result;
-            }
-        }
         public async Task<string> Insert_End_User_Login_Time_Stamp_History(Login_Time_Stamp_History dto)
         {
             try
@@ -2019,7 +1923,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return "Server Error: Report Pending Email Registration History Failed.";
             }
         }
-        public async Task<string> Insert_Report_Failed_Unregistered_Email_Login_History(Report_Failed_Unregistered_Email_Login_History dto)
+        public async Task<string> Insert_Report_Failed_Unregistered_Email_Login_History_Record(Report_Failed_Unregistered_Email_Login_History dto)
         {
             try
             {
@@ -2066,7 +1970,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return "Server Error: Report Unregistered Email Login History Failed.";
             }
         }
-        public async Task<string> Insert_Report_Failed_Email_Login_History(Report_Failed_Email_Login_History dto)
+        public async Task<string> Insert_Report_Failed_Email_Login_History_Record(Report_Failed_Email_Login_History dto)
         {
             try
             {
@@ -2117,7 +2021,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return "Server Error: Report Email Login History Failed.";
             }
         }
-        public async Task<string> Insert_End_User_Logout_History(Logout_Time_Stamp dto)
+        public async Task<string> Insert_End_User_Logout_History_Record(Logout_Time_Stamp dto)
         {
             await _UsersDBC.Logout_Time_Stamp_HistoryTbl.AddAsync(new Logout_Time_Stamp_HistoryTbl
             {
@@ -2749,31 +2653,33 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     .ToList()));
             }
         }
-        public async Task<string> Read_End_User_Friend_Data_By_ID(long user_id)
+        public async Task<string> Read_End_User_Friend_Permissions_By_ID(long user_id)
         {
-            var user_sent_permissions = (from friend_permission in _UsersDBC.Friends_PermissionTbl
-                where friend_permission.End_User_ID == user_id
-                select new
-                {
-                    participant_id = friend_permission.Participant_ID,
-                    requests = friend_permission.Requested,
-                    blocks = friend_permission.Blocked,
-                    approves = friend_permission.Approved
-                }).ToList();
+            var user_sent_permissions = _UsersDBC.Friends_PermissionTbl
+                .Where(friend_permission => friend_permission.End_User_ID == user_id && friend_permission.Deleted == false)
+                .ToDictionary(friend_permission => friend_permission.Participant_ID,
+                    friend_permission => new
+                    {
+                        request = friend_permission.Requested,
+                        block = friend_permission.Blocked,
+                        approve = friend_permission.Approved,
+                        time_stamp = friend_permission.Created_on
+                    }
+                );
 
-            var user_received_permissions = (from friend_permission in _UsersDBC.Friends_PermissionTbl
-                where friend_permission.Participant_ID == user_id
-                select new
-                {
-                    end_user_id = friend_permission.End_User_ID,
-                    requests = friend_permission.Requested,
-                    blocks = friend_permission.Blocked,
-                    approves = friend_permission.Approved
-                }).ToList();
+            var user_received_permissions = _UsersDBC.Friends_PermissionTbl
+                .Where(friend_permission => friend_permission.Participant_ID == user_id && friend_permission.Deleted == false)
+                .ToDictionary(friend_permission => friend_permission.End_User_ID,
+                    friend_permission => new {
+                        request = friend_permission.Requested,
+                        block = friend_permission.Blocked,
+                        approve = friend_permission.Approved,
+                        time_stamp = friend_permission.Created_on
+                    }
+                );
 
             return await Task.FromResult(JsonSerializer.Serialize(new
             {
-                end_user_id = user_id,
                 sent_permissions = user_sent_permissions,
                 received_permissions = user_received_permissions,
                 time_stamped = TimeStamp()
@@ -2853,59 +2759,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return "Server Error: Update Chat Permissions Failed.";
             }
         }
-        public async Task<string> Update_Friend_Permissions(Friends_Permission dto)
+        public async Task<string> Update_Pending_Email_Registration_Record(Pending_Email_Registration dto)
         {
             try
             {
-                if (_UsersDBC.Friends_PermissionTbl.Any((x) => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID && x.Deleted == false))
-                {
-                    await _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                            .SetProperty(dto => dto.Requested, dto.Requested)
-                            .SetProperty(dto => dto.Blocked, dto.Blocked)
-                            .SetProperty(dto => dto.Approved, dto.Approved)
-                            .SetProperty(dto => dto.Updated_on, TimeStamp())
-                            .SetProperty(dto => dto.Updated_by, dto.End_User_ID)
-                        );
-                    await _UsersDBC.SaveChangesAsync();
-                    return JsonSerializer.Serialize(new
-                    {
-                        id = dto.End_User_ID,
-                        participant_id = dto.Participant_ID,
-                        updated_on = TimeStamp(),
-                        updated_by = dto.End_User_ID
-                    });
-                }
-                else if (_UsersDBC.Friends_PermissionTbl.Any((x) => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID && x.Deleted == false))
-                {
-                    await _UsersDBC.Friends_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
-                            .SetProperty(dto => dto.Requested, dto.Requested)
-                            .SetProperty(dto => dto.Blocked, dto.Blocked)
-                            .SetProperty(dto => dto.Approved, dto.Approved)
-                            .SetProperty(dto => dto.Updated_on, TimeStamp())
-                            .SetProperty(dto => dto.Updated_by, dto.End_User_ID)
-                        );
-                    await _UsersDBC.SaveChangesAsync();
-                    return JsonSerializer.Serialize(new
-                    {
-                        id = dto.End_User_ID,
-                        participant_id = dto.Participant_ID,
-                        updated_on = TimeStamp(),
-                        updated_by = dto.End_User_ID,
-                        requested = dto.Requested,
-                        blocked = dto.Blocked,
-                        approved = dto.Approved
-                    });
-                }
-                return "Server Error: Update Friend Permission Selection Failed.";
-            }
-            catch
-            {
-                return "Server Error: Update Friend Permissions Failed.";
-            }
-        }
-        public async Task<string> Update_Pending_Email_Registration_Record(Pending_Email_Registration dto)
-        {
-            try {
                 await _UsersDBC.Pending_Email_RegistrationTbl.Where(x => x.Email_Address == dto.Email_Address).ExecuteUpdateAsync(s => s
                     .SetProperty(col => col.Email_Address, dto.Email_Address)
                     .SetProperty(col => col.Code, dto.Code)
@@ -2921,8 +2778,92 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     region = dto.Region,
                     updated_on = TimeStamp(),
                 });
-            } catch {
+            }
+            catch
+            {
                 return "Server Error: Email Address Registration Failed";
+            }
+        }
+        public async Task<string> Update_Friend_Permissions(Friends_Permission dto)
+        {
+            try
+            {
+                var permission_record_exists_in_database = await _UsersDBC.Friends_PermissionTbl.Where(x =>
+                    (x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID) ||
+                    (x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID)
+                ).FirstOrDefaultAsync();
+
+                if (permission_record_exists_in_database == null)
+                {
+                    await _UsersDBC.Friends_PermissionTbl.AddAsync(new Friends_PermissionTbl
+                    {
+                        End_User_ID = dto.End_User_ID,
+                        Participant_ID = dto.Participant_ID,
+                        Updated_on = TimeStamp(),
+                        Created_on = TimeStamp(),
+                        Updated_by = dto.End_User_ID,
+                        Created_by = dto.End_User_ID,
+                        Requested = true,
+                        Blocked = false,
+                        Approved = false
+                    });
+                } else if (permission_record_exists_in_database.Blocked) {
+                    return await Task.FromResult(JsonSerializer.Serialize(new
+                    {
+                        participant_id = dto.Participant_ID,
+                        requested = false,
+                        blocked = true,
+                        approved = false,
+                        time_stamped = TimeStamp()
+                    }));
+                } else if (dto.Blocked) {
+                    permission_record_exists_in_database.Approved = false;
+                    permission_record_exists_in_database.Requested = false;
+                    permission_record_exists_in_database.Blocked = true;
+                    permission_record_exists_in_database.Deleted = false;
+                    permission_record_exists_in_database.Updated_by = dto.End_User_ID;
+                    permission_record_exists_in_database.Updated_on = TimeStamp();
+                } else if (permission_record_exists_in_database.Deleted) {
+                    permission_record_exists_in_database.Approved = false;
+                    permission_record_exists_in_database.Requested = true;
+                    permission_record_exists_in_database.Blocked = false;
+                    permission_record_exists_in_database.Deleted = false;
+                    permission_record_exists_in_database.Updated_by = dto.End_User_ID;
+                    permission_record_exists_in_database.Updated_on = TimeStamp();
+                } else if (dto.Deleted) {
+                    permission_record_exists_in_database.Approved = false;
+                    permission_record_exists_in_database.Requested = false;
+                    permission_record_exists_in_database.Blocked = false;
+                    permission_record_exists_in_database.Updated_by = dto.End_User_ID;
+                    permission_record_exists_in_database.Updated_on = TimeStamp();
+                    permission_record_exists_in_database.Deleted = true;
+                    permission_record_exists_in_database.Deleted_on = TimeStamp();
+                    permission_record_exists_in_database.Deleted_by = dto.End_User_ID;
+                } else if (dto.Requested) {
+                    permission_record_exists_in_database.Approved = false;
+                    permission_record_exists_in_database.Requested = true;
+                    permission_record_exists_in_database.Blocked = false;
+                    permission_record_exists_in_database.Updated_by = dto.End_User_ID;
+                    permission_record_exists_in_database.Updated_on = TimeStamp();
+                } else if (dto.Approved) {
+                    permission_record_exists_in_database.Approved = true;
+                    permission_record_exists_in_database.Requested = false;
+                    permission_record_exists_in_database.Blocked = false;
+                    permission_record_exists_in_database.Updated_by = dto.End_User_ID;
+                    permission_record_exists_in_database.Updated_on = TimeStamp();
+                }
+
+                await _UsersDBC.SaveChangesAsync();
+                return await Task.FromResult(JsonSerializer.Serialize(new
+                {
+                    participant_id = dto.Participant_ID,
+                    requested = true,
+                    blocked = false,
+                    approved = false,
+                    time_stamped = TimeStamp()
+                }));
+            } catch {
+                return Task.FromResult(JsonSerializer.Serialize("Friend Request Permission Failed.")).Result;
             }
         }
         public async Task<string> Update_End_User_Avatar(Selected_Avatar dto)
@@ -4215,7 +4156,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Created_on = TimeStamp(),
                     Updated_by = dto.End_User_ID
                 });
-            } else {
+            }
+            else
+            {
                 identity_record.End_User_ID = dto.End_User_ID;
                 identity_record.First_Name = dto.First_name;
                 identity_record.Updated_on = TimeStamp();
@@ -4225,7 +4168,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             await _UsersDBC.SaveChangesAsync();
 
-            return JsonSerializer.Serialize(new {
+            return JsonSerializer.Serialize(new
+            {
                 id = dto.End_User_ID,
                 first_name = dto.First_name
             });
@@ -4468,20 +4412,26 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Deleted_by = 0,
                         Deleted_on = 0
                     });
-                } else {
+                }
+                else
+                {
                     account_roles_record.End_User_ID = dto.End_User_ID;
                     account_roles_record.Roles = dto.Roles;
                     account_roles_record.Updated_by = dto.End_User_ID;
                     account_roles_record.Updated_on = TimeStamp();
                 }
-                
-                return JsonSerializer.Serialize( new { 
-                    roles = dto.Roles 
+
+                return JsonSerializer.Serialize(new
+                {
+                    roles = dto.Roles
                 });
-            } catch {
+            }
+            catch
+            {
                 return "Server Error: Update End User Roles Failed.";
             }
         }
+
         public async Task<bool> Validate_Client_With_Server_Authorization(Report_Failed_Authorization_History dto)
         {
 

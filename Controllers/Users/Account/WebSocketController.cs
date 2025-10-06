@@ -723,7 +723,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            dto.Participant_ID = long.Parse(AES.Process_Decryption(dto.user));
+            dto.Participant_ID_Parsed = long.Parse(AES.Process_Decryption(dto.End_User_ID));
             dto.Report_type = AES.Process_Decryption(dto.Report_type);
 
             if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
@@ -768,13 +768,13 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             await Task.FromResult(Users_Repository.Create_Reported_Record(new Reported { 
                 End_User_ID = dto.JWT_id,
-                Participant_ID = dto.Participant_ID
+                Participant_ID = dto.Participant_ID_Parsed
             }).Result);
 
             return await Task.FromResult(Users_Repository.Update_Chat_Web_Socket_Permissions(new WebSocket_Chat_Permission
             {
                 End_User_ID = dto.JWT_id,
-                Participant_ID = dto.Participant_ID,
+                Participant_ID = dto.Participant_ID_Parsed,
                 Requested = 0,
                 Approved = 0,
                 Blocked = 1
