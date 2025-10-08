@@ -1821,7 +1821,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return "Server Error: Report Pending Email Registration History Failed.";
             }
         }
-        public async Task<string> Insert_Report_Failed_JWT_History(Report_Failed_JWT_History dto)
+        public async Task<string> Insert_Report_Failed_JWT_History_Record(Report_Failed_JWT_History dto)
         {
             try
             {
@@ -1875,7 +1875,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return "Server Error: Report Pending Email Registration History Failed.";
             }
         }
-        public async Task<string> Insert_Report_Failed_Client_ID_History(Report_Failed_Client_ID_History dto)
+        public async Task<string> Insert_Report_Failed_Client_ID_History_Record(Report_Failed_Client_ID_History dto)
         {
             try
             {
@@ -2854,6 +2854,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 }
 
                 await _UsersDBC.SaveChangesAsync();
+
                 return await Task.FromResult(JsonSerializer.Serialize(new
                 {
                     participant_id = dto.Participant_ID,
@@ -4475,7 +4476,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 dto.JWT_client_key != _Constants.JWT_CLIENT_KEY ||
                 dto.JWT_client_address != _Constants.JWT_CLAIM_WEBPAGE)
             {
-                await Insert_Report_Failed_JWT_History(new Report_Failed_JWT_History
+                await Insert_Report_Failed_JWT_History_Record(new Report_Failed_JWT_History
                 {
                     Remote_IP = dto.Remote_IP,
                     Remote_Port = dto.Remote_Port,
@@ -4516,7 +4517,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             if (dto.Client_id != dto.JWT_id)
             {
-                await Insert_Report_Failed_JWT_History(new Report_Failed_JWT_History
+                await Insert_Report_Failed_JWT_History_Record(new Report_Failed_JWT_History
                 {
                     Remote_IP = dto.Remote_IP,
                     Remote_Port = dto.Remote_Port,
@@ -4557,7 +4558,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             if (dto.JWT_id != 0 && !ID_Exists_In_Users_ID(dto.JWT_id).Result)
             {
-                await Insert_Report_Failed_JWT_History(new Report_Failed_JWT_History
+                await Insert_Report_Failed_JWT_History_Record(new Report_Failed_JWT_History
                 {
                     Remote_IP = dto.Remote_IP,
                     Remote_Port = dto.Remote_Port,
@@ -4598,7 +4599,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             if (dto.Client_id != 0 && !ID_Exists_In_Users_ID(dto.Client_id).Result)
             {
-                await Insert_Report_Failed_Client_ID_History(new Report_Failed_Client_ID_History
+                await Insert_Report_Failed_Client_ID_History_Record(new Report_Failed_Client_ID_History
                 {
                     Remote_IP = dto.Remote_IP,
                     Remote_Port = dto.Remote_Port,

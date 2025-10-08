@@ -112,7 +112,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             return await Task.FromResult(Users_Repository.Read_End_User_Friend_Permissions_By_ID(dto.End_User_ID_Parsed).Result);
         }
 
-        [HttpPost("Approve")]
+        [HttpPut("Approve")]
         public async Task<ActionResult<string>> Update_Friend_Approve_Permission(Friends_PermissionDTO dto)
         {
             if (!ModelState.IsValid)
@@ -366,7 +366,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             }).Result));
         }
 
-        [HttpPost("Block")]
+        [HttpPut("Block")]
         public async Task<ActionResult<string>> Update_Friend_Block_Permission(Friends_PermissionDTO dto)
         {
             if (!ModelState.IsValid)
@@ -447,7 +447,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             {
                 End_User_ID = dto.End_User_ID_Parsed,
                 Participant_ID = dto.Participant_ID_Parsed,
-                Updated_by = dto.End_User_ID_Parsed,
                 Blocked = true
             }).Result);
         }

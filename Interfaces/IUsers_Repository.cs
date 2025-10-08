@@ -64,7 +64,7 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<string> Insert_Report_Failed_Logout_History(Report_Failed_Logout_History dto);
         Task<string> Insert_Report_Failed_Unregistered_Email_Login_History_Record(Report_Failed_Unregistered_Email_Login_History dto);
         Task<string> Insert_Report_Failed_Pending_Email_Registration_History(Report_Failed_Pending_Email_Registration_History dto);
-        Task<string> Insert_Report_Failed_JWT_History(Report_Failed_JWT_History dto);
+        Task<string> Insert_Report_Failed_JWT_History_Record(Report_Failed_JWT_History dto);
         Task<string> Insert_Report_Failed_User_Agent_History(Report_Failed_User_Agent_History dto);
         Task<string> Update_Pending_Email_Registration_Record(Pending_Email_Registration dto);
         Task<string> Update_End_User_Avatar(Selected_Avatar dto);
@@ -110,7 +110,7 @@ namespace mpc_dotnetc_user_server.Interfaces
         Task<string> Update_End_User_Button_Background_Color(Selected_App_Custom_Design dto);
         Task<string> Delete_End_User_Selected_App_Custom_Design(Selected_App_Custom_Design dto);
         Task<bool> Validate_Client_With_Server_Authorization(Report_Failed_Authorization_History dto);
-        Task<string> Insert_Report_Failed_Client_ID_History(Report_Failed_Client_ID_History dto);
+        Task<string> Insert_Report_Failed_Client_ID_History_Record(Report_Failed_Client_ID_History dto);
         Task Create_WebSocket_Permission_Record(WebSocket_Chat_Permission dto);
         Task<bool> Email_Exists_In_Pending_Email_Registration(string email_address);
         Task<bool> Email_Exists_In_Login_Email_Address(string email_address);
