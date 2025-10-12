@@ -78,9 +78,9 @@ namespace mpc_dotnetc_user_server.Models.Users.WebSocket_Chat
         public long Deleted_by { get; set; }
         public string User { get; set; } = string.Empty;
         public long Participant_ID { get; set; }
-        public byte Approved { get; set; }
-        public byte Requested { get; set; }
-        public byte Blocked { get; set; }
+        public bool Approved { get; set; }
+        public bool Requested { get; set; }
+        public bool Blocked { get; set; }
         public string Client_user_agent { get; set; } = string.Empty;
         public string Server_user_agent { get; set; } = string.Empty;
         public string Client_time { get; set; } = string.Empty;
@@ -89,7 +89,7 @@ namespace mpc_dotnetc_user_server.Models.Users.WebSocket_Chat
         public int Remote_Port { get; set; }
         public string Server_IP { get; set; } = string.Empty;
         public int Server_Port { get; set; }
-        public string Reason { get; set; } = string.Empty;
+        public string Report_reason { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;
         public string Controller { get; set; } = string.Empty;
 

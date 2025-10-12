@@ -683,9 +683,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     Updated_on = TimeStamp(),
                     Created_on = TimeStamp(),
                     Updated_by = 0,
-                    Requested = 1,
-                    Approved = 0,
-                    Blocked = 0
+                    Requested = true,
+                    Approved = false,
+                    Blocked = false
                 });
 
                 await _UsersDBC.SaveChangesAsync();
@@ -749,7 +749,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Page_Description = _UsersDBC.Profile_PageTbl.Where(x => x.End_User_ID == dto.Reported_ID).Select(x => x.Page_Description).SingleOrDefault(),
                 About_Me = _UsersDBC.Profile_PageTbl.Where(x => x.End_User_ID == dto.Reported_ID).Select(x => x.About_Me).SingleOrDefault(),
                 Banner_URL = _UsersDBC.Profile_PageTbl.Where(x => x.End_User_ID == dto.Reported_ID).Select(x => x.Banner_URL).SingleOrDefault(),
-                Reported_Reason = dto.Reported_Reason,
+                Reported_Reason = dto.Reported_reason,
                 Updated_on = TimeStamp(),
                 Created_on = TimeStamp(),
                 Updated_by = dto.End_User_ID
@@ -780,9 +780,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 Updated_on = TimeStamp(),
                 Created_on = TimeStamp(),
                 Updated_by = dto.End_User_ID,
-                Requested = 1,
-                Blocked = 0,
-                Approved = 0
+                Requested = true,
+                Blocked = false,
+                Approved = false
             });
             await _UsersDBC.SaveChangesAsync();
         }
@@ -2485,18 +2485,18 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         }
         public async Task<string> Read_WebSocket_Permission_Record_For_Both_End_Users(WebSocket_Chat_Permission dto)
         {
-            byte requested = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Requested).SingleOrDefault();
-            byte approved = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Approved).SingleOrDefault();
-            byte blocked = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Blocked).SingleOrDefault();
+            bool requested = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Requested).SingleOrDefault();
+            bool approved = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Approved).SingleOrDefault();
+            bool blocked = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Blocked).SingleOrDefault();
             bool deleted = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).Select(x => x.Deleted).SingleOrDefault();
 
-            byte requested_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Requested).SingleOrDefault();
-            byte approved_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Approved).SingleOrDefault();
-            byte blocked_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Blocked).SingleOrDefault();
+            bool requested_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Requested).SingleOrDefault();
+            bool approved_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Approved).SingleOrDefault();
+            bool blocked_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Blocked).SingleOrDefault();
             bool deleted_swap_ids = _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).Select(x => x.Deleted).SingleOrDefault();
 
 
-            if (requested == 1 || requested_swap_ids == 1)
+            if (requested == true || requested_swap_ids == true)
             {
                 return JsonSerializer.Serialize(new
                 {
@@ -2506,27 +2506,27 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 });
             }
 
-            if (approved == 1 || approved_swap_ids == 1)
+            if (approved == true || approved_swap_ids == true)
             {
                 return JsonSerializer.Serialize(new
                 {
                     requested = 0,
                     blocked = 0,
-                    approved = 1,
+                    approved = true,
                 });
             }
 
-            if (blocked == 1 || blocked_swap_ids == 1)
+            if (blocked == true || blocked_swap_ids == true)
             {
                 return JsonSerializer.Serialize(new
                 {
                     requested = 0,
-                    blocked = 1,
+                    blocked = true,
                     approved = 0,
                 });
             }
 
-            if (requested == 0 && approved == 0 && blocked == 0 && requested_swap_ids == 0 && approved_swap_ids == 0 && blocked_swap_ids == 0 && deleted == false && deleted_swap_ids == false)
+            if (requested == false && approved == false && blocked == false && requested_swap_ids == false && approved_swap_ids == false && blocked_swap_ids == false && deleted == false && deleted_swap_ids == false)
             {
                 await Create_WebSocket_Permission_Record(dto);
                 return JsonSerializer.Serialize(new
@@ -2537,15 +2537,15 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 });
             }
 
-            if (requested == 0 && approved == 0 && blocked == 0 && requested_swap_ids == 0 && approved_swap_ids == 0 && blocked_swap_ids == 0 && (deleted == true || deleted_swap_ids == true))
+            if (requested == false && approved == false && blocked == false && requested_swap_ids == false && approved_swap_ids == false && blocked_swap_ids == false && (deleted == true || deleted_swap_ids == true))
             {
                 await Update_Chat_Web_Socket_Permissions(new WebSocket_Chat_Permission
                 {
                     End_User_ID = dto.End_User_ID,
                     Participant_ID = dto.Participant_ID,
-                    Requested = 1,
-                    Blocked = 0,
-                    Approved = 0
+                    Requested = true,
+                    Blocked = false,
+                    Approved = false
                 });
                 return JsonSerializer.Serialize(new
                 {
@@ -2571,7 +2571,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             else
             {
                 return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Requested == 1)
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Requested == true)
                     .ToList()));
             }
         }
@@ -2584,7 +2584,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             else
             {
                 return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Blocked == 1)
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Blocked == true)
                     .ToList()));
             }
         }
@@ -2597,7 +2597,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             else
             {
                 return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Approved == 1)
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == user_id && x.Approved == true)
                     .ToList()));
             }
         }
@@ -2610,7 +2610,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             else
             {
                 return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == 1)
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Requested == true)
                     .ToList()));
             }
         }
@@ -2636,7 +2636,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             else
             {
                 return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Blocked == 1)
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Blocked == true)
                     .ToList()));
             }
         }
@@ -2649,7 +2649,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             else
             {
                 return await Task.FromResult(JsonSerializer.Serialize(
-                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Approved == 1)
+                    _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.Participant_ID == user_id && x.Approved == true)
                     .ToList()));
             }
         }
@@ -2663,7 +2663,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         request = friend_permission.Requested,
                         block = friend_permission.Blocked,
                         approve = friend_permission.Approved,
-                        time_stamp = friend_permission.Created_on
+                        record_updated_by = friend_permission.Updated_by,
+                        record_updated_on = friend_permission.Updated_on,
+                        record_created_on = friend_permission.Created_on,
+                        record_created_by = friend_permission.Created_by,
+                        time_stamp = TimeStamp()
                     }
                 );
 
@@ -2674,7 +2678,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         request = friend_permission.Requested,
                         block = friend_permission.Blocked,
                         approve = friend_permission.Approved,
-                        time_stamp = friend_permission.Created_on
+                        record_updated_by = friend_permission.Updated_by,
+                        record_updated_on = friend_permission.Updated_on,
+                        record_created_on = friend_permission.Created_on,
+                        record_created_by = friend_permission.Created_by,
+                        time_stamp = TimeStamp()
                     }
                 );
 
@@ -2858,9 +2866,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return await Task.FromResult(JsonSerializer.Serialize(new
                 {
                     participant_id = dto.Participant_ID,
-                    requested = true,
-                    blocked = false,
-                    approved = false,
+                    requested = dto.Requested,
+                    blocked = dto.Blocked,
+                    approved = dto.Approved,
                     time_stamped = TimeStamp()
                 }));
             } catch {

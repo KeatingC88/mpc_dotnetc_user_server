@@ -23,7 +23,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Feedback
         public string? Page_Description { get; set; } = string.Empty;
         public string? About_Me { get; set; } = string.Empty;
         public string? Banner_URL { get; set; } = string.Empty;
-        public string Reported_Reason { get; set; } = string.Empty;
+        public string Reported_reason { get; set; } = string.Empty;
         public long? Report_Chat_TS { get; set; }
     }
 }

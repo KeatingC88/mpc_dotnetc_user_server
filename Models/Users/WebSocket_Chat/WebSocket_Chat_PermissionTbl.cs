@@ -13,11 +13,11 @@ namespace mpc_dotnetc_user_server.Models.Users.WebSocket_Chat
         [Required]
         public long Participant_ID { get; set; }
         [Required]
-        public byte Approved { get; set; }
+        public bool Approved { get; set; }
         [Required]
-        public byte Requested { get; set; }
+        public bool Requested { get; set; }
         [Required]
-        public byte Blocked { get; set; }
+        public bool Blocked { get; set; }
         [Required]
         public long Updated_on { get; set; }
         [Required]

@@ -21,8 +21,10 @@ namespace mpc_dotnetc_user_server.Models.Users.Friends
         public long Deleted_by { get; set; }
         public bool Deleted { get; set; }
         public long Created_by { get; set; }
-        public bool Approved { get; set; }
-        public bool Requested { get; set; }
-        public bool Blocked { get; set; }
+        public bool Approved { get; set; } = false;
+        public bool Requested { get; set; } = false;
+        public bool Blocked { get; set; } = false;
+        public string Report_reason { get; set; } = string.Empty;
+
     }
 }
