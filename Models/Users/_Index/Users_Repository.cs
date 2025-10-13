@@ -771,21 +771,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Code == Code));
         }
-        public async Task Create_WebSocket_Permission_Record(WebSocket_Chat_Permission dto)
-        {
-            await _UsersDBC.WebSocket_Chat_PermissionTbl.AddAsync(new WebSocket_Chat_PermissionTbl
-            {
-                End_User_ID = dto.End_User_ID,
-                Participant_ID = dto.Participant_ID,
-                Updated_on = TimeStamp(),
-                Created_on = TimeStamp(),
-                Updated_by = dto.End_User_ID,
-                Requested = true,
-                Blocked = false,
-                Approved = false
-            });
-            await _UsersDBC.SaveChangesAsync();
-        }
         public async Task<string> Delete_Account_By_User_id(Delete_User dto)
         {
             await _UsersDBC.User_IDsTbl.Where(x => x.ID == long.Parse(dto.Target_User)).ExecuteUpdateAsync(s => s
@@ -976,134 +961,11 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             {
                 switch (dto.Report_type.ToUpper())
                 {
-                    case "THREAT":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Threat = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
-
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Threat = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long threat_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Threat).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Threat, (threat_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            threat_record_created_on = TimeStamp(),
-                        });
-                    case "SPAM":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Spam = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
-
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Spam = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long spam_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Spam).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Spam, (spam_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            spam_record_created_on = TimeStamp(),
-                        });
-                    case "BLOCK":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Block = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
-
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Block = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long block_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Block).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Block, (block_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            block_record_created_on = TimeStamp(),
-                        });
                     case "ABUSE":
                         await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
                             Updated_on = TimeStamp(),
                             Updated_by = dto.End_User_ID,
                             Abuse = 1,
@@ -1111,368 +973,63 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
+                        var reported_abuse_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_abuse_record_exists_in_database == null)
                         {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
                             {
                                 End_User_ID = dto.Participant_ID,
-                                Abuse = 1,
                                 Updated_on = TimeStamp(),
                                 Created_on = TimeStamp(),
                                 Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
+                                Created_by = dto.End_User_ID,
+                                Abuse = 1
+                            };
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
                         }
                         else
                         {
-                            long abuse_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Abuse).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Abuse, (abuse_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
+                            reported_abuse_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_abuse_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_abuse_record_exists_in_database.Abuse = reported_abuse_record_exists_in_database.Abuse + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_abuse_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
                         }
 
                         await _UsersDBC.SaveChangesAsync();
+
                         return JsonSerializer.Serialize(new
                         {
                             id = dto.End_User_ID,
                             reported = dto.Participant_ID,
                             abuse_record_created_on = TimeStamp(),
                         });
-                    case "MISINFORM":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Misinform = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
 
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Misinform = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long misinform_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Misinform).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Misinform, (misinform_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            misinform_record_created_on = TimeStamp(),
-                        });
-                    case "HARASS":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Harass = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
-
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Harass = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long harass_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Harass).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Harass, (harass_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            harass_record_created_on = TimeStamp(),
-                        });
-                    case "FAKE":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Fake = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
-
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Fake = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long fake_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Fake).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Fake, (fake_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            fake_account_record_created_on = TimeStamp(),
-                        });
-                    case "HATE":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Hate = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
-
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Hate = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long hate_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Nudity).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Hate, (hate_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            hate_record_created_on = TimeStamp(),
-                        });
-                    case "NUDITY":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Nudity = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
-
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Nudity = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long nudity_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Nudity).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Nudity, (nudity_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            nudity_record_created_on = TimeStamp(),
-                        });
-                    case "VIOLENCE":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Violence = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
-
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Violence = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long violence_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Violence).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Violence, (violence_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            violence_record_created_on = TimeStamp(),
-                        });
-                    case "ILLEGAL":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Illegal = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
-
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Illegal = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long illegal_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Illegal).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Illegal, (illegal_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            illegal_record_created_on = TimeStamp(),
-                        });
-                    case "SELF_HARM":
-                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
-                        {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
-                            Updated_on = TimeStamp(),
-                            Updated_by = dto.End_User_ID,
-                            Self_harm = 1,
-                            Created_on = TimeStamp(),
-                            Created_by = dto.End_User_ID,
-                        });
-
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
-                        {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
-                            {
-                                End_User_ID = dto.Participant_ID,
-                                Self_harm = 1,
-                                Updated_on = TimeStamp(),
-                                Created_on = TimeStamp(),
-                                Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
-                        }
-                        else
-                        {
-                            long self_harm_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Self_harm).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Self_harm, (self_harm_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
-                        }
-
-                        await _UsersDBC.SaveChangesAsync();
-                        return JsonSerializer.Serialize(new
-                        {
-                            id = dto.End_User_ID,
-                            reported = dto.Participant_ID,
-                            self_harm_record_created_on = TimeStamp(),
-                        });
                     case "DISRUPTION":
                         await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
                         {
-                            End_User_ID = dto.Participant_ID,
-                            Participant_ID = dto.End_User_ID,
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
                             Updated_on = TimeStamp(),
                             Updated_by = dto.End_User_ID,
                             Disruption = 1,
@@ -1480,35 +1037,636 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                             Created_by = dto.End_User_ID,
                         });
 
-                        if (!_UsersDBC.ReportedTbl.Any(x => x.End_User_ID == dto.Participant_ID))
+                        var reported_disruption_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_disruption_record_exists_in_database == null)
                         {
-                            await _UsersDBC.ReportedTbl.AddAsync(new ReportedTbl
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
                             {
                                 End_User_ID = dto.Participant_ID,
-                                Disruption = 1,
                                 Updated_on = TimeStamp(),
                                 Created_on = TimeStamp(),
                                 Updated_by = dto.End_User_ID,
-                                Created_by = dto.End_User_ID
-                            });
+                                Created_by = dto.End_User_ID,
+                                Disruption = 1
+                            };
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
                         }
                         else
                         {
-                            long disruption_count = _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).Select(x => x.Disruption).SingleOrDefault();
-                            await _UsersDBC.ReportedTbl.Where(x => x.End_User_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                                .SetProperty(col => col.Disruption, (disruption_count + 1))
-                                .SetProperty(col => col.Updated_on, TimeStamp())
-                                .SetProperty(col => col.Updated_by, dto.End_User_ID)
-                            );
+                            reported_disruption_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_disruption_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_disruption_record_exists_in_database.Disruption = reported_disruption_record_exists_in_database.Disruption + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_disruption_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
                         }
 
                         await _UsersDBC.SaveChangesAsync();
+
                         return JsonSerializer.Serialize(new
                         {
                             id = dto.End_User_ID,
                             reported = dto.Participant_ID,
                             disruption_record_created_on = TimeStamp(),
                         });
+
+                    case "SELF_HARM":
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
+                        {
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = TimeStamp(),
+                            Updated_by = dto.End_User_ID,
+                            Self_harm = 1,
+                            Created_on = TimeStamp(),
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        var reported_self_harm_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_self_harm_record_exists_in_database == null)
+                        {
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
+                            {
+                                End_User_ID = dto.Participant_ID,
+                                Updated_on = TimeStamp(),
+                                Created_on = TimeStamp(),
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID,
+                                Self_harm = 1
+                            };
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+                        else
+                        {
+                            reported_self_harm_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_self_harm_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_self_harm_record_exists_in_database.Self_harm = reported_self_harm_record_exists_in_database.Self_harm + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_self_harm_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+
+                        return JsonSerializer.Serialize(new
+                        {
+                            id = dto.End_User_ID,
+                            reported = dto.Participant_ID,
+                            self_harm_record_created_on = TimeStamp(),
+                        });
+
+                    case "SPAM":
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
+                        {
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = TimeStamp(),
+                            Updated_by = dto.End_User_ID,
+                            Spam = 1,
+                            Created_on = TimeStamp(),
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        var reported_spam_harm_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_spam_harm_record_exists_in_database == null)
+                        {
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
+                            {
+                                End_User_ID = dto.Participant_ID,
+                                Updated_on = TimeStamp(),
+                                Created_on = TimeStamp(),
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID,
+                                Spam = 1
+                            };
+
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+
+                        } else {
+
+                            reported_spam_harm_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_spam_harm_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_spam_harm_record_exists_in_database.Self_harm = reported_spam_harm_record_exists_in_database.Self_harm + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_spam_harm_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+
+                        return JsonSerializer.Serialize(new
+                        {
+                            id = dto.End_User_ID,
+                            reported = dto.Participant_ID,
+                            spam_record_created_on = TimeStamp(),
+                        });
+
+                    case "ILLEGAL":
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
+                        {
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = TimeStamp(),
+                            Updated_by = dto.End_User_ID,
+                            Illegal = 1,
+                            Created_on = TimeStamp(),
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        var reported_illegal_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_illegal_record_exists_in_database == null)
+                        {
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
+                            {
+                                End_User_ID = dto.Participant_ID,
+                                Updated_on = TimeStamp(),
+                                Created_on = TimeStamp(),
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID,
+                                Illegal = 1
+                            };
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+                        else
+                        {
+                            reported_illegal_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_illegal_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_illegal_record_exists_in_database.Illegal = reported_illegal_record_exists_in_database.Illegal + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_illegal_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+
+                        return JsonSerializer.Serialize(new
+                        {
+                            id = dto.End_User_ID,
+                            reported = dto.Participant_ID,
+                            illegal_record_created_on = TimeStamp(),
+                        });
+
+                    case "HARASS":
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
+                        {
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = TimeStamp(),
+                            Updated_by = dto.End_User_ID,
+                            Harass = 1,
+                            Created_on = TimeStamp(),
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        var reported_harass_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_harass_record_exists_in_database == null)
+                        {
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
+                            {
+                                End_User_ID = dto.Participant_ID,
+                                Updated_on = TimeStamp(),
+                                Created_on = TimeStamp(),
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID,
+                                Harass = 1
+                            };
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+                        else
+                        {
+                            reported_harass_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_harass_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_harass_record_exists_in_database.Harass = reported_harass_record_exists_in_database.Harass + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_harass_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+
+                        return JsonSerializer.Serialize(new
+                        {
+                            id = dto.End_User_ID,
+                            reported = dto.Participant_ID,
+                            harass_record_created_on = TimeStamp(),
+                        });
+
+                    case "MISINFORM":
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
+                        {
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = TimeStamp(),
+                            Updated_by = dto.End_User_ID,
+                            Misinform = 1,
+                            Created_on = TimeStamp(),
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        var reported_misinform_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_misinform_record_exists_in_database == null)
+                        {
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
+                            {
+                                End_User_ID = dto.Participant_ID,
+                                Updated_on = TimeStamp(),
+                                Created_on = TimeStamp(),
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID,
+                                Misinform = 1
+                            };
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+                        else
+                        {
+                            reported_misinform_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_misinform_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_misinform_record_exists_in_database.Misinform = reported_misinform_record_exists_in_database.Misinform + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_misinform_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+
+                        return JsonSerializer.Serialize(new
+                        {
+                            id = dto.End_User_ID,
+                            reported = dto.Participant_ID,
+                            misinform_record_created_on = TimeStamp(),
+                        });
+
+                    case "NUDITY":
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
+                        {
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = TimeStamp(),
+                            Updated_by = dto.End_User_ID,
+                            Nudity = 1,
+                            Created_on = TimeStamp(),
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        var reported_nudity_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_nudity_record_exists_in_database == null)
+                        {
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
+                            {
+                                End_User_ID = dto.Participant_ID,
+                                Updated_on = TimeStamp(),
+                                Created_on = TimeStamp(),
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID,
+                                Nudity = 1
+                            };
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+                        else
+                        {
+                            reported_nudity_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_nudity_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_nudity_record_exists_in_database.Nudity = reported_nudity_record_exists_in_database.Nudity + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_nudity_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+
+                        return JsonSerializer.Serialize(new
+                        {
+                            id = dto.End_User_ID,
+                            reported = dto.Participant_ID,
+                            nudity_record_created_on = TimeStamp(),
+                        });
+
+                    case "FAKE":
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
+                        {
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = TimeStamp(),
+                            Updated_by = dto.End_User_ID,
+                            Fake = 1,
+                            Created_on = TimeStamp(),
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        var reported_fake_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_fake_record_exists_in_database == null)
+                        {
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
+                            {
+                                End_User_ID = dto.Participant_ID,
+                                Updated_on = TimeStamp(),
+                                Created_on = TimeStamp(),
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID,
+                                Fake = 1
+                            };
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+                        else
+                        {
+                            reported_fake_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_fake_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_fake_record_exists_in_database.Fake = reported_fake_record_exists_in_database.Fake + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_fake_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+
+                        return JsonSerializer.Serialize(new
+                        {
+                            id = dto.End_User_ID,
+                            reported = dto.Participant_ID,
+                            fake_record_created_on = TimeStamp(),
+                        });
+
+                    case "HATE_SPEECH":
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
+                        {
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = TimeStamp(),
+                            Updated_by = dto.End_User_ID,
+                            Hate = 1,
+                            Created_on = TimeStamp(),
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        var reported_hate_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_hate_record_exists_in_database == null)
+                        {
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
+                            {
+                                End_User_ID = dto.Participant_ID,
+                                Updated_on = TimeStamp(),
+                                Created_on = TimeStamp(),
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID,
+                                Hate = 1
+                            };
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+                        else
+                        {
+                            reported_hate_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_hate_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_hate_record_exists_in_database.Hate = reported_hate_record_exists_in_database.Hate + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_hate_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+
+                        return JsonSerializer.Serialize(new
+                        {
+                            id = dto.End_User_ID,
+                            reported = dto.Participant_ID,
+                            hate_record_created_on = TimeStamp(),
+                        });
+
+                    case "VIOLENCE":
+                        await _UsersDBC.Reported_HistoryTbl.AddAsync(new Reported_HistoryTbl
+                        {
+                            End_User_ID = dto.End_User_ID,
+                            Participant_ID = dto.Participant_ID,
+                            Updated_on = TimeStamp(),
+                            Updated_by = dto.End_User_ID,
+                            Violence = 1,
+                            Created_on = TimeStamp(),
+                            Created_by = dto.End_User_ID,
+                        });
+
+                        var reported_violence_record_exists_in_database = await _UsersDBC.ReportedTbl
+                            .Where(x => x.End_User_ID == dto.Participant_ID)
+                            .FirstOrDefaultAsync();
+
+                        if (reported_violence_record_exists_in_database == null)
+                        {
+                            ReportedTbl ReportedTbl_Record = new ReportedTbl
+                            {
+                                End_User_ID = dto.Participant_ID,
+                                Updated_on = TimeStamp(),
+                                Created_on = TimeStamp(),
+                                Updated_by = dto.End_User_ID,
+                                Created_by = dto.End_User_ID,
+                                Violence = 1
+                            };
+                            await _UsersDBC.ReportedTbl.AddAsync(ReportedTbl_Record);
+                            await _UsersDBC.SaveChangesAsync();
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = ReportedTbl_Record.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+                        else
+                        {
+                            reported_violence_record_exists_in_database.Updated_by = dto.End_User_ID;
+                            reported_violence_record_exists_in_database.Updated_on = TimeStamp();
+                            reported_violence_record_exists_in_database.Violence = reported_violence_record_exists_in_database.Violence + 1;
+
+                            if (!string.IsNullOrWhiteSpace(dto.Report_reason))
+                            {
+                                await _UsersDBC.Reported_ReasonTbl.AddAsync(new Reported_ReasonTbl
+                                {
+                                    Reported_ID = reported_violence_record_exists_in_database.ID,
+                                    Reason = dto.Report_reason
+                                });
+                            }
+                        }
+
+                        await _UsersDBC.SaveChangesAsync();
+
+                        return JsonSerializer.Serialize(new
+                        {
+                            id = dto.End_User_ID,
+                            reported = dto.Participant_ID,
+                            violence_record_created_on = TimeStamp(),
+                        });
+
                     default:
                         return "Server Error: Report Record Selection Failed.";
                 }
@@ -2212,7 +2370,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     on end_user.ID equals twitch_email_address_table.End_User_ID into resulting_twitch_email_address_table
                 from twitch_email_address_table in resulting_twitch_email_address_table.DefaultIfEmpty()
 
-
                 join logout_table in _UsersDBC.Logout_Time_StampTbl
                     on end_user.ID equals logout_table.End_User_ID into resulting_logout_table
                 from logout_table in resulting_logout_table.DefaultIfEmpty()
@@ -2334,7 +2491,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                     user.center_text_alignment ? (byte)1 :
                     user.right_text_alignment ? (byte)2 : (byte)0,
                 
-                gender = user.gender ?? 2,
+                gender = user.gender ?? (byte)2,
                 birth_day = user.birth_day ?? 0,
                 birth_month = user.birth_month ?? 0,
                 birth_year = user.birth_year ?? 0,
@@ -2528,7 +2685,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
             if (requested == false && approved == false && blocked == false && requested_swap_ids == false && approved_swap_ids == false && blocked_swap_ids == false && deleted == false && deleted_swap_ids == false)
             {
-                await Create_WebSocket_Permission_Record(dto);
+                await Update_Chat_Web_Socket_Permissions(dto);
                 return JsonSerializer.Serialize(new
                 {
                     requested = 1,
@@ -2722,48 +2879,42 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         {
             try
             {
-                if (_UsersDBC.WebSocket_Chat_PermissionTbl.Any((x) => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID))
+                var websocket_permission_record_exists_in_database = await _UsersDBC.WebSocket_Chat_PermissionTbl
+                    .Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID || x.Participant_ID == dto.End_User_ID && x.End_User_ID == x.Participant_ID)
+                    .FirstOrDefaultAsync();
+
+                if (websocket_permission_record_exists_in_database == null)
                 {
-                    await _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.End_User_ID && x.Participant_ID == dto.Participant_ID).ExecuteUpdateAsync(s => s
-                            .SetProperty(dto => dto.Requested, dto.Requested)
-                            .SetProperty(dto => dto.Blocked, dto.Blocked)
-                            .SetProperty(dto => dto.Approved, dto.Approved)
-                            .SetProperty(dto => dto.Updated_on, TimeStamp())
-                            .SetProperty(dto => dto.Deleted, false)
-                            .SetProperty(dto => dto.Updated_by, dto.Participant_ID)
-                        );
-                    await _UsersDBC.SaveChangesAsync();
-                    return JsonSerializer.Serialize(new
+                    await _UsersDBC.WebSocket_Chat_PermissionTbl.AddAsync(new WebSocket_Chat_PermissionTbl
                     {
-                        id = dto.End_User_ID,
-                        participant_id = dto.Participant_ID,
-                        updated_on = TimeStamp(),
-                        updated_by = dto.Participant_ID
+                        End_User_ID = dto.End_User_ID,
+                        Participant_ID = dto.Participant_ID,
+                        Updated_on = TimeStamp(),
+                        Created_on = TimeStamp(),
+                        Updated_by = dto.End_User_ID,
+                        Requested = dto.Requested,
+                        Blocked = dto.Blocked,
+                        Approved = dto.Approved
                     });
+                } else {
+                    websocket_permission_record_exists_in_database.Updated_by = dto.End_User_ID;
+                    websocket_permission_record_exists_in_database.Updated_on = TimeStamp();
+                    websocket_permission_record_exists_in_database.Deleted = false;
+                    websocket_permission_record_exists_in_database.Blocked = dto.Blocked;
+                    websocket_permission_record_exists_in_database.Approved = dto.Approved;
+                    websocket_permission_record_exists_in_database.Requested = dto.Requested;
                 }
-                else if (_UsersDBC.WebSocket_Chat_PermissionTbl.Any((x) => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID))
+
+                await _UsersDBC.SaveChangesAsync();
+
+                return JsonSerializer.Serialize(new
                 {
-                    await _UsersDBC.WebSocket_Chat_PermissionTbl.Where(x => x.End_User_ID == dto.Participant_ID && x.Participant_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
-                            .SetProperty(dto => dto.Requested, dto.Requested)
-                            .SetProperty(dto => dto.Blocked, dto.Blocked)
-                            .SetProperty(dto => dto.Approved, dto.Approved)
-                            .SetProperty(dto => dto.Updated_on, TimeStamp())
-                            .SetProperty(dto => dto.Deleted, false)
-                            .SetProperty(dto => dto.Updated_by, dto.End_User_ID)
-                        );
-                    await _UsersDBC.SaveChangesAsync();
-                    return JsonSerializer.Serialize(new
-                    {
-                        id = dto.End_User_ID,
-                        participant_id = dto.Participant_ID,
-                        updated_on = TimeStamp(),
-                        updated_by = dto.End_User_ID
-                    });
-                }
-                return "Server Error: Update Chat Permission Selection Failed.";
-            }
-            catch
-            {
+                    id = dto.End_User_ID,
+                    participant_id = dto.Participant_ID,
+                    updated_on = TimeStamp(),
+                    updated_by = dto.End_User_ID
+                });
+            } catch {
                 return "Server Error: Update Chat Permissions Failed.";
             }
         }
@@ -2811,9 +2962,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Created_on = TimeStamp(),
                         Updated_by = dto.End_User_ID,
                         Created_by = dto.End_User_ID,
-                        Requested = true,
-                        Blocked = false,
-                        Approved = false
+                        Requested = dto.Requested,
+                        Blocked = dto.Blocked,
+                        Approved = dto.Approved
                     });
                 } else if (permission_record_exists_in_database.Blocked) {
                     return await Task.FromResult(JsonSerializer.Serialize(new

@@ -429,11 +429,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            dto.Participant_ID_Parsed = long.Parse(AES.Process_Decryption(dto.End_User_ID));
+            dto.Participant_ID_Parsed = long.Parse(AES.Process_Decryption(dto.Participant_ID));
             dto.Report_type = AES.Process_Decryption(dto.Report_type);
             dto.Report_reason = AES.Process_Decryption(dto.Report_reason);
 
-            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+           if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -473,15 +473,16 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             await Task.FromResult(Users_Repository.Create_Reported_Record(new Reported
             {
-                End_User_ID = dto.JWT_id,
-                Participant_ID = dto.Participant_ID_Parsed
+                End_User_ID = dto.End_User_ID_Parsed,
+                Participant_ID = dto.Participant_ID_Parsed,
+                Report_type = dto.Report_type,
+                Report_reason = dto.Report_reason,
             }).Result);
 
             await Task.FromResult(Users_Repository.Update_Chat_Web_Socket_Permissions(new WebSocket_Chat_Permission
             {
-                End_User_ID = dto.JWT_id,
+                End_User_ID = dto.End_User_ID_Parsed,
                 Participant_ID = dto.Participant_ID_Parsed,
-                Report_reason = dto.Report_reason,
                 Requested = false,
                 Approved = false,
                 Blocked = true
@@ -491,18 +492,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             {
                 End_User_ID = dto.End_User_ID_Parsed,
                 Participant_ID = dto.Participant_ID_Parsed,
-                Report_reason = dto.Report_reason,
                 Requested = false,
                 Approved = false,
                 Blocked = true
             }).Result);
-
-            await Task.FromResult(Users_Repository.Create_Reported_User_Profile_Record(new Reported_Profile
-            {
-                End_User_ID = dto.End_User_ID_Parsed,
-                Reported_ID = dto.Participant_ID_Parsed,
-                Reported_reason = dto.Report_reason,
-            })).Result;
 
             return @$"Reported {dto.Participant_ID}";
         }

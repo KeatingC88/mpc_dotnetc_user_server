@@ -12,5 +12,8 @@ namespace mpc_dotnetc_user_server.Models.Users.Report
 
         [Required]
         public string Report_type { get; set; } = string.Empty;
+
+        [Required]
+        public string Report_reason { get; set; } = string.Empty;
     }
 }

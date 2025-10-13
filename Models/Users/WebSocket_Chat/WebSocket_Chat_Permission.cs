@@ -89,7 +89,6 @@ namespace mpc_dotnetc_user_server.Models.Users.WebSocket_Chat
         public int Remote_Port { get; set; }
         public string Server_IP { get; set; } = string.Empty;
         public int Server_Port { get; set; }
-        public string Report_reason { get; set; } = string.Empty;
         public string Action { get; set; } = string.Empty;
         public string Controller { get; set; } = string.Empty;
 

@@ -70,6 +70,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Reported_ProfileTbl> Reported_ProfileTbl { get; set; } = null!;
         public DbSet<Reported_Website_BugTbl> Reported_Website_BugTbl { get; set; } = null!;
         public DbSet<ReportedTbl> ReportedTbl { get; set; } = null!;
+        public DbSet<Reported_ReasonTbl> Reported_ReasonTbl { get; set; } = null!;
         public DbSet<Reported_HistoryTbl> Reported_HistoryTbl { get; set; } = null!;
         public DbSet<WebSocket_Chat_PermissionTbl> WebSocket_Chat_PermissionTbl { get; set; } = null!;
         public DbSet<Friends_PermissionTbl> Friends_PermissionTbl { get; set; } = null!;
