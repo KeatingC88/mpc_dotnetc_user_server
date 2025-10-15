@@ -497,7 +497,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 Blocked = true
             }).Result);
 
-            return @$"Reported {dto.Participant_ID}";
+            return AES.Process_Encryption(@$"Reported {dto.Participant_ID}");
         }
 
         [HttpPost("Website_Bug")]

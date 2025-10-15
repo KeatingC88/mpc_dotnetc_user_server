@@ -2966,6 +2966,13 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                         Blocked = dto.Blocked,
                         Approved = dto.Approved
                     });
+                } else if (dto.Unblock) {
+                    permission_record_exists_in_database.Approved = false;
+                    permission_record_exists_in_database.Requested = false;
+                    permission_record_exists_in_database.Blocked = false;
+                    permission_record_exists_in_database.Deleted = false;
+                    permission_record_exists_in_database.Updated_by = dto.End_User_ID;
+                    permission_record_exists_in_database.Updated_on = TimeStamp();
                 } else if (permission_record_exists_in_database.Blocked) {
                     return await Task.FromResult(JsonSerializer.Serialize(new
                     {
@@ -3016,6 +3023,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
 
                 return await Task.FromResult(JsonSerializer.Serialize(new
                 {
+                    end_user_id = dto.End_User_ID,
                     participant_id = dto.Participant_ID,
                     requested = dto.Requested,
                     blocked = dto.Blocked,

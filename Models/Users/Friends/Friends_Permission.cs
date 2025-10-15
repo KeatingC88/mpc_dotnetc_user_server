@@ -24,6 +24,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Friends
         public bool Approved { get; set; } = false;
         public bool Requested { get; set; } = false;
         public bool Blocked { get; set; } = false;
+        public bool Unblock { get; set; } = false;
 
     }
 }
