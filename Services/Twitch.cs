@@ -34,7 +34,6 @@ namespace mpc_dotnetc_user_server.Services
             var token_response = JsonSerializer.Deserialize<Twitch_Token_Response>(json);
             return token_response.AccessToken ?? string.Empty;
         }
-
         public async Task<string?> Authorization_Code_Flow_Access_Token(string code)
         {
             using HttpClient http_client = new HttpClient();
@@ -59,7 +58,6 @@ namespace mpc_dotnetc_user_server.Services
 
             return await Task.FromResult(token_response.AccessToken);
         }
-
         public async Task<Twitch_User_Response?> Get_User_Data(string twitch_access_token)
         {
             HttpClient http_client = new HttpClient();

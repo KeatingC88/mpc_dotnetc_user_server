@@ -168,11 +168,11 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 long user_id = Users_Repository.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
 
                 byte[]? user_password_hash_in_the_database = Users_Repository.Read_User_Password_Hash_By_ID(user_id).Result;
-                byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result;
+                byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = Password.Create_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}"));
 
                 if (user_password_hash_in_the_database != null)
                 {
-                    if (Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash).Result)
+                    if (!Password.Compare_Password_Byte_Arrays(user_password_hash_in_the_database, end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash))
                     {
                         await Users_Repository.Insert_Report_Failed_Email_Login_History_Record(new Report_Failed_Email_Login_History
                         {

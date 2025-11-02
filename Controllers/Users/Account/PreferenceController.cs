@@ -801,10 +801,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                         string? email_address = Users_Repository.Read_User_Email_By_ID(dto.JWT_id).Result;
 
                         byte[]? usersdb_SavedPasswordHash = Users_Repository.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
-                        byte[]? given_PasswordHash = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes($"{dto.Password}"), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}")).Result;
+                        byte[]? given_PasswordHash = Password.Create_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes($"{dto.Password}"), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}"));
 
                         if (usersdb_SavedPasswordHash != null)
-                            if (!Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(usersdb_SavedPasswordHash, given_PasswordHash).Result)
+                            if (!Password.Compare_Password_Byte_Arrays(usersdb_SavedPasswordHash, given_PasswordHash))
                                 return Unauthorized();
 
                         return await Task.FromResult(Users_Repository.Update_End_User_Password(new Password_Change

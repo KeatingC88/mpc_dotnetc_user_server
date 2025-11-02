@@ -216,7 +216,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.Login_PasswordTbl.AddAsync(new Login_PasswordTbl
             {
                 End_User_ID = ID_Record.ID,
-                Password = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result,
+                Password = Password.Create_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")),
                 Updated_on = TimeStamp(),
                 Created_on = TimeStamp(),
                 Created_by = ID_Record.ID,
@@ -901,7 +901,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             await _UsersDBC.Login_PasswordTbl.AddAsync(new Login_PasswordTbl
             {
                 End_User_ID = dto.End_User_ID,
-                Password = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")).Result,
+                Password = Password.Create_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}")),
                 Updated_on = TimeStamp(),
                 Created_on = TimeStamp(),
                 Created_by = dto.End_User_ID,
@@ -4150,7 +4150,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
             try {
                 if (!dto.Email_address.IsNullOrEmpty()) {
                     await _UsersDBC.Login_PasswordTbl.Where(x => x.End_User_ID == dto.End_User_ID).ExecuteUpdateAsync(s => s
-                        .SetProperty(col => col.Password, Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes($"{dto.New_password}"), Encoding.UTF8.GetBytes($"{dto.Email_address}{_Constants.JWT_SECURITY_KEY}")).Result)
+                        .SetProperty(col => col.Password, Password.Create_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes($"{dto.New_password}"), Encoding.UTF8.GetBytes($"{dto.Email_address}{_Constants.JWT_SECURITY_KEY}")))
                         .SetProperty(col => col.Updated_by, dto.End_User_ID)
                         .SetProperty(col => col.Updated_on, TimeStamp())
                     );
@@ -4599,7 +4599,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
                 return "Server Error: Update End User Roles Failed.";
             }
         }
-
         public async Task<bool> Validate_Client_With_Server_Authorization(Report_Failed_Authorization_History dto)
         {
 

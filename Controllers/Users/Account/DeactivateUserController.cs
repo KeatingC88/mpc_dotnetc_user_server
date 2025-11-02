@@ -120,9 +120,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 string? email_address = Users_Repository.Read_User_Email_By_ID(dto.JWT_id).Result;
                 byte[]? user_password_hash_from_database_storage = Users_Repository.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
-                byte[]? user_password_given_from_end_user_on_gui_client = Password.Process_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}")).Result;
+                byte[]? user_password_given_from_end_user_on_gui_client = Password.Create_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}"));
                 if (user_password_hash_from_database_storage != null)
-                    if (!Password.Process_Comparison_Between_Password_Salted_Hash_Bytes(user_password_hash_from_database_storage, user_password_given_from_end_user_on_gui_client).Result)
+                    if (!Password.Compare_Password_Byte_Arrays(user_password_hash_from_database_storage, user_password_given_from_end_user_on_gui_client))
                         return Unauthorized();
 
                 return await Task.FromResult(Users_Repository.Delete_Account_By_User_id(new Delete_User { 
