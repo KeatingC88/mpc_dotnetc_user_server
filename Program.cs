@@ -5,10 +5,13 @@ using Microsoft.IdentityModel.Tokens;
 using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Services;
+using mpc_dotnetc_user_server.Initialization;
 using System.Net;
-using System.Runtime.InteropServices;
 
 string sqlite3_users_database_path = "";
+string database_directory;
+string current_directory = Directory.GetCurrentDirectory();
+string parent_directory = Directory.GetParent(Directory.GetCurrentDirectory())!.FullName;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -19,28 +22,20 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 string environment = builder.Environment.EnvironmentName;
-string dir = Directory.GetCurrentDirectory();
 IWebHostEnvironment env = builder.Environment;
 
-if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-
-    sqlite3_users_database_path = $"{dir}\\bin\\Debug\\net8.0\\mpc_sqlite_users_database\\Users.db";
-
-} else if (env.IsDevelopment() && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-
-    sqlite3_users_database_path = $"{dir}/bin/Debug/net8.0/mpc_sqlite_users_database/Users.db";
-
-} else if (env.EnvironmentName == "Docker") {
-
-    sqlite3_users_database_path = "/app/Users.db";//This must match Dockerfile's COPY Cmd.
-
-} else if (env.IsProduction() && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {//Linux for AWS Production.
-
-    sqlite3_users_database_path = Path.Combine(dir, "mpc_sqlite_users_database", "Users.db");
-
+//Create Database
+if (env.IsDevelopment()) {
+    database_directory = Path.Combine(parent_directory, "mpc_sqlite_users_database");
+} else if (env.IsProduction()) {
+    database_directory = Path.Combine(parent_directory, "mpc_sqlite_users_database");
+} else {
+    database_directory = Path.Combine(parent_directory, "mpc_sqlite_users_database");
 }
-
+if (!Directory.Exists(database_directory)) Directory.CreateDirectory(database_directory);
+sqlite3_users_database_path = Path.Combine(database_directory, "Users.db");
 builder.Services.AddDbContext<Users_Database_Context>(options => options.UseSqlite($"Data Source = {sqlite3_users_database_path}"));
+//Database Created
 
 builder.Services.AddCors(options =>
 {
@@ -50,7 +45,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add Redis distributed cache
+// Add Redis distributed cache for sessions
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = Environment.GetEnvironmentVariable("DOCKER_CONNECTION_STRING");
@@ -80,7 +75,9 @@ builder.Services.AddSingleton<IPassword, Password>();
 builder.Services.AddSingleton<ITwitch, Twitch>();
 
 var tempProvider = builder.Services.BuildServiceProvider();
-var AES = tempProvider.GetRequiredService<IAES>();
+Constants Constants = tempProvider.GetRequiredService<Constants>();
+IAES IAES = tempProvider.GetRequiredService<IAES>();
+IPassword IPassword = tempProvider.GetRequiredService<IPassword>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -90,8 +87,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     {
         ValidateIssuer = true,
         ValidateAudience = true,
-        ValidAudience = $"{AES.Process_Encryption(Environment.GetEnvironmentVariable("JWT_CLIENT_KEY") ?? string.Empty)}",
-        ValidIssuer = $"{AES.Process_Encryption(Environment.GetEnvironmentVariable("JWT_ISSUER_KEY") ?? string.Empty)}",
+        ValidAudience = $"{IAES.Process_Encryption(Environment.GetEnvironmentVariable("JWT_CLIENT_KEY") ?? string.Empty)}",
+        ValidIssuer = $"{IAES.Process_Encryption(Environment.GetEnvironmentVariable("JWT_ISSUER_KEY") ?? string.Empty)}",
         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SIGN_KEY") ?? string.Empty))
     };
 });
@@ -114,6 +111,15 @@ string local_network_ip_address = get_local_machine_ip_address();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+//Update the Database with Mock Data.
+using (var scope = app.Services.CreateScope())
+{
+    Users_Database_Context Users_Database_Context = scope.ServiceProvider.GetRequiredService<Users_Database_Context>();
+    SQL_Database_Startup startup = new SQL_Database_Startup(Users_Database_Context, Constants, IAES, IPassword);
+    startup.Initialize();
+}
+//End Update the Database with Mock Data.
 
 Network.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 

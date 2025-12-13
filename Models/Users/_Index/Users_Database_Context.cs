@@ -9,10 +9,10 @@ using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Register.Email_Address;
 using mpc_dotnetc_user_server.Models.Users.Feedback;
+using mpc_dotnetc_user_server.Models.Users.Friends;
 using mpc_dotnetc_user_server.Models.Users.Identity;
 using mpc_dotnetc_user_server.Models.Users.Profile;
 using mpc_dotnetc_user_server.Models.Users.Report;
-using mpc_dotnetc_user_server.Models.Users.Friends;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
@@ -78,9 +78,1044 @@ namespace mpc_dotnetc_user_server.Models.Users.Index
         public DbSet<Twitch_IDsTbl> Twitch_IDsTbl { get;set; } = null!;
         public DbSet<Discord_Email_AddressTbl> Discord_Email_AddressTbl { get; set; } = null!;
         public DbSet<Discord_IDsTbl> Discord_IDsTbl { get; set; } = null!;
+
         public Users_Database_Context(DbContextOptions<Users_Database_Context> options, IConfiguration configuration) : base(options)
         {
             _configuration = configuration;
         }
-    }   
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User_IDsTbl>(entity =>
+            {
+                entity.ToTable("User_IDsTbl");
+                entity.HasKey(e => e.ID);
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Public_ID).IsRequired();
+                entity.Property(e => e.Secret_Hash_ID).IsRequired();
+                entity.Property(e => e.Secret_ID).IsRequired();
+            });
+
+            modelBuilder.Entity<Account_TypeTbl>(entity =>
+            {
+                entity.ToTable("Account_TypeTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Type).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Account_RolesTbl>(entity =>
+            {
+                entity.ToTable("Account_RolesTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Roles).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Account_GroupsTbl>(entity =>
+            {
+                entity.ToTable("Account_GroupsTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Groups).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Comment_BoxTbl>(entity =>
+            {
+                entity.ToTable("Comment_BoxTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Comment).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Contact_UsTbl>(entity =>
+            {
+                entity.ToTable("Contact_UsTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Subject_Line).IsRequired();
+                entity.Property(e => e.Summary).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Login_PasswordTbl>(entity =>
+            {
+                entity.ToTable("Login_PasswordTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Password).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Login_Time_StampTbl>(entity =>
+            {
+                entity.ToTable("Login_Time_StampTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.Property(e => e.Login_on).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Login_Time_Stamp_HistoryTbl>(entity =>
+            {
+                entity.ToTable("Login_Time_Stamp_HistoryTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.Property(e => e.Login_on).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Logout_Time_StampTbl>(entity =>
+            {
+                entity.ToTable("Logout_Time_StampTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.Property(e => e.Logout_on).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Logout_Time_StampTbl>(entity =>
+            {
+                entity.ToTable("Logout_Time_StampTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.Property(e => e.Logout_on).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Login_Email_AddressTbl>(entity =>
+            {
+                entity.ToTable("Login_Email_AddressTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Report_Email_RegistrationTbl>(entity =>
+            {
+                entity.ToTable("Report_Email_RegistrationTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.Language_Region).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Reason).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+
+            modelBuilder.Entity<Report_Failed_JWT_HistoryTbl>(entity =>
+            {
+                entity.ToTable("Report_Failed_JWT_HistoryTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Language_Region).IsRequired();
+                entity.Property(e => e.Login_type).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Controller).IsRequired();
+                entity.Property(e => e.Action).IsRequired();
+                entity.Property(e => e.Client_id).IsRequired();
+                entity.Property(e => e.JWT_id).IsRequired();
+                entity.Property(e => e.JWT_client_address).IsRequired();
+                entity.Property(e => e.JWT_client_key).IsRequired();
+                entity.Property(e => e.JWT_issuer_key).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+                entity.Property(e => e.Reason).IsRequired();
+                entity.Property(e => e.Token).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+
+            modelBuilder.Entity<Report_Failed_Client_ID_HistoryTbl>(entity =>
+            {
+                entity.ToTable("Report_Failed_Client_ID_HistoryTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Language_Region).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Controller).IsRequired();
+                entity.Property(e => e.Action).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+                entity.Property(e => e.Reason).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+
+            modelBuilder.Entity<Report_Failed_Pending_Email_Registration_HistoryTbl>(entity =>
+            {
+                entity.ToTable("Report_Failed_Pending_Email_Registration_HistoryTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.Language_Region).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Action).IsRequired();
+                entity.Property(e => e.Controller).IsRequired();
+                entity.Property(e => e.Reason).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+
+            modelBuilder.Entity<Report_Failed_Email_Login_HistoryTbl>(entity =>
+            {
+                entity.ToTable("Report_Failed_Email_Login_HistoryTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Language_Region).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Reason).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Report_Failed_Email_Logout_HistoryTbl>(entity =>
+            {
+                entity.ToTable("Report_Failed_Email_Logout_HistoryTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Language_Region).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Reason).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Report_Failed_Selected_HistoryTbl>(entity =>
+            {
+                entity.ToTable("Report_Failed_Selected_HistoryTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Language_Region).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Reason).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Pending_Email_RegistrationTbl>(entity =>
+            {
+                entity.ToTable("Pending_Email_RegistrationTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.Language_Region).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Code).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+
+            modelBuilder.Entity<Pending_Email_Registration_HistoryTbl>(entity =>
+            {
+                entity.ToTable("Pending_Email_Registration_HistoryTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.Language_Region).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+                entity.Property(e => e.Code).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+
+            modelBuilder.Entity<Completed_Email_RegistrationTbl>(entity =>
+            {
+                entity.ToTable("Completed_Email_RegistrationTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.Language_Region).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+                entity.Property(e => e.Code).IsRequired();
+                entity.Property(e => e.Remote_IP).IsRequired();
+                entity.Property(e => e.Remote_Port).IsRequired();
+                entity.Property(e => e.Server_IP).IsRequired();
+                entity.Property(e => e.Server_Port).IsRequired();
+                entity.Property(e => e.Client_IP).IsRequired();
+                entity.Property(e => e.Client_Port).IsRequired();
+                entity.Property(e => e.Client_time).IsRequired();
+                entity.Property(e => e.User_agent).IsRequired();
+                entity.Property(e => e.Down_link).IsRequired();
+                entity.Property(e => e.Connection_type).IsRequired();
+                entity.Property(e => e.RTT).IsRequired();
+                entity.Property(e => e.Data_saver).IsRequired();
+                entity.Property(e => e.Device_ram_gb).IsRequired();
+                entity.Property(e => e.Orientation).IsRequired();
+                entity.Property(e => e.Screen_width).IsRequired();
+                entity.Property(e => e.Screen_height).IsRequired();
+                entity.Property(e => e.Color_depth).IsRequired();
+                entity.Property(e => e.Pixel_depth).IsRequired();
+                entity.Property(e => e.Window_width).IsRequired();
+                entity.Property(e => e.Window_height).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+
+            modelBuilder.Entity<Selected_App_Custom_DesignTbl>(entity =>
+            {
+                entity.ToTable("Selected_App_Custom_DesignTbl");
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID).ValueGeneratedOnAdd();
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Card_Border_Color).IsRequired();
+                entity.Property(e => e.Card_Header_Font).IsRequired();
+                entity.Property(e => e.Card_Header_Background_Color).IsRequired();
+                entity.Property(e => e.Card_Header_Font_Color).IsRequired();
+                entity.Property(e => e.Card_Body_Font).IsRequired();
+                entity.Property(e => e.Card_Body_Background_Color).IsRequired();
+                entity.Property(e => e.Card_Body_Font_Color).IsRequired();
+                entity.Property(e => e.Card_Footer_Font).IsRequired();
+                entity.Property(e => e.Card_Footer_Background_Color).IsRequired();
+                entity.Property(e => e.Card_Footer_Font_Color).IsRequired();
+                entity.Property(e => e.Navigation_Menu_Background_Color).IsRequired();
+                entity.Property(e => e.Navigation_Menu_Font_Color).IsRequired();
+                entity.Property(e => e.Navigation_Menu_Font).IsRequired();
+                entity.Property(e => e.Button_Background_Color).IsRequired();
+                entity.Property(e => e.Button_Font_Color).IsRequired();
+                entity.Property(e => e.Button_Font).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+
+                entity.HasOne<User_IDsTbl>()
+                      .WithMany()
+                      .HasForeignKey(e => e.End_User_ID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Selected_Navbar_LockTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+                entity.Property(e => e.Locked).IsRequired();
+            });
+
+            modelBuilder.Entity<Selected_StatusTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Offline).IsRequired();
+                entity.Property(e => e.Hidden).IsRequired();
+                entity.Property(e => e.Online).IsRequired().HasDefaultValue(1);
+                entity.Property(e => e.Away).IsRequired();
+                entity.Property(e => e.DND).IsRequired();
+                entity.Property(e => e.Custom).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+                entity.Property(e => e.Custom_lbl);
+            });
+
+            modelBuilder.Entity<Selected_ThemeTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+                entity.Property(e => e.Light).IsRequired();
+                entity.Property(e => e.Night).IsRequired();
+                entity.Property(e => e.Custom).IsRequired();
+            });
+
+            modelBuilder.Entity<Reported_Website_BugTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+                entity.Property(e => e.URL).IsRequired();
+                entity.Property(e => e.Detail).IsRequired();
+            });
+
+            modelBuilder.Entity<Reported_Discord_Bot_BugTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+                entity.Property(e => e.Location).IsRequired();
+                entity.Property(e => e.Detail).IsRequired();
+            });
+
+            modelBuilder.Entity<Reported_Broken_LinkTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+                entity.Property(e => e.URL).IsRequired();
+            });
+
+            modelBuilder.Entity<ReportedTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+                entity.Property(e => e.Spam).IsRequired();
+                entity.Property(e => e.Abuse).IsRequired();
+                entity.Property(e => e.Block).IsRequired();
+                entity.Property(e => e.Fake).IsRequired();
+                entity.Property(e => e.Hate).IsRequired();
+                entity.Property(e => e.Nudity).IsRequired();
+                entity.Property(e => e.Violence).IsRequired();
+                entity.Property(e => e.Threat).IsRequired();
+                entity.Property(e => e.Misinform).IsRequired();
+                entity.Property(e => e.Harass).IsRequired();
+                entity.Property(e => e.Illegal).IsRequired();
+                entity.Property(e => e.Self_harm).IsRequired();
+                entity.Property(e => e.Disruption).IsRequired();
+            });
+
+            modelBuilder.Entity<IdentityTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+                entity.Property(e => e.Ethnicity).IsRequired();
+                entity.Property(e => e.Gender).IsRequired();
+                entity.Property(e => e.First_Name).IsRequired();
+                entity.Property(e => e.Middle_Name).IsRequired();
+                entity.Property(e => e.Last_Name).IsRequired();
+                entity.Property(e => e.Maiden_Name).IsRequired();
+            });
+
+            modelBuilder.Entity<Birth_DateTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+                entity.Property(e => e.Month).IsRequired();
+                entity.Property(e => e.Day).IsRequired();
+                entity.Property(e => e.Year).IsRequired();
+            });
+
+            modelBuilder.Entity<Twitch_IDsTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Twitch_ID).IsRequired();
+                entity.Property(e => e.User_Name).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+
+            modelBuilder.Entity<Discord_IDsTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Discord_ID).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+
+            modelBuilder.Entity<Twitch_Email_AddressTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+
+            modelBuilder.Entity<Discord_Email_AddressTbl>(entity =>
+            {
+                entity.Property(e => e.End_User_ID).IsRequired();
+                entity.Property(e => e.Email_Address).IsRequired();
+                entity.Property(e => e.Created_by).IsRequired();
+                entity.Property(e => e.Created_on).IsRequired();
+                entity.Property(e => e.Deleted).IsRequired();
+                entity.Property(e => e.Deleted_on).IsRequired();
+                entity.Property(e => e.Deleted_by).IsRequired();
+                entity.Property(e => e.Updated_on).IsRequired();
+                entity.Property(e => e.Updated_by).IsRequired();
+            });
+        }
+    }
 }
