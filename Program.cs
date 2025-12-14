@@ -2,12 +2,29 @@ using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using mpc_dotnetc_user_server.Interfaces;
-using mpc_dotnetc_user_server.Models.Users.Index;
 using mpc_dotnetc_user_server.Services;
-using mpc_dotnetc_user_server.Initialization;
 using System.Net;
+using mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository;
+using mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository.Initialization;
+using mpc_dotnetc_user_server.Services.Social.Media;
+using mpc_dotnetc_user_server.Services.Security;
+using mpc_dotnetc_user_server.Interfaces;
+using mpc_dotnetc_user_server.Interfaces.IUsers_Respository;
+using mpc_dotnetc_user_server.Interfaces.Social;
 
+static string get_local_machine_ip_address()
+{
+    var host = Dns.GetHostEntry(Dns.GetHostName());
+    foreach (var ip in host.AddressList)
+    {
+        if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip))
+        {
+            return ip.ToString();
+        }
+    }
+    return "IP Address not found.";
+}
+string local_network_ip_address = get_local_machine_ip_address();
 string sqlite3_users_database_path = "";
 string database_directory;
 string current_directory = Directory.GetCurrentDirectory();
@@ -15,14 +32,22 @@ string parent_directory = Directory.GetParent(Directory.GetCurrentDirectory())!.
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-Env.Load();
+string environment = builder.Environment.EnvironmentName;
+IWebHostEnvironment env = builder.Environment;
+
+if (env.IsDevelopment())
+{
+    Env.Load(".env.development");
+}
+else if (env.IsProduction())
+{
+    Env.Load(".env.production");
+}
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-string environment = builder.Environment.EnvironmentName;
-IWebHostEnvironment env = builder.Environment;
 
 //Create Database
 if (env.IsDevelopment()) {
@@ -64,7 +89,15 @@ builder.Services.AddSession(options =>
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
+
+builder.Services.AddScoped<IUsers_Repository_Create, Users_Repository_Create>();
+builder.Services.AddScoped<IUsers_Repository_Delete, Users_Repository_Delete>();
+builder.Services.AddScoped<IUsers_Repository_Update, Users_Repository_Update>();
+builder.Services.AddScoped<IUsers_Repository_Integrate, Users_Repository_Integrate>();
+builder.Services.AddScoped<IUsers_Repository_Read, Users_Repository_Read>();
 builder.Services.AddScoped<IUsers_Repository, Users_Repository>();
+
+
 builder.Services.AddScoped<INetwork, Network>();
 
 builder.Services.AddSingleton<Constants>();
@@ -74,6 +107,7 @@ builder.Services.AddSingleton<IJWT, JWT>();
 builder.Services.AddSingleton<IPassword, Password>();
 builder.Services.AddSingleton<ITwitch, Twitch>();
 
+//Create Services to be used on Program.cs
 var tempProvider = builder.Services.BuildServiceProvider();
 Constants Constants = tempProvider.GetRequiredService<Constants>();
 IAES IAES = tempProvider.GetRequiredService<IAES>();
@@ -93,21 +127,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
-static string get_local_machine_ip_address()
-{
-    var host = Dns.GetHostEntry(Dns.GetHostName());
-    foreach (var ip in host.AddressList)
-    {
-        if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip))
-        {
-            return ip.ToString();
-        }
-    }
-    return "IP Address not found.";
-}
-
-string local_network_ip_address = get_local_machine_ip_address();
-
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
@@ -116,7 +135,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     Users_Database_Context Users_Database_Context = scope.ServiceProvider.GetRequiredService<Users_Database_Context>();
-    SQL_Database_Startup startup = new SQL_Database_Startup(Users_Database_Context, Constants, IAES, IPassword);
+    SQLite_Database_Mock startup = new SQLite_Database_Mock(Users_Database_Context, Constants, IAES, IPassword);
     startup.Initialize();
 }
 //End Update the Database with Mock Data.

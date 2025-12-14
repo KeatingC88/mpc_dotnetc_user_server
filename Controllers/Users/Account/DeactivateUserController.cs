@@ -3,6 +3,7 @@ using System.Text;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Selected.Deactivate;
 using mpc_dotnetc_user_server.Interfaces;
+using mpc_dotnetc_user_server.Interfaces.IUsers_Respository;
 
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -14,6 +15,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<DeactivateUserController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsers_Repository Users_Repository;
+        private readonly IUsers_Repository_Read Users_Repository_Read;
+        private readonly IUsers_Repository_Delete Users_Repository_Delete;
         private readonly Constants _Constants;
 
         private readonly IAES AES;
@@ -25,6 +28,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             ILogger<DeactivateUserController> logger,
             IConfiguration configuration,
             IUsers_Repository users_repository,
+            IUsers_Repository_Read users_repository_read,
+            IUsers_Repository_Delete users_repository_delete,
             IAES aes,
             IJWT jwt,
             INetwork network,
@@ -34,6 +39,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             _logger = logger;
             _configuration = configuration;
             Users_Repository = users_repository;
+            Users_Repository_Read = users_repository_read;
+            Users_Repository_Delete = users_repository_delete;
             _Constants = constants;
             AES = aes;
             JWT = jwt;
@@ -118,14 +125,14 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                string? email_address = Users_Repository.Read_User_Email_By_ID(dto.JWT_id).Result;
-                byte[]? user_password_hash_from_database_storage = Users_Repository.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
+                string? email_address = Users_Repository_Read.Read_User_Email_By_ID(dto.JWT_id).Result;
+                byte[]? user_password_hash_from_database_storage = Users_Repository_Read.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
                 byte[]? user_password_given_from_end_user_on_gui_client = Password.Create_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}"));
                 if (user_password_hash_from_database_storage != null)
                     if (!Password.Compare_Password_Byte_Arrays(user_password_hash_from_database_storage, user_password_given_from_end_user_on_gui_client))
                         return Unauthorized();
 
-                return await Task.FromResult(Users_Repository.Delete_Account_By_User_id(new Delete_User { 
+                return await Task.FromResult(Users_Repository_Delete.Delete_Account_By_User_id(new Delete_User { 
                     ID = dto.Client_id.ToString(),
                     Target_User = dto.Target_User
                 }).Result);

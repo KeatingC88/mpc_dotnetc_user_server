@@ -29,13 +29,6 @@
     <None Remove="obj\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="..\mpc_sqlite_users_database\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>mpc_sqlite_users_database\%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </Content>
-  </ItemGroup>
-
 
   <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
@@ -57,6 +50,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Folder Include="Models\Users\WebSocket\Broadcast\" />
+    <Folder Include="Models\Users\WebSocket\Notification\" />
+    <Folder Include="Repositories\MySQL\" />
+    <Folder Include="Repositories\MongoDB\" />
   </ItemGroup>
 
 </Project>

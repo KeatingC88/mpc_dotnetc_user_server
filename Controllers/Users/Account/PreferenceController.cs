@@ -1,15 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Interfaces;
+using mpc_dotnetc_user_server.Interfaces.IUsers_Respository;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Selected.Avatar;
 using mpc_dotnetc_user_server.Models.Users.Selected.Language;
 using mpc_dotnetc_user_server.Models.Users.Selected.Name;
-using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
 using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
+using mpc_dotnetc_user_server.Models.Users.Selected.Password_Change;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
 using mpc_dotnetc_user_server.Models.Users.Selection;
+using mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository;
 using System.Text;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -22,6 +24,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<PreferenceController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsers_Repository Users_Repository;
+        private readonly IUsers_Repository_Read Users_Repository_Read;
+        private readonly IUsers_Repository_Delete Users_Repository_Delete;
+        private readonly IUsers_Repository_Update Users_Repository_Update;
         private readonly IAES AES;
         private readonly IJWT JWT;
         private readonly INetwork Network;
@@ -30,7 +35,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         public PreferenceController(
             ILogger<PreferenceController> logger, 
             IConfiguration configuration, 
-            IUsers_Repository users_repository, 
+            IUsers_Repository users_repository,
+            IUsers_Repository_Read users_repository_read,
+            IUsers_Repository_Delete users_repository_delete,
+            IUsers_Repository_Update users_repository_update,
             IAES aes,
             IJWT jwt,
             INetwork network,
@@ -40,6 +48,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             _logger = logger;
             _configuration = configuration;
             Users_Repository = users_repository;
+            Users_Repository_Read = users_repository_read;
+            Users_Repository_Delete = users_repository_delete;
+            Users_Repository_Update = users_repository_update;
             _Constants = constants;
             AES = aes;
             JWT = jwt;
@@ -122,7 +133,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Alignment(new Selected_App_Alignment { 
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Selected_Alignment(new Selected_App_Alignment { 
                     Alignment = byte.Parse(dto.Alignment),
                     End_User_ID = long.Parse(dto.End_User_ID)
                 })).Result;
@@ -206,7 +217,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Text_Alignment(new Selected_App_Text_Alignment {
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Selected_Text_Alignment(new Selected_App_Text_Alignment {
                     End_User_ID = dto.JWT_id,
                     Text_alignment = byte.Parse(dto.Text_alignment)
                 })).Result;
@@ -290,7 +301,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Avatar(new Selected_Avatar {
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Avatar(new Selected_Avatar {
                     End_User_ID = dto.End_User_ID,
                     Avatar_url_path = dto.Avatar_url_path
                 })).Result;
@@ -375,7 +386,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Avatar_Title(new Selected_Avatar_Title { 
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Avatar_Title(new Selected_Avatar_Title { 
                     End_User_ID=dto.End_User_ID,
                     Avatar_title=dto.Avatar_title
                 })).Result;
@@ -461,7 +472,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Name(new Selected_Name { 
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Name(new Selected_Name { 
                     End_User_ID = dto.End_User_ID,
                     Name = dto.Name
                 })).Result;
@@ -543,7 +554,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Grid_Type(new Selected_App_Grid_Type { 
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Selected_Grid_Type(new Selected_App_Grid_Type { 
                     End_User_ID = dto.JWT_id,
                     Grid = byte.Parse(dto.Grid)
                 })).Result;
@@ -626,7 +637,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Language(new Selected_Language {
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Selected_Language(new Selected_Language {
                     End_User_ID = dto.JWT_id,
                     Language = dto.Language,
                     Region = dto.Region
@@ -710,7 +721,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Nav_Lock(new Selected_Navbar_Lock {
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Selected_Nav_Lock(new Selected_Navbar_Lock {
                     End_User_ID = dto.JWT_id,
                     Locked = bool.Parse(dto.Locked)
                 }).Result);
@@ -798,16 +809,16 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     
 
                     if (dto.Login_type.ToUpper() == "EMAIL") {
-                        string? email_address = Users_Repository.Read_User_Email_By_ID(dto.JWT_id).Result;
+                        string? email_address = Users_Repository_Read.Read_User_Email_By_ID(dto.JWT_id).Result;
 
-                        byte[]? usersdb_SavedPasswordHash = Users_Repository.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
+                        byte[]? usersdb_SavedPasswordHash = Users_Repository_Read.Read_User_Password_Hash_By_ID(dto.JWT_id).Result;
                         byte[]? given_PasswordHash = Password.Create_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes($"{dto.Password}"), Encoding.UTF8.GetBytes($"{email_address}{_Constants.JWT_SECURITY_KEY}"));
 
                         if (usersdb_SavedPasswordHash != null)
                             if (!Password.Compare_Password_Byte_Arrays(usersdb_SavedPasswordHash, given_PasswordHash))
                                 return Unauthorized();
 
-                        return await Task.FromResult(Users_Repository.Update_End_User_Password(new Password_Change
+                        return await Task.FromResult(Users_Repository_Update.Update_End_User_Password(new Password_Change
                         {
                             End_User_ID = dto.JWT_id,
                             Password = dto.Password,
@@ -895,7 +906,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Status(new Selected_Status {
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Selected_Status(new Selected_Status {
                     End_User_ID = dto.JWT_id,
                     Status = long.Parse(dto.Online_status)
 
@@ -978,7 +989,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Status(new Selected_Status {
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Selected_Status(new Selected_Status {
                     End_User_ID = dto.JWT_id,
                     Status = 5
                 })).Result;
@@ -1062,7 +1073,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Selected_Theme(new Selected_Theme {
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Selected_Theme(new Selected_Theme {
                     End_User_ID = dto.JWT_id,
                     Theme = byte.Parse(dto.Theme)
                 }).Result);
@@ -1151,7 +1162,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 }).Result)
                     return Conflict();
 
-                return await Task.FromResult(Users_Repository.Update_End_User_Card_Border_Color(new Selected_App_Custom_Design {
+                return await Task.FromResult(Users_Repository_Update.Update_End_User_Card_Border_Color(new Selected_App_Custom_Design {
                     End_User_ID = dto.End_User_ID,
                     Card_Border_Color = dto.Card_Border_Color
                 }).Result);
@@ -1242,7 +1253,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
             
 
-            return await Task.FromResult(Users_Repository.Update_End_User_Card_Header_Font(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Card_Header_Font(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Card_Header_Font = dto.Card_Header_Font
@@ -1330,7 +1341,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Card_Header_Background_Color(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Card_Header_Background_Color(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Card_Header_Background_Color = dto.Card_Header_Background_Color
@@ -1418,7 +1429,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Card_Header_Font_Color(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Card_Header_Font_Color(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Card_Header_Font_Color = dto.Card_Header_Font_Color
@@ -1506,7 +1517,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Card_Body_Font(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Card_Body_Font(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Card_Body_Font = dto.Card_Body_Font
@@ -1593,7 +1604,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Card_Body_Background_Color(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Card_Body_Background_Color(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Card_Body_Background_Color = dto.Card_Body_Background_Color
@@ -1683,7 +1694,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Card_Body_Font_Color(new Selected_App_Custom_Design { 
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Card_Body_Font_Color(new Selected_App_Custom_Design { 
                 End_User_ID = dto.End_User_ID,
                 Card_Body_Font_Color = dto.Card_Body_Font_Color 
             }).Result);
@@ -1772,7 +1783,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Card_Footer_Font(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Card_Footer_Font(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Card_Footer_Font = dto.Card_Footer_Font
@@ -1861,7 +1872,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Card_Footer_Background_Color(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Card_Footer_Background_Color(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Card_Footer_Background_Color = dto.Card_Footer_Background_Color
@@ -1951,7 +1962,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Card_Footer_Font_Color(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Card_Footer_Font_Color(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Card_Footer_Font_Color = dto.Card_Footer_Font_Color
@@ -2041,7 +2052,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Navigation_Menu_Background_Color(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Navigation_Menu_Background_Color(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Navigation_Menu_Background_Color = dto.Navigation_Menu_Background_Color
@@ -2131,7 +2142,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Navigation_Menu_Font_Color(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Navigation_Menu_Font_Color(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Navigation_Menu_Font_Color = dto.Navigation_Menu_Font_Color
@@ -2221,7 +2232,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Navigation_Menu_Font(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Navigation_Menu_Font(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Navigation_Menu_Font = dto.Navigation_Menu_Font
@@ -2310,7 +2321,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Button_Background_Color(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Button_Background_Color(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Button_Background_Color = dto.Button_Background_Color
@@ -2392,7 +2403,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Button_Font_Color(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Button_Font_Color(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Button_Font_Color = dto.Button_Font_Color
@@ -2470,7 +2481,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Update_End_User_Button_Font(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Update.Update_End_User_Button_Font(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID,
                 Button_Font = dto.Button_Font
@@ -2548,7 +2559,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 return Conflict();
 
             
-            return await Task.FromResult(Users_Repository.Delete_End_User_Selected_App_Custom_Design(new Selected_App_Custom_Design
+            return await Task.FromResult(Users_Repository_Delete.Delete_End_User_Selected_App_Custom_Design(new Selected_App_Custom_Design
             {
                 End_User_ID = dto.End_User_ID
             }).Result);

@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System;
 using mpc_dotnetc_user_server.Controllers.Users.Account;
 using mpc_dotnetc_user_server.Interfaces;
+using mpc_dotnetc_user_server.Interfaces.IUsers_Respository;
 
 namespace mpc_dotnetc_user_server.tests.Controllers.Users.Register
 {

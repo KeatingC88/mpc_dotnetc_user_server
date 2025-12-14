@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mpc_dotnetc_user_server.Interfaces;
+using mpc_dotnetc_user_server.Interfaces.IUsers_Respository;
 using mpc_dotnetc_user_server.Models.Report;
-using mpc_dotnetc_user_server.Models.Users.Authentication.JWT;
+using mpc_dotnetc_user_server.Models.Security.JWT;
 using System.Text.Json;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
@@ -13,6 +14,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly Constants _Constants;
         private readonly ILogger<LoadController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly IUsers_Repository_Read Users_Repository_Read;
         private readonly IUsers_Repository Users_Repository;
         private readonly IAES AES;
         private readonly IJWT JWT;
@@ -21,7 +23,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         public LoadController(
             ILogger<LoadController> logger, 
             IConfiguration configuration, 
-            IUsers_Repository users_repository, 
+            IUsers_Repository_Read users_repository_read, 
             IAES aes,
             IJWT jwt,
             INetwork network,
@@ -29,7 +31,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         ){
             _logger = logger;
             _configuration = configuration;
-            Users_Repository = users_repository;
+            Users_Repository_Read = users_repository_read;
             _Constants = constants;
             AES = aes;
             JWT = jwt;
@@ -110,7 +112,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     return Conflict();
 
                 
-                User_Token_Data_DTO user_data = await Users_Repository.Read_Require_Token_Data_By_ID(dto.End_User_ID);
+                User_Token_Data_DTO user_data = await Users_Repository_Read.Read_Require_Token_Data_By_ID(dto.End_User_ID);
                 CookieOptions cookie_options = new CookieOptions
                 {
                     HttpOnly = true,

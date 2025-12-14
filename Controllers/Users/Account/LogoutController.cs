@@ -1,17 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-
-using System.Text;
-using mpc_dotnetc_user_server.Models.Users.Selected.Navbar_Lock;
-using mpc_dotnetc_user_server.Models.Users.Selected.Language;
-using mpc_dotnetc_user_server.Models.Users.Selected.Alignment;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
 using mpc_dotnetc_user_server.Models.Users.Selected.Status;
-using mpc_dotnetc_user_server.Models.Users.Selection;
 using mpc_dotnetc_user_server.Models.Report;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Logout;
-using System.Text.Json;
 using mpc_dotnetc_user_server.Interfaces;
+using mpc_dotnetc_user_server.Interfaces.IUsers_Respository;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Account
 {
@@ -23,6 +16,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<LogoutController> _logger;
         private static IConfiguration? _configuration;
         private readonly IUsers_Repository Users_Repository;
+        private readonly IUsers_Repository_Update Users_Repository_Update;
+        private readonly IUsers_Repository_Create Users_Repository_Create;
 
         private readonly IAES AES;
         private readonly IJWT JWT;
@@ -33,6 +28,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
             ILogger<LogoutController> logger,
             IConfiguration configuration,
             IUsers_Repository users_repository,
+            IUsers_Repository_Create users_repository_create,
             Constants constants,
             IAES aes,
             IJWT jwt,
@@ -132,7 +128,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.End_User_ID = dto.JWT_id;
 
-                await Users_Repository.Update_End_User_Selected_Status(new Selected_Status
+                await Users_Repository_Update.Update_End_User_Selected_Status(new Selected_Status
                 {
                     End_User_ID = dto.End_User_ID,
                     Status = 0
@@ -141,7 +137,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 HttpContext.Session.Remove(dto.End_User_ID.ToString());
                 Response.Cookies.Delete(Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME") ?? ".AspNetCore.Session");
 
-                await Users_Repository.Insert_End_User_Logout_History_Record(new Logout_Time_Stamp {
+                await Users_Repository_Create.Insert_End_User_Logout_History_Record(new Logout_Time_Stamp {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
                     Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
@@ -166,7 +162,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     Device_ram_gb = dto.Device_ram_gb
                 });
 
-                await Users_Repository.Update_End_User_Logout(new Logout_Time_Stamp {
+                await Users_Repository_Update.Update_End_User_Logout(new Logout_Time_Stamp {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
                     Server_IP = HttpContext.Connection.LocalIpAddress?.ToString() ?? "error",
