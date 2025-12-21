@@ -364,6 +364,8 @@ FodyWeavers.xsd
 
 # Ignore .env files
 .env
+.env.development
+.env.production
 
 # Ignore all .txt files
 *.txt
@@ -388,3 +390,5 @@ node_modules/
 packages/
 
 
+/.env.development
+/.env.production
