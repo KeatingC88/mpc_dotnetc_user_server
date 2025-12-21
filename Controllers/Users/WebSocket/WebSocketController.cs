@@ -15,7 +15,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
     {
         private readonly ILogger<WebSocketController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsers_Repository Users_Repository;
+        private readonly ISystem_Tampering System_Tampering;
         private readonly IUsers_Repository_Read Users_Repository_Read;
         private readonly IUsers_Repository_Delete Users_Repository_Delete;
         private readonly IUsers_Repository_Update Users_Repository_Update;
@@ -25,7 +25,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
         public WebSocketController(
             ILogger<WebSocketController> logger, 
             IConfiguration configuration, 
-            IUsers_Repository users_repository,
+            ISystem_Tampering system_tampering,
             IUsers_Repository_Read users_repository_read,
             IUsers_Repository_Delete users_repository_delete,
             IUsers_Repository_Update users_repository_update,
@@ -36,7 +36,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
         {
             _logger = logger;
             _configuration = configuration;
-            Users_Repository = users_repository;
+            System_Tampering = system_tampering;
             Users_Repository_Read = users_repository_read;
             Users_Repository_Delete = users_repository_delete;
             Users_Repository_Update = users_repository_update;
@@ -81,7 +81,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+            if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -160,7 +160,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
             
-            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+            if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -239,7 +239,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+            if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -318,7 +318,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+            if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -397,7 +397,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+            if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -476,7 +476,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
             dto.Down_link = AES.Process_Decryption(dto.Down_link);
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+            if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -557,7 +557,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
 
             dto.Participant_ID = long.Parse(AES.Process_Decryption(dto.User));
 
-            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+            if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -645,7 +645,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
 
             dto.Participant_ID = long.Parse(AES.Process_Decryption(dto.User));
 
-            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+            if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -731,7 +731,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.WebSocket
             dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
             dto.Participant_ID = long.Parse(AES.Process_Decryption(dto.User));
 
-            if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+            if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,

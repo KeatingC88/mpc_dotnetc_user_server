@@ -938,7 +938,7 @@ namespace mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository
                 entity.Property(e => e.End_User_ID).IsRequired();
                 entity.Property(e => e.Offline).IsRequired();
                 entity.Property(e => e.Hidden).IsRequired();
-                entity.Property(e => e.Online).IsRequired().HasDefaultValue(1);
+                entity.Property(e => e.Online).IsRequired();
                 entity.Property(e => e.Away).IsRequired();
                 entity.Property(e => e.DND).IsRequired();
                 entity.Property(e => e.Custom).IsRequired();

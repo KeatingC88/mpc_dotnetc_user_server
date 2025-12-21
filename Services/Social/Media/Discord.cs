@@ -8,7 +8,6 @@ namespace mpc_dotnetc_user_server.Services.Social.Media
 {
     public class Discord : IDiscord
     {
-        private static readonly Constants Constants = new Constants();
         private readonly string discord_client_id = Environment.GetEnvironmentVariable("discord_client_id") ?? string.Empty;
         private readonly string discord_client_secret = Environment.GetEnvironmentVariable("discord_client_secret") ?? string.Empty;
 

@@ -1,23 +1,27 @@
-﻿using mpc_dotnetc_user_server.Models.Report;
-using mpc_dotnetc_user_server.Interfaces;
+﻿using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Interfaces.IUsers_Respository;
+using mpc_dotnetc_user_server.Models.Report;
+using mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository;
 
-namespace mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository
+
+namespace mpc_dotnetc_user_server.Services.Security
 {
-    public class Users_Repository : IUsers_Repository
+    public class System_Tampering : ISystem_Tampering
     {
+
         private readonly Constants _Constants;
         private readonly IUsers_Repository_Read Users_Repository_Read;
         private readonly IUsers_Repository_Create Users_Repository_Create;
 
-        public Users_Repository(
+        public System_Tampering(
             Constants constants,
             IAES aes,
             IJWT jwt,
             IPassword password,
             IUsers_Repository_Read iuser_repository_read,
             IUsers_Repository_Create iuser_repository_create
-        ) {
+        )
+        {
             _Constants = constants;
             Users_Repository_Read = iuser_repository_read;
             Users_Repository_Create = iuser_repository_create;

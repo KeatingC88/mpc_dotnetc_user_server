@@ -9,7 +9,6 @@ using mpc_dotnetc_user_server.Models.Security.JWT;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Discord;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Email;
 using mpc_dotnetc_user_server.Models.Users.Authentication.Login.TimeStamps;
-using mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository;
 using System.Text.Json;
 
 namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
@@ -21,7 +20,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
         private readonly Constants _Constants;
         private readonly ILogger<DiscordController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsers_Repository Users_Repository;
+        private readonly ISystem_Tampering System_Tampering;
         private readonly IUsers_Repository_Read Users_Repository_Read;
         private readonly IUsers_Repository_Update Users_Repository_Update;
         private readonly IUsers_Repository_Create Users_Repository_Create;
@@ -35,7 +34,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
         public DiscordController(
             ILogger<DiscordController> logger,
             IConfiguration configuration,
-            IUsers_Repository users_repository,
+            ISystem_Tampering system_tampering,
             IUsers_Repository_Read users_repository_read,
             IUsers_Repository_Update users_repository_update,
             IUsers_Repository_Create users_repository_create,
@@ -49,7 +48,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
         {
             _logger = logger;
             _configuration = configuration;
-            Users_Repository = users_repository;
+            System_Tampering = system_tampering;
             Users_Repository_Read = users_repository_read;
             Users_Repository_Update = users_repository_update;
             Users_Repository_Create = users_repository_create;
@@ -102,7 +101,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                 dto.Theme = AES.Process_Decryption(dto.Theme);
                 dto.Grid_type = AES.Process_Decryption(dto.Grid_type);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -150,9 +149,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                 }
 
                 string user_email = user_data.Data[0].Email;
-                string user_display_name = user_data.Data[0].DisplayName;
+                string user_display_name = user_data.Data[0].Global_name;
                 long user_discord_id = long.Parse(user_data.Data[0].Id);
-                string user_discord_login_name = user_data.Data[0].Login;
+                string user_discord_login_name = user_data.Data[0].User_name;
+                bool user_verified = user_data.Data[0].Verified ?? false;
 
                 bool user_discord_id_exists = Users_Repository_Read.Read_ID_Exists_In_Discord_IDs(user_discord_id).Result;
                 bool discord_email_exists = Users_Repository_Read.Read_Email_Exists_In_Discord_Email_Address(user_email).Result;
@@ -215,12 +215,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                         Device_ram_gb = dto.Device_ram_gb
                     });
 
-                }
-                else
-                {
+                } else {
 
-                    mpc_member_data = Users_Repository_Create.Create_Account_By_Discord(new Complete_Discord_Registeration
-                    {
+                    mpc_member_data = Users_Repository_Create.Create_Account_By_Discord(new Complete_Discord_Registeration {
                         Discord_Name = user_display_name,
                         Discord_User_Name = user_discord_login_name,
                         Discord_ID = user_discord_id,
@@ -255,11 +252,9 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                         Down_link = dto.Down_link,
                         Device_ram_gb = dto.Device_ram_gb
                     }).Result;
-
                 }
 
-                created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO
-                {
+                created_email_account_token = JWT.Create_Email_Account_Token(new JWT_DTO {
                     End_User_ID = mpc_member_data.id,
                     User_groups = mpc_member_data.groups,
                     User_roles = mpc_member_data.roles,
@@ -267,11 +262,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                     Email_address = user_email
                 }).Result;
 
-                mpc_member_data.login_type = "TWITCH";
+                mpc_member_data.login_type = "DISCORD";
                 mpc_member_data.email_address = user_email;
 
-                CookieOptions cookie_options = new CookieOptions
-                {
+                CookieOptions cookie_options = new CookieOptions {
                     HttpOnly = true,
                     Secure = false,
                     SameSite = SameSiteMode.Lax,
@@ -279,11 +273,10 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                     Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
                 };
 
-                HttpContext.Session.SetString($@"AUTH|MPC:{mpc_member_data.id}|Login_Type:TWITCH", JsonSerializer.Serialize(created_email_account_token));
+                HttpContext.Session.SetString($@"AUTH|MPC:{mpc_member_data.id}|Login_Type:{mpc_member_data.login_type}", JsonSerializer.Serialize(created_email_account_token));
                 Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
 
-                return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
-                {
+                return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new {
                     discord_data = user_data.Data[0],
                     mpc_data = mpc_member_data,
                     app_token = discord_access_token
@@ -331,7 +324,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
 
                 dto.End_User_ID = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -373,16 +366,17 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                 {
                     return BadRequest();
                 }
-
+                
                 string user_email = user_data.Data[0].Email;
-                string user_display_name = user_data.Data[0].DisplayName;
+                string user_display_name = user_data.Data[0].Global_name;
                 long user_discord_id = long.Parse(user_data.Data[0].Id);
-                string user_discord_login_name = user_data.Data[0].Login;
+                string user_discord_login_name = user_data.Data[0].User_name;
+                bool user_verified = user_data.Data[0].Verified ?? false;
 
                 bool user_discord_id_exists = Users_Repository_Read.Read_ID_Exists_In_Discord_IDs(user_discord_id).Result;
                 bool discord_email_exists = Users_Repository_Read.Read_Email_Exists_In_Discord_Email_Address(user_email).Result;
 
-                if (user_discord_id_exists || discord_email_exists || user_discord_login_name.IsNullOrEmpty())
+                if (user_discord_id_exists || discord_email_exists || user_discord_login_name.IsNullOrEmpty() || !user_verified)
                 {
                     return BadRequest();
                 }
@@ -393,6 +387,8 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                     Discord_ID = user_discord_id,
                     Email_Address = user_email,
                     Discord_User_Name = user_discord_login_name,
+                    Discord_Global_Name = user_display_name,
+                    Verified = user_verified,
                     Code = dto.Code
                 });
 
@@ -402,9 +398,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                     app_token = discord_access_token,
                     end_user_id = dto.End_User_ID
                 }))));
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 return StatusCode(500, $"{e.Message}");
             }
         }
@@ -445,7 +439,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
 
                 dto.End_User_ID = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -480,8 +474,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                 }).Result)
                     return Conflict();
 
-                return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
-                {
+                return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new {
                     app_token = Discord.Get_Client_Credentials_Flow_Access_Token().Result
                 }))));
             } catch (Exception e) {

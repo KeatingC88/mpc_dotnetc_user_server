@@ -2,15 +2,16 @@ using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using mpc_dotnetc_user_server.Services;
-using System.Net;
-using mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository;
-using mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository.Initialization;
-using mpc_dotnetc_user_server.Services.Social.Media;
-using mpc_dotnetc_user_server.Services.Security;
 using mpc_dotnetc_user_server.Interfaces;
 using mpc_dotnetc_user_server.Interfaces.IUsers_Respository;
 using mpc_dotnetc_user_server.Interfaces.Social;
+using mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository;
+using mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository.Initialization;
+using mpc_dotnetc_user_server.Services;
+using mpc_dotnetc_user_server.Services.Security;
+using mpc_dotnetc_user_server.Services.Social.Media;
+using StackExchange.Redis;
+using System.Net;
 
 static string get_local_machine_ip_address()
 {
@@ -35,12 +36,9 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 string environment = builder.Environment.EnvironmentName;
 IWebHostEnvironment env = builder.Environment;
 
-if (env.IsDevelopment())
-{
+if (env.IsDevelopment()) {
     Env.Load(".env.development");
-}
-else if (env.IsProduction())
-{
+} else if (env.IsProduction()) {
     Env.Load(".env.production");
 }
 
@@ -73,11 +71,24 @@ builder.Services.AddCors(options =>
 // Add Redis distributed cache for sessions
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = Environment.GetEnvironmentVariable("DOCKER_CONNECTION_STRING");
-    options.InstanceName = @$"{Environment.GetEnvironmentVariable("DOCKER_CONTAINER_NAME")}_session:";
+    options.ConfigurationOptions = new ConfigurationOptions
+    {
+        EndPoints =
+        {
+            $"{Environment.GetEnvironmentVariable("REDIS_USER_SESSION_HOST")}:" +
+            $"{Environment.GetEnvironmentVariable("REDIS_USER_SESSION_PORT")}"
+        },
+
+        User = Environment.GetEnvironmentVariable("REDIS_USER_SESSION_USER"),
+        Password = Environment.GetEnvironmentVariable("REDIS_USER_SESSION_PASSWORD"),
+
+        AbortOnConnectFail = false
+    };
+
+    options.InstanceName =
+        $"{Environment.GetEnvironmentVariable("DOCKER_CONTAINER_NAME")}_session:";
 });
 
-builder.Services.AddDistributedMemoryCache();
 
 // Add Session middleware
 builder.Services.AddSession(options =>
@@ -88,15 +99,13 @@ builder.Services.AddSession(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.None;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
-
+// end of session configuration.
 
 builder.Services.AddScoped<IUsers_Repository_Create, Users_Repository_Create>();
 builder.Services.AddScoped<IUsers_Repository_Delete, Users_Repository_Delete>();
 builder.Services.AddScoped<IUsers_Repository_Update, Users_Repository_Update>();
 builder.Services.AddScoped<IUsers_Repository_Integrate, Users_Repository_Integrate>();
 builder.Services.AddScoped<IUsers_Repository_Read, Users_Repository_Read>();
-builder.Services.AddScoped<IUsers_Repository, Users_Repository>();
-
 
 builder.Services.AddScoped<INetwork, Network>();
 
@@ -106,6 +115,7 @@ builder.Services.AddSingleton<IAES, AES>();
 builder.Services.AddSingleton<IJWT, JWT>();
 builder.Services.AddSingleton<IPassword, Password>();
 builder.Services.AddSingleton<ITwitch, Twitch>();
+builder.Services.AddTransient<ISystem_Tampering, System_Tampering>();
 
 //Create Services to be used on Program.cs
 var tempProvider = builder.Services.BuildServiceProvider();
@@ -135,7 +145,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     Users_Database_Context Users_Database_Context = scope.ServiceProvider.GetRequiredService<Users_Database_Context>();
-    SQLite_Database_Mock startup = new SQLite_Database_Mock(Users_Database_Context, Constants, IAES, IPassword);
+    SQLite_Database_Create_Users_Mock startup = new SQLite_Database_Create_Users_Mock(Users_Database_Context, Constants, IAES, IPassword);
     startup.Initialize();
 }
 //End Update the Database with Mock Data.

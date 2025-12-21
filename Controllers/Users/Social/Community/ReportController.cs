@@ -16,7 +16,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Community
     {
         private readonly ILogger<ReportController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsers_Repository Users_Repository;
+        private readonly ISystem_Tampering System_Tampering;
         private readonly IUsers_Repository_Read Users_Repository_Read;
         private readonly IUsers_Repository_Update Users_Repository_Update;
         private readonly IUsers_Repository_Create Users_Repository_Create;
@@ -28,7 +28,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Community
         public ReportController(
             ILogger<ReportController> logger,
             IConfiguration configuration,
-            IUsers_Repository users_repository,
+            ISystem_Tampering system_tampering,
             IAES aes,
             IJWT jwt,
             INetwork network,
@@ -39,7 +39,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Community
         {
             _logger = logger;
             _configuration = configuration;
-            Users_Repository = users_repository;
+            System_Tampering = system_tampering;
             AES = aes;
             JWT = jwt;
             Network = network;
@@ -87,7 +87,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Community
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.URL = AES.Process_Decryption(dto.URL);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -174,7 +174,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Community
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -264,7 +264,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Community
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -354,7 +354,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Community
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.Comment = AES.Process_Decryption(dto.Comment);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -445,7 +445,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Community
             dto.Report_type = AES.Process_Decryption(dto.Report_type);
             dto.Report_reason = AES.Process_Decryption(dto.Report_reason);
 
-           if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+           if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
             {
                 Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                 Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -552,7 +552,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Community
                 dto.Detail = AES.Process_Decryption(dto.Detail);
                 dto.URL = AES.Process_Decryption(dto.URL);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,

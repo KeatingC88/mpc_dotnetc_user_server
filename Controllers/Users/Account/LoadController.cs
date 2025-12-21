@@ -15,7 +15,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly ILogger<LoadController> _logger;
         private readonly IConfiguration _configuration;
         private readonly IUsers_Repository_Read Users_Repository_Read;
-        private readonly IUsers_Repository Users_Repository;
+        private readonly ISystem_Tampering System_Tampering;
         private readonly IAES AES;
         private readonly IJWT JWT;
         private readonly INetwork Network;
@@ -74,7 +74,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                var validationResult = await Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                var validationResult = await System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = await Network.Get_Client_Remote_Internet_Protocol_Address(),
                     Remote_Port = await Network.Get_Client_Remote_Internet_Protocol_Port(),

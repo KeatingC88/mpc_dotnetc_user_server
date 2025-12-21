@@ -77,152 +77,152 @@ namespace mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository
         {
             var user = (from end_user in _UsersDBC.User_IDsTbl
 
-                        join account_type_table in _UsersDBC.Account_TypeTbl
-                            on end_user.ID equals account_type_table.End_User_ID into resulting_account_type_table
-                        from account_type_table in resulting_account_type_table.DefaultIfEmpty()
+            join account_type_table in _UsersDBC.Account_TypeTbl
+                on end_user.ID equals account_type_table.End_User_ID into resulting_account_type_table
+            from account_type_table in resulting_account_type_table.DefaultIfEmpty()
 
-                        join login_email_table in _UsersDBC.Login_Email_AddressTbl
-                            on end_user.ID equals login_email_table.End_User_ID into resulting_email_table
-                        from login_email_table in resulting_email_table.DefaultIfEmpty()
+            join login_email_table in _UsersDBC.Login_Email_AddressTbl
+                on end_user.ID equals login_email_table.End_User_ID into resulting_email_table
+            from login_email_table in resulting_email_table.DefaultIfEmpty()
 
-                        join selected_language_table in _UsersDBC.Selected_LanguageTbl
-                            on end_user.ID equals selected_language_table.End_User_ID into resulting_selected_language_table
-                        from selected_language_table in resulting_selected_language_table.DefaultIfEmpty()
+            join selected_language_table in _UsersDBC.Selected_LanguageTbl
+                on end_user.ID equals selected_language_table.End_User_ID into resulting_selected_language_table
+            from selected_language_table in resulting_selected_language_table.DefaultIfEmpty()
 
-                        join selected_name_table in _UsersDBC.Selected_NameTbl
-                            on end_user.ID equals selected_name_table.End_User_ID into resulting_name_table
-                        from selected_name_table in resulting_name_table.DefaultIfEmpty()
+            join selected_name_table in _UsersDBC.Selected_NameTbl
+                on end_user.ID equals selected_name_table.End_User_ID into resulting_name_table
+            from selected_name_table in resulting_name_table.DefaultIfEmpty()
 
-                        join selected_custom_design_table in _UsersDBC.Selected_App_Custom_DesignTbl
-                            on end_user.ID equals selected_custom_design_table.End_User_ID into resulting_selected_custom_design_table
-                        from selected_custom_design_table in resulting_selected_custom_design_table.DefaultIfEmpty()
+            join selected_custom_design_table in _UsersDBC.Selected_App_Custom_DesignTbl
+                on end_user.ID equals selected_custom_design_table.End_User_ID into resulting_selected_custom_design_table
+            from selected_custom_design_table in resulting_selected_custom_design_table.DefaultIfEmpty()
 
-                        join account_groups_table in _UsersDBC.Account_GroupsTbl
-                            on end_user.ID equals account_groups_table.End_User_ID into resulting_account_groups_table
-                        from account_groups_table in resulting_account_groups_table.DefaultIfEmpty()
+            join account_groups_table in _UsersDBC.Account_GroupsTbl
+                on end_user.ID equals account_groups_table.End_User_ID into resulting_account_groups_table
+            from account_groups_table in resulting_account_groups_table.DefaultIfEmpty()
 
-                        join account_roles_table in _UsersDBC.Account_RolesTbl
-                            on end_user.ID equals account_roles_table.End_User_ID into resulting_account_roles_table
-                        from account_roles_table in resulting_account_roles_table.DefaultIfEmpty()
+            join account_roles_table in _UsersDBC.Account_RolesTbl
+                on end_user.ID equals account_roles_table.End_User_ID into resulting_account_roles_table
+            from account_roles_table in resulting_account_roles_table.DefaultIfEmpty()
 
-                        join selected_grid_table in _UsersDBC.Selected_App_Grid_TypeTbl
-                            on end_user.ID equals selected_grid_table.End_User_ID into resulting_selected_grid_table
-                        from selected_grid_table in resulting_selected_grid_table.DefaultIfEmpty()
+            join selected_grid_table in _UsersDBC.Selected_App_Grid_TypeTbl
+                on end_user.ID equals selected_grid_table.End_User_ID into resulting_selected_grid_table
+            from selected_grid_table in resulting_selected_grid_table.DefaultIfEmpty()
 
-                        join selected_navbar_lock_table in _UsersDBC.Selected_Navbar_LockTbl
-                            on end_user.ID equals selected_navbar_lock_table.End_User_ID into resulting_selected_navbar_lock_table
-                        from selected_navbar_lock_table in resulting_selected_navbar_lock_table.DefaultIfEmpty()
+            join selected_navbar_lock_table in _UsersDBC.Selected_Navbar_LockTbl
+                on end_user.ID equals selected_navbar_lock_table.End_User_ID into resulting_selected_navbar_lock_table
+            from selected_navbar_lock_table in resulting_selected_navbar_lock_table.DefaultIfEmpty()
 
-                        join status_table in _UsersDBC.Selected_StatusTbl
-                            on end_user.ID equals status_table.End_User_ID into resulting_status_table
-                        from status_table in resulting_status_table.DefaultIfEmpty()
+            join status_table in _UsersDBC.Selected_StatusTbl
+                on end_user.ID equals status_table.End_User_ID into resulting_status_table
+            from status_table in resulting_status_table.DefaultIfEmpty()
 
-                        join avatar_table in _UsersDBC.Selected_AvatarTbl
-                            on end_user.ID equals avatar_table.End_User_ID into resulting_avatar_table
-                        from avatar_table in resulting_avatar_table.DefaultIfEmpty()
+            join avatar_table in _UsersDBC.Selected_AvatarTbl
+                on end_user.ID equals avatar_table.End_User_ID into resulting_avatar_table
+            from avatar_table in resulting_avatar_table.DefaultIfEmpty()
 
-                        join theme_table in _UsersDBC.Selected_ThemeTbl
-                            on end_user.ID equals theme_table.End_User_ID into resulting_theme_table
-                        from theme_table in resulting_theme_table.DefaultIfEmpty()
+            join theme_table in _UsersDBC.Selected_ThemeTbl
+                on end_user.ID equals theme_table.End_User_ID into resulting_theme_table
+            from theme_table in resulting_theme_table.DefaultIfEmpty()
 
-                        join alignment_table in _UsersDBC.Selected_App_AlignmentTbl
-                            on end_user.ID equals alignment_table.End_User_ID into resulting_alignment_table
-                        from alignment_table in resulting_alignment_table.DefaultIfEmpty()
+            join alignment_table in _UsersDBC.Selected_App_AlignmentTbl
+                on end_user.ID equals alignment_table.End_User_ID into resulting_alignment_table
+            from alignment_table in resulting_alignment_table.DefaultIfEmpty()
 
-                        join text_alignment_table in _UsersDBC.Selected_App_Text_AlignmentTbl
-                            on end_user.ID equals text_alignment_table.End_User_ID into resulting_text_alignment_table
-                        from text_alignment_table in resulting_text_alignment_table.DefaultIfEmpty()
+            join text_alignment_table in _UsersDBC.Selected_App_Text_AlignmentTbl
+                on end_user.ID equals text_alignment_table.End_User_ID into resulting_text_alignment_table
+            from text_alignment_table in resulting_text_alignment_table.DefaultIfEmpty()
 
-                        join identity_table in _UsersDBC.IdentityTbl
-                            on end_user.ID equals identity_table.End_User_ID into resulting_identity_table
-                        from identity_table in resulting_identity_table.DefaultIfEmpty()
+            join identity_table in _UsersDBC.IdentityTbl
+                on end_user.ID equals identity_table.End_User_ID into resulting_identity_table
+            from identity_table in resulting_identity_table.DefaultIfEmpty()
 
-                        join birth_date_table in _UsersDBC.Birth_DateTbl
-                            on end_user.ID equals birth_date_table.End_User_ID into resulting_birth_date_table
-                        from birth_date_table in resulting_birth_date_table.DefaultIfEmpty()
+            join birth_date_table in _UsersDBC.Birth_DateTbl
+                on end_user.ID equals birth_date_table.End_User_ID into resulting_birth_date_table
+            from birth_date_table in resulting_birth_date_table.DefaultIfEmpty()
 
-                        join login_table in _UsersDBC.Login_Time_StampTbl
-                            on end_user.ID equals login_table.End_User_ID into resulting_login_table
-                        from login_table in resulting_login_table.DefaultIfEmpty()
+            join login_table in _UsersDBC.Login_Time_StampTbl
+                on end_user.ID equals login_table.End_User_ID into resulting_login_table
+            from login_table in resulting_login_table.DefaultIfEmpty()
 
-                        join twitch_id_table in _UsersDBC.Twitch_IDsTbl
-                            on end_user.ID equals twitch_id_table.End_User_ID into resulting_twitch_table
-                        from twitch_id_table in resulting_twitch_table.DefaultIfEmpty()
+            join twitch_id_table in _UsersDBC.Twitch_IDsTbl
+                on end_user.ID equals twitch_id_table.End_User_ID into resulting_twitch_table
+            from twitch_id_table in resulting_twitch_table.DefaultIfEmpty()
 
-                        join twitch_email_address_table in _UsersDBC.Twitch_Email_AddressTbl
-                            on end_user.ID equals twitch_email_address_table.End_User_ID into resulting_twitch_email_address_table
-                        from twitch_email_address_table in resulting_twitch_email_address_table.DefaultIfEmpty()
+            join twitch_email_address_table in _UsersDBC.Twitch_Email_AddressTbl
+                on end_user.ID equals twitch_email_address_table.End_User_ID into resulting_twitch_email_address_table
+            from twitch_email_address_table in resulting_twitch_email_address_table.DefaultIfEmpty()
 
-                        join logout_table in _UsersDBC.Logout_Time_StampTbl
-                            on end_user.ID equals logout_table.End_User_ID into resulting_logout_table
-                        from logout_table in resulting_logout_table.DefaultIfEmpty()
+            join logout_table in _UsersDBC.Logout_Time_StampTbl
+                on end_user.ID equals logout_table.End_User_ID into resulting_logout_table
+            from logout_table in resulting_logout_table.DefaultIfEmpty()
 
-                        where end_user.ID == end_user_id
+            where end_user.ID == end_user_id
 
-                        select new
-                        {
-                            end_user_id = end_user.ID,
-                            created_on = end_user.Created_on,
-                            account_type = account_type_table.Type,
-                            email_address = login_email_table.Email_Address,
-                            name = selected_name_table.Name,
-                            public_id = end_user.Public_ID,
-                            current_language = $@"{selected_language_table.Language_code}-{selected_language_table.Region_code}",
-                            language = selected_language_table.Language_code,
-                            region = selected_language_table.Region_code,
-                            groups = account_groups_table.Groups,
-                            roles = account_roles_table.Roles,
-                            grid_type = selected_grid_table.Grid,
-                            nav_lock = selected_navbar_lock_table.Locked,
-                            online_status = status_table.Online,
-                            offline_status = status_table.Offline,
-                            hidden_status = status_table.Hidden,
-                            away_status = status_table.Away,
-                            dnd_status = status_table.DND,
-                            custom_status = status_table.Custom,
-                            custom_lbl = status_table.Custom_lbl,
-                            avatar_url_path = avatar_table.Avatar_url_path,
-                            avatar_title = avatar_table.Avatar_title,
-                            light_theme = theme_table.Light,
-                            night_theme = theme_table.Night,
-                            custom_theme = theme_table.Custom,
-                            left_alignment = alignment_table.Left,
-                            center_alignment = alignment_table.Center,
-                            right_alignment = alignment_table.Right,
-                            left_text_alignment = text_alignment_table.Left,
-                            center_text_alignment = text_alignment_table.Center,
-                            right_text_alignment = text_alignment_table.Right,
-                            login_on = login_table.Login_on,
-                            logout_on = logout_table != null ? logout_table.Logout_on : (long?)null,
-                            gender = identity_table.Gender,
-                            birth_day = birth_date_table.Day,
-                            birth_month = birth_date_table.Month,
-                            birth_year = birth_date_table.Year,
-                            first_name = identity_table.First_Name,
-                            last_name = identity_table.Last_Name,
-                            middle_name = identity_table.Middle_Name,
-                            maiden_name = identity_table.Maiden_Name,
-                            ethnicity = identity_table.Ethnicity,
-                            twitch_user_id = twitch_id_table != null ? twitch_id_table.Twitch_ID : (long?)null,
-                            twitch_user_name = twitch_id_table != null ? twitch_id_table.User_Name : null,
-                            twitch_email_address = twitch_email_address_table != null ? twitch_email_address_table.Email_Address : null,
-                            card_border_color = selected_custom_design_table.Card_Border_Color,
-                            card_header_font = selected_custom_design_table.Card_Header_Font,
-                            card_header_font_color = selected_custom_design_table.Card_Header_Font_Color,
-                            card_header_background_color = selected_custom_design_table.Card_Header_Background_Color,
-                            card_body_font = selected_custom_design_table.Card_Body_Font,
-                            card_body_background_color = selected_custom_design_table.Card_Body_Background_Color,
-                            card_body_font_color = selected_custom_design_table.Card_Body_Font_Color,
-                            card_footer_font_color = selected_custom_design_table.Card_Footer_Font_Color,
-                            card_footer_font = selected_custom_design_table.Card_Footer_Font,
-                            card_footer_background_color = selected_custom_design_table.Card_Footer_Background_Color,
-                            navigation_menu_background_color = selected_custom_design_table.Navigation_Menu_Background_Color,
-                            navigation_menu_font_color = selected_custom_design_table.Navigation_Menu_Font_Color,
-                            navigation_menu_font = selected_custom_design_table.Navigation_Menu_Font,
-                            button_background_color = selected_custom_design_table.Button_Background_Color,
-                            button_font = selected_custom_design_table.Button_Font,
-                            button_font_color = selected_custom_design_table.Button_Font_Color
-                        }).FirstOrDefault();
+            select new
+            {
+                end_user_id = end_user.ID,
+                created_on = end_user.Created_on,
+                account_type = account_type_table.Type,
+                email_address = login_email_table.Email_Address,
+                name = selected_name_table.Name,
+                public_id = end_user.Public_ID,
+                current_language = $@"{selected_language_table.Language_code}-{selected_language_table.Region_code}",
+                language = selected_language_table.Language_code,
+                region = selected_language_table.Region_code,
+                groups = account_groups_table.Groups,
+                roles = account_roles_table.Roles,
+                grid_type = selected_grid_table.Grid,
+                nav_lock = selected_navbar_lock_table.Locked,
+                online_status = status_table.Online,
+                offline_status = status_table.Offline,
+                hidden_status = status_table.Hidden,
+                away_status = status_table.Away,
+                dnd_status = status_table.DND,
+                custom_status = status_table.Custom,
+                custom_lbl = status_table.Custom_lbl,
+                avatar_url_path = avatar_table.Avatar_url_path,
+                avatar_title = avatar_table.Avatar_title,
+                light_theme = theme_table.Light,
+                night_theme = theme_table.Night,
+                custom_theme = theme_table.Custom,
+                left_alignment = alignment_table.Left,
+                center_alignment = alignment_table.Center,
+                right_alignment = alignment_table.Right,
+                left_text_alignment = text_alignment_table.Left,
+                center_text_alignment = text_alignment_table.Center,
+                right_text_alignment = text_alignment_table.Right,
+                login_on = login_table.Login_on,
+                logout_on = logout_table != null ? logout_table.Logout_on : (long?)null,
+                gender = identity_table.Gender,
+                birth_day = birth_date_table.Day,
+                birth_month = birth_date_table.Month,
+                birth_year = birth_date_table.Year,
+                first_name = identity_table.First_Name,
+                last_name = identity_table.Last_Name,
+                middle_name = identity_table.Middle_Name,
+                maiden_name = identity_table.Maiden_Name,
+                ethnicity = identity_table.Ethnicity,
+                twitch_user_id = twitch_id_table != null ? twitch_id_table.Twitch_ID : (long?)null,
+                twitch_user_name = twitch_id_table != null ? twitch_id_table.User_Name : null,
+                twitch_email_address = twitch_email_address_table != null ? twitch_email_address_table.Email_Address : null,
+                card_border_color = selected_custom_design_table.Card_Border_Color,
+                card_header_font = selected_custom_design_table.Card_Header_Font,
+                card_header_font_color = selected_custom_design_table.Card_Header_Font_Color,
+                card_header_background_color = selected_custom_design_table.Card_Header_Background_Color,
+                card_body_font = selected_custom_design_table.Card_Body_Font,
+                card_body_background_color = selected_custom_design_table.Card_Body_Background_Color,
+                card_body_font_color = selected_custom_design_table.Card_Body_Font_Color,
+                card_footer_font_color = selected_custom_design_table.Card_Footer_Font_Color,
+                card_footer_font = selected_custom_design_table.Card_Footer_Font,
+                card_footer_background_color = selected_custom_design_table.Card_Footer_Background_Color,
+                navigation_menu_background_color = selected_custom_design_table.Navigation_Menu_Background_Color,
+                navigation_menu_font_color = selected_custom_design_table.Navigation_Menu_Font_Color,
+                navigation_menu_font = selected_custom_design_table.Navigation_Menu_Font,
+                button_background_color = selected_custom_design_table.Button_Background_Color,
+                button_font = selected_custom_design_table.Button_Font,
+                button_font_color = selected_custom_design_table.Button_Font_Color
+            }).FirstOrDefault();
 
             if (user == null)
                 return await Task.FromResult(new User_Data_DTO { });
@@ -658,7 +658,6 @@ namespace mpc_dotnetc_user_server.Repositories.SQLite.Users_Repository
                 _ => 255
             };
         }
-
         public async Task<bool> Read_Confirmation_Code_Exists_In_Pending_Email_Address_Registration(string Code)
         {
             return await Task.FromResult(_UsersDBC.Pending_Email_RegistrationTbl.Any(x => x.Code == Code));

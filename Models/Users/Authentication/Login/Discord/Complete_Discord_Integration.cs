@@ -8,6 +8,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Discord
         public string Discord_User_Name { get; set; } = string.Empty;
 
         [Required]
+        public string Discord_Global_Name { get; set; } = string.Empty;
+
+        [Required]
         public string Email_Address { get; set; } = string.Empty;
 
         [Required]
@@ -18,6 +21,9 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Discord
 
         [Required]
         public long End_User_ID { get; set; }
+
+        [Required]
+        public bool Verified { get; set; }
 
     }
 }

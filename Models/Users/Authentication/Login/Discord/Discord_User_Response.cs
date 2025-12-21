@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using mpc_dotnetc_user_server.Models.Users.Authentication.Login.Discord;
+﻿using System.Text.Json.Serialization;
 
 namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Discord
 {

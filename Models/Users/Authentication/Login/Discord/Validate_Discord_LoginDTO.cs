@@ -28,8 +28,6 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Discord
         [Required]
         public string Location { get; set; } = string.Empty;
 
-        public string Login_type { get; set; } = string.Empty;
-
         [Required]
         public string Client_time { get; set; } = string.Empty;
 
@@ -89,7 +87,5 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Discord
 
         [Required]
         public string Window_height { get; set; } = string.Empty;
-        public string Token { get; set; } = string.Empty;
-        public long End_User_ID { get; set; }
     }
 }

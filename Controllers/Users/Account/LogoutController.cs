@@ -15,7 +15,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly Constants _Constants;
         private readonly ILogger<LogoutController> _logger;
         private static IConfiguration? _configuration;
-        private readonly IUsers_Repository Users_Repository;
+        private readonly ISystem_Tampering System_Tampering;
         private readonly IUsers_Repository_Update Users_Repository_Update;
         private readonly IUsers_Repository_Create Users_Repository_Create;
 
@@ -27,7 +27,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         public LogoutController(
             ILogger<LogoutController> logger,
             IConfiguration configuration,
-            IUsers_Repository users_repository,
+            ISystem_Tampering system_tampering,
             IUsers_Repository_Create users_repository_create,
             Constants constants,
             IAES aes,
@@ -38,7 +38,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             _logger = logger;
             _configuration = configuration;
-            Users_Repository = users_repository;
+            System_Tampering = system_tampering;
             _Constants = constants;
             AES = aes;
             JWT = jwt;
@@ -90,7 +90,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,

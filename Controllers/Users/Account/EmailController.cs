@@ -25,7 +25,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         private readonly Constants _Constants;
         private readonly ILogger<EmailController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsers_Repository Users_Repository;
+        private readonly ISystem_Tampering System_Tampering;
         private readonly IUsers_Repository_Create Users_Repository_Create;
         private readonly IUsers_Repository_Read Users_Repository_Read;
         private readonly IUsers_Repository_Update Users_Repository_Update;
@@ -39,7 +39,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         public EmailController(
             ILogger<EmailController> logger,
             IConfiguration configuration,
-            IUsers_Repository users_repository,
+            ISystem_Tampering system_tampering,
             IUsers_Repository_Read users_repository_read,
             IUsers_Repository_Create users_repository_create,
             IUsers_Repository_Update users_repository_update,
@@ -54,7 +54,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             _logger = logger;
             _configuration = configuration;
-            Users_Repository = users_repository;
+            System_Tampering = system_tampering;
             Users_Repository_Read = users_repository_read;
             Users_Repository_Create = users_repository_create;
             Users_Repository_Update = users_repository_update;
@@ -114,7 +114,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -182,7 +182,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 long user_id = Users_Repository_Read.Read_User_ID_By_Email_Address(dto.Email_Address).Result;
 
                 byte[]? user_password_hash_in_the_database = Users_Repository_Read.Read_User_Password_Hash_By_ID(user_id).Result;
-                byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = Password.Create_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address}{_Constants.JWT_SECURITY_KEY}"));
+                byte[]? end_user_given_password_that_becomes_hash_given_to_compare_with_db_hash = Password.Create_Password_Salted_Hash_Bytes(Encoding.UTF8.GetBytes(dto.Password), Encoding.UTF8.GetBytes($"{dto.Email_Address.ToUpper()}{_Constants.JWT_SECURITY_KEY}"));
 
                 if (user_password_hash_in_the_database != null)
                 {
@@ -370,7 +370,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -613,7 +613,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -826,7 +826,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1110,7 +1110,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Down_link = AES.Process_Decryption(dto.Down_link);
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -1311,6 +1311,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     });
                     return BadRequest();
                 }
+
                 if (!Valid.Region_Code(dto.Region))
                 {
                     await Users_Repository_Create.Insert_Report_Failed_Pending_Email_Registration_History(new Report_Failed_Pending_Email_Registration_History

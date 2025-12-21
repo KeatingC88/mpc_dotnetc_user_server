@@ -1,3 +1,7 @@
+# Launch SQLITE to Set the Database Tables
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+
 # Manual CLI build command: 
 1) Navigate CLI to folder and use
 dotnet build

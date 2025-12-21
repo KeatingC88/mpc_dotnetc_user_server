@@ -13,7 +13,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
     {
         private readonly ILogger<IdentityController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsers_Repository Users_Repository;
+        private readonly ISystem_Tampering System_Tampering;
         private readonly IUsers_Repository_Update Users_Repository_Update;
         private readonly IAES AES;
         private readonly IJWT JWT;
@@ -21,7 +21,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         public IdentityController(
             ILogger<IdentityController> logger,
             IConfiguration configuration, 
-            IUsers_Repository users_repository,
+            ISystem_Tampering system_tampering,
             IUsers_Repository_Update users_repository_update,
             IAES aes,
             IJWT jwt,
@@ -29,7 +29,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         ){
             _logger = logger;
             _configuration = configuration;
-            Users_Repository = users_repository;
+            System_Tampering = system_tampering;
             Users_Repository_Update = users_repository_update;
             AES = aes;
             JWT = jwt;
@@ -76,7 +76,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.First_name = AES.Process_Decryption(dto.First_name);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -164,7 +164,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Last_name = AES.Process_Decryption(dto.Last_name);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -252,7 +252,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Middle_name = AES.Process_Decryption(dto.Middle_name);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -342,7 +342,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Maiden_name = AES.Process_Decryption(dto.Maiden_name);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -431,7 +431,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Gender = AES.Process_Decryption(dto.Gender);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -519,7 +519,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
 
                 dto.Ethnicity = AES.Process_Decryption(dto.Ethnicity);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -609,7 +609,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Month = AES.Process_Decryption(dto.Month);
                 dto.Year = AES.Process_Decryption(dto.Year);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -702,7 +702,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Month = "0";
                 dto.Year = "0";
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,

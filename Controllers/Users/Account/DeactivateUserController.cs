@@ -14,7 +14,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
     {
         private readonly ILogger<DeactivateUserController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsers_Repository Users_Repository;
+        private readonly ISystem_Tampering System_Tampering;
         private readonly IUsers_Repository_Read Users_Repository_Read;
         private readonly IUsers_Repository_Delete Users_Repository_Delete;
         private readonly Constants _Constants;
@@ -27,7 +27,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         public DeactivateUserController(
             ILogger<DeactivateUserController> logger,
             IConfiguration configuration,
-            IUsers_Repository users_repository,
+            ISystem_Tampering system_tampering,
             IUsers_Repository_Read users_repository_read,
             IUsers_Repository_Delete users_repository_delete,
             IAES aes,
@@ -38,7 +38,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
         {
             _logger = logger;
             _configuration = configuration;
-            Users_Repository = users_repository;
+            System_Tampering = system_tampering;
             Users_Repository_Read = users_repository_read;
             Users_Repository_Delete = users_repository_delete;
             _Constants = constants;
@@ -88,7 +88,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                 dto.Device_ram_gb = AES.Process_Decryption(dto.Device_ram_gb);
                 dto.Password = AES.Process_Decryption(dto.Password);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -109,7 +109,6 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Account
                     End_User_ID = dto.Client_id,
                     Window_height = dto.Window_height,
                     Window_width = dto.Window_width,
-    
                     Screen_height = dto.Screen_height,
                     Screen_width = dto.Screen_width,
                     RTT = dto.RTT,

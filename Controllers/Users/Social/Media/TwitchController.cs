@@ -20,7 +20,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
         private readonly Constants _Constants;
         private readonly ILogger<TwitchController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IUsers_Repository Users_Repository;
+        private readonly ISystem_Tampering System_Tampering;
         private readonly IUsers_Repository_Read Users_Repository_Read;
         private readonly IUsers_Repository_Update Users_Repository_Update;
         private readonly IUsers_Repository_Create Users_Repository_Create;
@@ -34,7 +34,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
         public TwitchController(
             ILogger<TwitchController> logger,
             IConfiguration configuration,
-            IUsers_Repository users_repository,
+            ISystem_Tampering system_tampering,
             IUsers_Repository_Read users_repository_read,
             IUsers_Repository_Update users_repository_update,
             IUsers_Repository_Create users_repository_create,
@@ -48,7 +48,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
         {
             _logger = logger;
             _configuration = configuration;
-            Users_Repository = users_repository;
+            System_Tampering = system_tampering;
             Users_Repository_Read = users_repository_read;
             Users_Repository_Update = users_repository_update;
             Users_Repository_Create = users_repository_create;
@@ -100,7 +100,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                 dto.Theme = AES.Process_Decryption(dto.Theme);
                 dto.Grid_type = AES.Process_Decryption(dto.Grid_type);
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -274,7 +274,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
                     Expires = DateTime.UtcNow.AddMinutes(_Constants.JWT_EXPIRE_TIME)
                 };
 
-                HttpContext.Session.SetString($@"AUTH|MPC:{mpc_member_data.id}|Login_Type:TWITCH", JsonSerializer.Serialize(created_email_account_token));
+                HttpContext.Session.SetString($@"AUTH|MPC:{mpc_member_data.id}|Login_Type:{mpc_member_data.login_type}", JsonSerializer.Serialize(created_email_account_token));
                 Response.Cookies.Append(@$"{Environment.GetEnvironmentVariable("SERVER_COOKIE_NAME")}", created_email_account_token, cookie_options);
 
                 return await Task.FromResult(Ok(AES.Process_Encryption(JsonSerializer.Serialize(new
@@ -324,7 +324,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
 
                 dto.End_User_ID = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
@@ -435,7 +435,7 @@ namespace mpc_dotnetc_user_server.Controllers.Users.Social.Media
 
                 dto.End_User_ID = JWT.Read_Email_Account_User_ID_By_JWToken(dto.Token).Result;
 
-                if (!Users_Repository.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
+                if (!System_Tampering.Validate_Client_With_Server_Authorization(new Report_Failed_Authorization_History
                 {
                     Remote_IP = Network.Get_Client_Remote_Internet_Protocol_Address().Result,
                     Remote_Port = Network.Get_Client_Remote_Internet_Protocol_Port().Result,
