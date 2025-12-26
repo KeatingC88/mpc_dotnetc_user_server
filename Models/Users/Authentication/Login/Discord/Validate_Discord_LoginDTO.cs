@@ -6,6 +6,7 @@ namespace mpc_dotnetc_user_server.Models.Users.Authentication.Login.Discord
     {
         [Required(ErrorMessage = "Theme is Missing.")]
         public string Theme { get; set; } = string.Empty;
+        public string End_User_ID { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Alignment is Missing.")]
         public string Alignment { get; set; } = string.Empty;

@@ -115,6 +115,8 @@ builder.Services.AddSingleton<IAES, AES>();
 builder.Services.AddSingleton<IJWT, JWT>();
 builder.Services.AddSingleton<IPassword, Password>();
 builder.Services.AddSingleton<ITwitch, Twitch>();
+builder.Services.AddSingleton<IDiscord, Discord>();
+
 builder.Services.AddTransient<ISystem_Tampering, System_Tampering>();
 
 //Create Services to be used on Program.cs

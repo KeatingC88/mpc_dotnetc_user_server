@@ -8,8 +8,8 @@ namespace mpc_dotnetc_user_server.Services.Social.Media
 {
     public class Discord : IDiscord
     {
-        private readonly string discord_client_id = Environment.GetEnvironmentVariable("discord_client_id") ?? string.Empty;
-        private readonly string discord_client_secret = Environment.GetEnvironmentVariable("discord_client_secret") ?? string.Empty;
+        private readonly string discord_client_id = Environment.GetEnvironmentVariable("DISCORD_CLIENT_ID") ?? string.Empty;
+        private readonly string discord_client_secret = Environment.GetEnvironmentVariable("DISCORD_CLIENT_SECRET") ?? string.Empty;
 
         public Discord() { }
 
@@ -31,9 +31,9 @@ namespace mpc_dotnetc_user_server.Services.Social.Media
             var json = await response.Content.ReadAsStringAsync();
 
             var token_response = JsonSerializer.Deserialize<Discord_Token_Response>(json);
-            return token_response.AccessToken ?? string.Empty;
+            return token_response.AccessToken;
         }
-        public async Task<string?> Authorization_Code_Flow_Access_Token(string code)
+        public async Task<string> Authorization_Code_Flow_Access_Token(string code)
         {
             using HttpClient http_client = new HttpClient();
 
@@ -43,21 +43,21 @@ namespace mpc_dotnetc_user_server.Services.Social.Media
                     { "client_secret", discord_client_secret },
                     { "code", code },
                     { "grant_type", "authorization_code" },
-                    { "redirect_uri", Environment.GetEnvironmentVariable("Discord_CLIENT_REDIRECT_URI") ?? string.Empty }
+                    { "redirect_uri", Environment.GetEnvironmentVariable("DISCORD_CLIENT_REDIRECT_URI") ?? string.Empty }
                 }));
 
             var content = await http_response.Content.ReadAsStringAsync();
 
             var token_response = JsonSerializer.Deserialize<Discord_Token_Response>(content);
 
-            if (token_response == null || token_response.AccessToken == null)
+            if (token_response == null || string.IsNullOrEmpty($"{token_response?.AccessToken}"))
             {
                 return null;
             }
 
-            return await Task.FromResult(token_response.AccessToken);
+            return await Task.FromResult($"{token_response?.AccessToken}");
         }
-        public async Task<Discord_User_Response?> Get_User_Data(string Discord_access_token)
+        public async Task<Discord_UserDTO> Get_User_Data(string Discord_access_token)
         {
             HttpClient http_client = new HttpClient();
             http_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Discord_access_token);
@@ -69,18 +69,8 @@ namespace mpc_dotnetc_user_server.Services.Social.Media
             {
                 throw new Exception("Invalid Discord_Access_Token");
             }
-
-            var discord_end_user_json = await discord_response.Content.ReadAsStringAsync();
-
-            var discord_end_user_data = JsonSerializer.Deserialize<Discord_User_Response>(discord_end_user_json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            if (discord_end_user_data == null)
-                return null;
-
-            return await Task.FromResult(discord_end_user_data);
+            string user_discord_data = await discord_response.Content.ReadAsStringAsync();
+            return await Task.FromResult(JsonSerializer.Deserialize<Discord_UserDTO>(user_discord_data));
         }
     }
 }
